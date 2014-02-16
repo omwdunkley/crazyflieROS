@@ -1,0 +1,16 @@
+<package>
+  <description brief="crazyflieROS">
+
+     crazyflieROS
+
+  </description>
+  <author>ollie</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/crazyflieROS</url>
+  <depend package="rospy"/>
+  <depend package="tf"/>
+
+</package>
+
+
