@@ -2,6 +2,9 @@
 
 #!! ERROR: py is undefined. Use list command to see defined gitignore types !!#
 
+*.pyc
+
+
 ### PyCharm ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode
 
