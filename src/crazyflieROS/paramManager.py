@@ -13,6 +13,8 @@ from PyQt4.QtGui import  QTreeWidget, QTreeWidgetItem, QAbstractItemView
 import logging
 logger = logging.getLogger(__name__)
 
+
+
 class ParamAccessItem(QTreeWidgetItem):
     """ Represents a row in the tree that is either RO or RW and contains child groups """
     def __init__(self, access, groups, parent):
@@ -104,10 +106,22 @@ class ParamManager(QTreeWidget):
     """ Class that sends/receives parameters """
     sig_connected = pyqtSignal(str)
     sig_disconnected = pyqtSignal(str)
+    sig_firmware = pyqtSignal(str, str)
+    sig_baroFound = pyqtSignal(bool)
+    sig_magFound = pyqtSignal(bool)
+    sig_test = pyqtSignal(str, bool) #sensor, bool
+
+    # Emit signals with additional details from the RO firmware
+    # Firmware / clean
+    # Sensors found HMC5883L/MS5611
+    # Sensor Tests MPU6050/HMC5883L/MS5611
+    # Crazyradio version
 
     def __init__(self, cf, parent=None):
         super(ParamManager, self).__init__(parent)
         self.cf = cf
+        self.fw = {}
+
         self.setColumnCount(3)
         self.setHeaderLabels(['Name', 'Type', 'Value'])
         self.setAlternatingRowColors(True)
@@ -138,7 +152,44 @@ class ParamManager(QTreeWidget):
         # Add data recursively
         for key in data.keys():
             self.insertTopLevelItem(0,ParamAccessItem(key, data[key], self))
+
+        # Listen to specific updates
+        self.cf.param.add_update_callback(group="imu_sensors", cb=self.imuSensorsCB)
+        self.cf.param.add_update_callback(group="imu_tests",   cb=self.imuSensorTestsCB)
+        self.cf.param.add_update_callback(group="firmware",    cb=self.firmwareCB)
+
+        # Read TOC Values
         self.forceUpdate()
+
+
+
+    def firmwareCB(self, name, val):
+        if "revision0" in name:
+            self.fw["v0"] = eval(val)
+        if "revision1" in name:
+            self.fw["v1"] = eval(val)
+        if "modified" in name:
+            self.fw["mod"] = "Modified" if eval(val) else "Clean"
+
+        if len(self.fw)==3:
+            firmware = "{:x}{:x})".format(self.fw["v0"], self.fw["v1"])
+            self.sig_firmware.emit(firmware, self.fw["mod"])
+
+
+
+    def imuSensorsCB(self, name, val):
+        """Callback for sensor found paramters"""
+        print name, eval(val)
+        if "MS5611" in name:
+            self.sig_baroFound.emit(eval(val))
+        elif "HMC5883L" in name:
+            self.sig_magFound.emit(eval(val))
+
+
+    def imuSensorTestsCB(self, name, val):
+        """Callback for sensor test parameters"""
+        self.sig_test.emit(name[name.index('.') + 1:],eval(val))
+
 
     def uppopulate(self, uri):
         self.cf.param.remove_update_callbacks()
@@ -151,3 +202,16 @@ class ParamManager(QTreeWidget):
             for g in a.getChildren():
                 for p in g.getChildren():
                     p.requestUpdate()
+
+
+
+    def getParams(self,RO=False):
+        """ Get a list of group of list of params
+        """
+        #TODO
+        return None
+
+    def setRWParams(self, group, param, value):
+        """ Sets a RW param """
+        #TODO
+        return None

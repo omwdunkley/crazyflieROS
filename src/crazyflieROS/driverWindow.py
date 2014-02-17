@@ -5,7 +5,7 @@ from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot, QThread, QObject, QTimer
 
 from paramManager import ParamManager
 from ui.driverGUI import Ui_MainWindow
-from cflib.crtp import scan_interfaces, init_drivers
+from cflib.crtp import scan_interfaces, init_drivers, get_interfaces_status
 from cflib.crazyflie import Crazyflie
 
 
@@ -78,6 +78,8 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.ui.tabWidget.setCurrentIndex(0)
+        self.resetInfo()
+        self.ui.labelTest = {"MS5611": self.ui.label_baroTest, "MPU6050": self.ui.label_MPUTest, "HMC5883L": self.ui.label_magTest}
 
         # Defaults according to settings within GUI
         self.beepOn = self.ui.checkBox_beep.isChecked()
@@ -120,7 +122,13 @@ class DriverWindow(QtGui.QMainWindow ):
 
         # Connections to GUI
         self.flie.sig_packetSpeed.connect(self.updatePacketRate)
-        self.flie.sig_flieLink.connect(self.ui.progressbar_link.setValue) # TODO shouldnt do this diretly
+        self.flie.sig_flieLink.connect(self.ui.progressbar_link.setValue)
+        self.paramManager.sig_baroFound.connect(lambda found: self.ui.label_baroFound.setText("Yes" if found else "No"))
+        self.paramManager.sig_magFound.connect(lambda found: self.ui.label_magFound.setText("Yes" if found else "No"))
+        self.paramManager.sig_test.connect(lambda name, p: self.ui.labelTest[str(name)].setText("Pass" if p else "FAIL"))
+        self.paramManager.sig_firmware.connect(lambda fw, mod: self.ui.label_fw.setText(fw))
+        self.paramManager.sig_firmware.connect(lambda fw, mod: self.ui.label_fwMod.setText(mod))
+
 
         # Connections GUI to GUI
         self.ui.checkBox_pktHZ.toggled.connect(lambda on: self.flie.setPacketUpdateSpeed(self.ui.spinBox_pktHZ.value() if on else 0 ))
@@ -153,6 +161,22 @@ class DriverWindow(QtGui.QMainWindow ):
     @pyqtSlot(bool)
     def setStartupConnect(self, on):
         self.startupConnectOn = on
+
+    def getCRTPStatus(self):
+        interface_status =get_interfaces_status()
+        for key in interface_status.keys():
+            print key#,interface_status[key]
+        self.ui.label_crv.setText(interface_status["radio"])
+
+    def resetInfo(self):
+        self.ui.label_baroFound.setText("")
+        self.ui.label_magTest.setText("")
+        self.ui.label_baroTest.setText("")
+        self.ui.label_magFound.setText("")
+        self.ui.label_MPUTest.setText("")
+        self.ui.label_fw.setText("")
+        self.ui.label_fwMod.setText("")
+        self.ui.label_crv.setText("")
 
 
     @pyqtSlot(int)
@@ -272,6 +296,7 @@ class DriverWindow(QtGui.QMainWindow ):
         self.state = state
 
 
+
         if state == STATE.CONNECTION_REQUESTED:
             self.beepMsg(Message(msg="Connection to [%s] requested" % uri))
 
@@ -284,12 +309,15 @@ class DriverWindow(QtGui.QMainWindow ):
             self.beepMsg(Message(msg="Connected to [%s]" % uri, freq=3500, length=10, repeat=2))
             self.ui.pushButton_connect.setText("Disconnect")
             self.ui.pushButton_connect.setEnabled(True)
+            self.getCRTPStatus()
+
 
         elif state == STATE.DISCONNECTED:
             self.beepMsg(Message(msg="Disconnected from [%s]" % uri, freq=120, length=0))
             self.ui.pushButton_connect.setText("Connect")
             self.ui.comboBox_connect.setEnabled(True)
             self.ui.pushButton_connect.setEnabled(True)
+            self.resetInfo()
 
         elif state == STATE.CONNECTION_FAILED:
             self.beepMsg(Message(msgtype=MSGTYPE.WARN, msg="Connecting to [%s] failed: %s" % (uri, msg)))
