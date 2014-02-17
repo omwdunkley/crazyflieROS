@@ -1,8 +1,8 @@
 import logging, os, time
 
 from PyQt4 import QtGui, uic
-from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot, QThread, QObject, QTimer, QAbstractItemModel, QModelIndex, QString, QVariant
-from PyQt4.QtGui import QTreeView, QBrush, QColor
+from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot, QThread, QObject, QTimer, QString, QVariant
+from PyQt4.QtGui import QTreeView, QBrush, QColor, QTreeWidget, QTreeWidgetItem, QAbstractItemView
 
 from ui.driverGUI import Ui_MainWindow
 from cflib.crtp import scan_interfaces, init_drivers
@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 """
 TODO
 
-
+Disconnect flie on shutdown
+implement autoconnect (on detection of flie and on disconnect)
 """
 
 
@@ -583,187 +584,93 @@ class ScannerThread(QThread):
 
 
 
-class ParamChildItem(object):
-    """Represents a leaf-node in the tree-view (one parameter)"""
-    def __init__(self, parent, name, crazyflie):
-        """Initialize the node"""
-        self.parent = parent
-        self.name = name
-        self.ctype = None
-        self.access = None
-        self.value = ""
-        self._cf = crazyflie
-        self.is_updating = True
 
-    def updated(self, name, value):
-        """Callback from the param layer when a parameter has been updated"""
-        self.value = value
-        self.is_updating = False
-        self.parent.model.refresh()
+class ParamAccessItem(QTreeWidgetItem):
+    def __init__(self, access, groups, parent):
+        super(ParamAccessItem, self).__init__(parent, type=1001)
+        self.setText(0, access)
+        self.setExpanded(True)
+        for key in groups.keys():
+            self.addChild(ParamGroupItem(key, groups[key], self, access=="RW"))
 
-    def set_value(self, value):
-        """Send the update value to the Crazyflie. It will automatically be
-        read again after sending and then the updated callback will be
-        called"""
-        complete_name = "%s.%s" % (self.parent.name, self.name)
-        self._cf.param.set_value(complete_name, value)
-        self.is_updating = True
-
-    def child_count(self):
-        """Return the number of children this node has"""
-        return 0
+    def getChildren(self):
+        return [self.child(x) for x in range(self.childCount())]
 
 
-class ParamGroupItem(object):
-    """Represents a parameter group in the tree-view"""
-    def __init__(self, name, model):
-        """Initialize the parent node"""
-        super(ParamGroupItem, self).__init__()
-        self.parent = None
-        self.children = []
-        self.name = name
-        self.model = model
+class ParamGroupItem(QTreeWidgetItem):
+    def __init__(self, group, params, parent, editable):
+        super(ParamGroupItem, self).__init__(parent, type=1002)
+        self.setText(0, group)
+        self.setExpanded(True)
+        for param in params:
+            self.addChild(ParamItem(param, self, editable))
 
-    def child_count(self):
-        """Return the number of children this node has"""
-        return len(self.children)
+    def getChildren(self):
+        return [self.child(x) for x in range(self.childCount())]
 
 
 
+class ParamItem(QTreeWidgetItem):
+    def __init__(self, param, parent, editable):
+        super(ParamItem, self).__init__(parent, type=1003)
 
-class ParamBlockModel(QAbstractItemModel):
-    """Model for handling the parameters in the tree-view"""
-    def __init__(self, parent):
-        """Create the empty model"""
-        super(ParamBlockModel, self).__init__(parent)
-        self._nodes = []
-        self._column_headers = ['Name', 'Type', 'Access', 'Value']
-        self._red_brush = QBrush(QColor("red"))
+        # Our param data
+        self.param = param
+        if editable:
+            self.setFlags(self.flags() | Qt.ItemIsEditable)
 
-    def set_toc(self, cf):
-        """Populate the model with data from the param TOC"""
-        toc = cf.param.toc.toc
+        # Initial Populate
+        QtGui.QTreeWidgetItem.setData(self, 0, Qt.DisplayRole, QVariant(param.name))
+        QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, QVariant(param.ctype))
+        QtGui.QTreeWidgetItem.setData(self, 2, Qt.DisplayRole, "Updating...")
+        #self.setData(0, Qt.DisplayRole, QVariant(param.name))
+        #self.setData(1, Qt.DisplayRole, QVariant(param.ctype))
+        #self.setData(2, Qt.DisplayRole, QVariant("Updating..."))
 
-        # No luck using proxy sorting, so do it here instead...
-        for group in sorted(toc.keys()):
-            new_group = ParamGroupItem(group, self)
-            for param in sorted(toc[group].keys()):
-                new_param = ParamChildItem(new_group, param, cf)
-                new_param.ctype = toc[group][param].ctype
-                new_param.access = toc[group][param].get_readable_access()
-                cf.param.add_update_callback(
-                    group=group, name=param, cb=new_param.updated)
-                new_group.children.append(new_param)
-            self._nodes.append(new_group)
+        # Flie Updates
+        self.cf = self.treeWidget().cf
+        self.cf.param.add_update_callback(group=param.group, name=param.name, cb=self.updateValueCB)
 
-        # Request updates for all of the parameters
-        for group in self._nodes:
-            for param in group.children:
-                complete_name = "%s.%s" % (group.name, param.name)
-                cf.param.request_param_update(complete_name)
+    def updateValueCB(self, name, value):
+        """ Set the value from the flie callback """
+        QtGui.QTreeWidgetItem.setData(self, 2, Qt.DisplayRole, QVariant(value))
+        #self.setData(2, Qt.DisplayRole, QVariant(value))
 
-        self.layoutChanged.emit()
-
-    def refresh(self):
-        """Force a refresh of the view though the model"""
-        self.layoutChanged.emit()
-
-    def parent(self, index):
-        """Re-implemented method to get the parent of the given index"""
-        if not index.isValid():
-            return QModelIndex()
-
-        node = index.internalPointer()
-        if node.parent is None:
-            return QModelIndex()
-        else:
-            return self.createIndex(self._nodes.index(node.parent), 0,
-                                    node.parent)
-
-    def columnCount(self, parent):
-        """Re-implemented method to get the number of columns"""
-        return len(self._column_headers)
-
-    def headerData(self, section, orientation, role):
-        """Re-implemented method to get the headers"""
-        if role == Qt.DisplayRole:
-            return QString(self._column_headers[section])
-
-    def rowCount(self, parent):
-        """Re-implemented method to get the number of rows for a given index"""
-        parent_item = parent.internalPointer()
-        if parent.isValid():
-            parent_item = parent.internalPointer()
-            return parent_item.child_count()
-        else:
-            return len(self._nodes)
-
-    def index(self, row, column, parent):
-        """Re-implemented method to get the index for a specified row/column/parent combination"""
-        if not self._nodes:
-            return QModelIndex()
-        node = parent.internalPointer()
-        if not node:
-            index = self.createIndex(row, column, self._nodes[row])
-            self._nodes[row].index = index
-            return index
-        else:
-            return self.createIndex(row, column, node.children[row])
-
-    def data(self, index, role):
-        """Re-implemented method to get the data for a given index and role"""
-        node = index.internalPointer()
-        parent = node.parent
-        if not parent:
-            if role == Qt.DisplayRole and index.column() == 0:
-                return node.name
-        elif role == Qt.DisplayRole:
-            if index.column() == 0:
-                return node.name
-            if index.column() == 1:
-                return node.ctype
-            if index.column() == 2:
-                return node.access
-            if index.column() == 3:
-                return node.value
-        elif role == Qt.EditRole and index.column() == 3:
-            return node.value
-        elif (role == Qt.BackgroundRole and index.column() == 3
-                and node.is_updating):
-            return self._red_brush
-
-        return QVariant()
-
-    def setData(self, index, value, role):
-        """Re-implemented function called when a value has been edited"""
-        node = index.internalPointer()
-        if role == Qt.EditRole:
-            new_val = str(value.toString())
-            # This will not update the value, only trigger a setting and
-            # reading of the parameter from the Crazyflie
-            node.set_value(new_val)
-            return True
-        return False
+    def requestUpdate(self):
+         self.cf.param.request_param_update("%s.%s" % (self.param.group, self.param.name))
 
 
-    def flags(self, index):
-        """Re-implemented function for getting the flags for a certain index"""
-        flag = super(ParamBlockModel, self).flags(index)
-        node = index.internalPointer()
-        if index.column() == 3 and node.parent and node.access=="RW":
-            flag |= Qt.ItemIsEditable
-        return flag
+    def requestValueChange(self, value):
+        """ Send new value to flie. Flie callback updates GUI """
+        try:
+            self.cf.param.set_value("%s.%s" % (self.param.group, self.param.name), value)
+        except NameError, err:
+            QtGui.QTreeWidgetItem.setData(self, 2, Qt.DisplayRole, QVariant("Invalid..."))
+            logger.warn("Parameter [%s.%s] could not be updated from [%s] to [%s]: %s ", self.param.group, self.param.name, self.text(2), value, err)
+            self.requestUpdate()
 
 
-    def reset(self):
-        """Reset the model"""
-        self._nodes = []
-        self.layoutChanged.emit()
+    def setData(self, column, role, value):
+        """ Reimplement the setData role to stop the user changing paramters. The Users changes are sent
+            to the flie and the flie update callback changes the displayed parameters
+        """
+        v = str(value.toString())
+        if v!=self.text(2):
+            QtGui.QTreeWidgetItem.setData(self, column, role, QVariant("Updating..."))
+            self.requestValueChange(v)
 
 
 
 
-class ParamView(QTreeView):
+    def getChildren(self):
+        return [self.child(x) for x in range(self.childCount())]
+
+
+
+
+
+
+class ParamView(QTreeWidget):
     """ Class that sends/receives parameters """
     sig_connected = pyqtSignal(str)
     sig_disconnected = pyqtSignal(str)
@@ -771,10 +678,46 @@ class ParamView(QTreeView):
     def __init__(self, cf, parent=None):
         super(ParamView, self).__init__(parent)
         self.cf = cf
-        # Set model
-        self.model = ParamBlockModel(None)
-        self.setModel(self.model)
-        # Populate on connection
-        self.cf.connected.add_callback(lambda uri: self.model.set_toc(self.cf))
-        # Clear on disconnect
-        self.cf.disconnected.add_callback(lambda uri: self.model.reset())
+        self.setColumnCount(3)
+        self.setHeaderLabels(['Name', 'Type', 'Value'])
+        self.setAlternatingRowColors(True)
+
+        self.cf.connected.add_callback(self.populate)
+        self.cf.disconnected.add_callback(self.uppopulate)
+        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.itemDoubleClicked.connect(self.userStartEdit)
+
+
+    def userStartEdit(self, item, col):
+        if col == 2:
+            self.editItem(item, col)
+
+
+    def populate(self, uri):
+        """Populate the model with data from the param TOC"""
+        toc = self.cf.param.toc.toc
+
+        # Sort into data[RW/RO][Group] = [p1, p2, ..., pN]
+        data = {"RO":{}, "RW":{}}
+        for group in sorted(toc.keys()):
+            g = []
+            for param in sorted(toc[group].keys()):
+                g.append(toc[group][param])
+            data[toc[group][param].get_readable_access()][group] = g
+
+        # Add data recursively
+        for key in data.keys():
+            self.insertTopLevelItem(0,ParamAccessItem(key, data[key], self))
+        self.forceUpdate()
+
+    def uppopulate(self, uri):
+        self.cf.param.remove_update_callbacks()
+        self.clear()
+
+
+    def forceUpdate(self):
+        """ Update all Params from the flie """
+        for a in [self.topLevelItem(x) for x in range(self.topLevelItemCount())]:
+            for g in a.getChildren():
+                for p in g.getChildren():
+                    self.cf.param.request_param_update("%s.%s" % (p.param.group, p.param.name))

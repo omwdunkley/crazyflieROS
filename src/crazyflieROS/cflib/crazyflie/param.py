@@ -156,6 +156,27 @@ class Param():
                 self.param_update_callbacks[paramname] = Caller()
             self.param_update_callbacks[paramname].add_callback(cb)
 
+    def remove_update_callback(self, group, name=None, cb=None):
+        """
+        Remove a callback for a specific parameter name.
+        """
+        if not name:
+            if group in self.group_update_callbacks:
+                self.group_update_callbacks[group].remove_callback(cb)
+            if len(self.group_update_callbacks[group].callbacks())<=0:
+                self.group_update_callbacks.pop(group)
+        else:
+            paramname = "{}.{}".format(group, name)
+            if paramname in self.param_update_callbacks:
+                self.param_update_callbacks[paramname].remove_callback(cb)
+            if len(self.param_update_callbacks[paramname].callbacks())<=0:
+                self.param_update_callbacks.pop(group)
+
+    def remove_update_callbacks(self):
+        self.param_update_callbacks = {}
+        self.group_update_callbacks = {}
+
+
     def refresh_toc(self, refresh_done_callback, toc_cache):
         """
         Initiate a refresh of the parameter TOC.
