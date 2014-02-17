@@ -1,9 +1,9 @@
 import logging, os, time
 
 from PyQt4 import QtGui, uic
-from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot, QThread, QObject, QTimer, QString, QVariant
-from PyQt4.QtGui import QTreeView, QBrush, QColor, QTreeWidget, QTreeWidgetItem, QAbstractItemView
+from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot, QThread, QObject, QTimer
 
+from paramManager import ParamManager
 from ui.driverGUI import Ui_MainWindow
 from cflib.crtp import scan_interfaces, init_drivers
 from cflib.crazyflie import Crazyflie
@@ -95,8 +95,8 @@ class DriverWindow(QtGui.QMainWindow ):
         self.packetRateHZ = self.ui.spinBox_pktHZ.value()
         self.setPacketRateHZ(self.ui.spinBox_pktHZ.value())
 
-        self.paramView = ParamView(self.flie.crazyflie, self)
-        self.ui.tab_param.layout().addWidget(self.paramView)
+        self.paramManager = ParamManager(self.flie.crazyflie, self)
+        self.ui.tab_param.layout().addWidget(self.paramManager)
 
 
 
@@ -624,139 +624,3 @@ class ScannerThread(QThread):
 
 
 
-class ParamAccessItem(QTreeWidgetItem):
-    def __init__(self, access, groups, parent):
-        super(ParamAccessItem, self).__init__(parent, type=1001)
-        self.setText(0, access)
-        self.setExpanded(True)
-        for key in groups.keys():
-            self.addChild(ParamGroupItem(key, groups[key], self, access=="RW"))
-
-    def getChildren(self):
-        return [self.child(x) for x in range(self.childCount())]
-
-
-class ParamGroupItem(QTreeWidgetItem):
-    def __init__(self, group, params, parent, editable):
-        super(ParamGroupItem, self).__init__(parent, type=1002)
-        self.setText(0, group)
-        self.setExpanded(True)
-        for param in params:
-            self.addChild(ParamItem(param, self, editable))
-
-    def getChildren(self):
-        return [self.child(x) for x in range(self.childCount())]
-
-
-
-class ParamItem(QTreeWidgetItem):
-    def __init__(self, param, parent, editable):
-        super(ParamItem, self).__init__(parent, type=1003)
-
-        # Our param data
-        self.param = param
-        if editable:
-            self.setFlags(self.flags() | Qt.ItemIsEditable)
-
-        # Initial Populate
-        QtGui.QTreeWidgetItem.setData(self, 0, Qt.DisplayRole, QVariant(param.name))
-        QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, QVariant(param.ctype))
-        QtGui.QTreeWidgetItem.setData(self, 2, Qt.DisplayRole, "Updating...")
-        #self.setData(0, Qt.DisplayRole, QVariant(param.name))
-        #self.setData(1, Qt.DisplayRole, QVariant(param.ctype))
-        #self.setData(2, Qt.DisplayRole, QVariant("Updating..."))
-
-        # Flie Updates
-        self.cf = self.treeWidget().cf
-        self.cf.param.add_update_callback(group=param.group, name=param.name, cb=self.updateValueCB)
-
-    def updateValueCB(self, name, value):
-        """ Set the value from the flie callback """
-        QtGui.QTreeWidgetItem.setData(self, 2, Qt.DisplayRole, QVariant(value))
-        #self.setData(2, Qt.DisplayRole, QVariant(value))
-
-    def requestUpdate(self):
-         self.cf.param.request_param_update("%s.%s" % (self.param.group, self.param.name))
-
-
-    def requestValueChange(self, value):
-        """ Send new value to flie. Flie callback updates GUI """
-        try:
-            self.cf.param.set_value("%s.%s" % (self.param.group, self.param.name), value)
-        except NameError, err:
-            QtGui.QTreeWidgetItem.setData(self, 2, Qt.DisplayRole, QVariant("Invalid..."))
-            logger.warn("Parameter [%s.%s] could not be updated from [%s] to [%s]: %s ", self.param.group, self.param.name, self.text(2), value, err)
-            self.requestUpdate()
-
-
-    def setData(self, column, role, value):
-        """ Reimplement the setData role to stop the user changing paramters. The Users changes are sent
-            to the flie and the flie update callback changes the displayed parameters
-        """
-        v = str(value.toString())
-        if v!=self.text(2):
-            QtGui.QTreeWidgetItem.setData(self, column, role, QVariant("Updating..."))
-            self.requestValueChange(v)
-
-
-
-
-    def getChildren(self):
-        return [self.child(x) for x in range(self.childCount())]
-
-
-
-
-
-
-class ParamView(QTreeWidget):
-    """ Class that sends/receives parameters """
-    sig_connected = pyqtSignal(str)
-    sig_disconnected = pyqtSignal(str)
-
-    def __init__(self, cf, parent=None):
-        super(ParamView, self).__init__(parent)
-        self.cf = cf
-        self.setColumnCount(3)
-        self.setHeaderLabels(['Name', 'Type', 'Value'])
-        self.setAlternatingRowColors(True)
-
-        self.cf.connected.add_callback(self.populate)
-        self.cf.disconnected.add_callback(self.uppopulate)
-        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.itemDoubleClicked.connect(self.userStartEdit)
-
-
-    def userStartEdit(self, item, col):
-        if col == 2:
-            self.editItem(item, col)
-
-
-    def populate(self, uri):
-        """Populate the model with data from the param TOC"""
-        toc = self.cf.param.toc.toc
-
-        # Sort into data[RW/RO][Group] = [p1, p2, ..., pN]
-        data = {"RO":{}, "RW":{}}
-        for group in sorted(toc.keys()):
-            g = []
-            for param in sorted(toc[group].keys()):
-                g.append(toc[group][param])
-            data[toc[group][param].get_readable_access()][group] = g
-
-        # Add data recursively
-        for key in data.keys():
-            self.insertTopLevelItem(0,ParamAccessItem(key, data[key], self))
-        self.forceUpdate()
-
-    def uppopulate(self, uri):
-        self.cf.param.remove_update_callbacks()
-        self.clear()
-
-
-    def forceUpdate(self):
-        """ Update all Params from the flie """
-        for a in [self.topLevelItem(x) for x in range(self.topLevelItemCount())]:
-            for g in a.getChildren():
-                for p in g.getChildren():
-                    self.cf.param.request_param_update("%s.%s" % (p.param.group, p.param.name))
