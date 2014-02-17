@@ -37,6 +37,89 @@ default = {
 
 
 
+class LogGroup(QTreeWidgetItem):
+    """ Group
+        Can be turned on/off
+    """
+
+    def __init__(self, parent, name, children):
+        super(LogGroup, self).__init__(parent)
+        self.name = name
+
+        self.setFlags(self.flags() | Qt.ItemIsEditable | Qt.ItemIsUserCheckable)
+        self.setCheckState(0, Qt.Unchecked)
+
+        self.cAll = True
+        self.cNone = True
+
+        self.setText(0, name)
+        self.setData(1, Qt.DisplayRole, QVariant(0))
+        self.setData(2, Qt.DisplayRole, QVariant(50))
+        for c in sorted(children.keys()):
+            self.addChild(LogItem(self, children[c]))
+        self.checkChildren()
+
+    def setData(self, column, role, value):
+        """ Detect changes in the check box. Possibly uncheck/check all children
+        """
+        preState = self.checkState(column)
+        QtGui.QTreeWidgetItem.setData(self, column, role, value)
+        postState = self.checkState(column)
+        if role == Qt.CheckStateRole and preState != postState:
+            if postState == Qt.Checked:
+                print "   group", self.name, "checked"
+            else:
+                print  "   group", self.name, "unchecked"
+
+            if self.cAll and postState == Qt.Unchecked:
+                # Uncheck all children
+                for x in range(self.childCount()):
+                    self.child(x).setCheckState(0, Qt.Unchecked)
+
+            if self.cNone and postState == Qt.Checked:
+                # Uncheck all children
+                for x in range(self.childCount()):
+                    self.child(x).setCheckState(0, Qt.Checked)
+
+
+
+
+
+
+    def checkChildren(self):
+        """ Make sure the group is not selected if none of the children are selected
+            If all children are selected """
+
+        cAll = True
+        cNone = True
+        for x in range(self.childCount()):
+            if self.child(x).checkState(0) == Qt.Checked:
+                cNone = False
+            if self.child(x).checkState(0) == Qt.Unchecked:
+                cAll = False
+
+        if cAll:
+            self.setCheckState(0, Qt.Checked)
+        if cNone:
+            self.setCheckState(0, Qt.Unchecked)
+
+        self.cAll = cAll
+        self.cNone = cNone
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class LogItem(QTreeWidgetItem):
     """ Subname
         Can be turned on/off
@@ -46,24 +129,28 @@ class LogItem(QTreeWidgetItem):
         super(LogItem, self).__init__(parent)
         self.log = log
         self.setText(0, log.name)
-        self.setText(1, str(log.ident))
-        self.setText(2, log.ctype)
-        self.setText(3, "RO" if log.access else "RW")
+        #self.setText(1, str(log.ident))
+        self.setText(1, log.ctype)
+        #self.setText(3, "RO" if log.access else "RW")
+
+        self.setFlags(self.flags() | Qt.ItemIsUserCheckable)
+        self.setCheckState(0, Qt.Unchecked)
+
+    def setData(self, column, role, value):
+        """ Detect changes in the check box and report these to the parent
+        """
+        preState = self.checkState(column)
+        QtGui.QTreeWidgetItem.setData(self, column, role, value)
+        postState = self.checkState(column)
+        if role == Qt.CheckStateRole and preState != postState:
+            if postState == Qt.Checked:
+                print "param", self.log.name, "checked"
+            else:
+                print "param", self.log.name, "unchecked"
+            self.parent().checkChildren()
 
 
-class LogGroup(QTreeWidgetItem):
-    """ Group
-        Can be turned on/off
-    """
 
-    def __init__(self, parent, name, children):
-        super(LogGroup, self).__init__(parent)
-        self.setText(0, name)
-        # add checkbox
-        # add hz
-        # add hz
-        for c in children.keys():
-            self.addChild(LogItem(self, children[c]))
 
 class LogManager(QTreeWidget):
     """ Class to manage all things logging.
@@ -78,7 +165,7 @@ class LogManager(QTreeWidget):
         self.cf = cf
         self.toc = None
 
-        self.headers = ['ID','Name', 'On', 'HZ Desired', 'HZ Actual']
+        self.headers = ['Name','Enabled', 'Type' 'HZ Desired', 'HZ Actual']
         self.setColumnCount(len(self.headers))
         self.setHeaderLabels(self.headers)
         self.setAlternatingRowColors(True)
@@ -89,7 +176,7 @@ class LogManager(QTreeWidget):
     def newToc(self, uri):
         self.toc = self.cf.log._toc.toc
 
-        for g in self.toc.keys():
+        for g in sorted(self.toc.keys()):
             self.addTopLevelItem(LogGroup(self, g, self.toc[g]))
 
 
@@ -100,7 +187,64 @@ class LogManager(QTreeWidget):
 
 
 
-
+# class LogItem(QTreeWidgetItem):
+#     """ Subname
+#         Can be turned on/off
+#     """
+#
+#     def __init__(self, parent, log):
+#         super(LogItem, self).__init__(parent)
+#         self.log = log
+#         self.setText(0, log.name)
+#         self.setText(1, str(log.ident))
+#         self.setText(2, log.ctype)
+#         self.setText(3, "RO" if log.access else "RW")
+#
+#
+# class LogGroup(QTreeWidgetItem):
+#     """ Group
+#         Can be turned on/off
+#     """
+#
+#     def __init__(self, parent, name, children):
+#         super(LogGroup, self).__init__(parent)
+#         self.setText(0, name)
+#         # add checkbox
+#         # add hz
+#         # add hz
+#         for c in children.keys():
+#             self.addChild(LogItem(self, children[c]))
+#
+# class LogManager(QTreeWidget):
+#     """ Class to manage all things logging.
+#         One can turn on/off log group/names,
+#         monitor their frequency,
+#         change their frequency
+#     """
+#     sig_batteryUpdated = pyqtSignal(int)
+#
+#     def __init__(self, cf, parent=None):
+#         super(LogManager, self).__init__(parent)
+#         self.cf = cf
+#         self.toc = None
+#
+#         self.headers = ['ID','Name', 'On', 'HZ Desired', 'HZ Actual']
+#         self.setColumnCount(len(self.headers))
+#         self.setHeaderLabels(self.headers)
+#         self.setAlternatingRowColors(True)
+#
+#         self.cf.connected.add_callback(self.newToc)
+#         self.cf.disconnected.add_callback(self.purgeToc)
+#
+#     def newToc(self, uri):
+#         self.toc = self.cf.log._toc.toc
+#
+#         for g in self.toc.keys():
+#             self.addTopLevelItem(LogGroup(self, g, self.toc[g]))
+#
+#
+#     def purgeToc(self, uri):
+#         self.clear()
 
 
 

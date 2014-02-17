@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'driverGUI.ui'
 #
-# Created: Mon Feb 17 16:27:03 2014
+# Created: Mon Feb 17 21:17:00 2014
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -87,6 +87,7 @@ class Ui_MainWindow(object):
         self.checkBox_reconnect.setObjectName(_fromUtf8("checkBox_reconnect"))
         self.gridLayout_3.addWidget(self.checkBox_reconnect, 1, 0, 1, 3)
         self.checkBox_startupConnect = QtGui.QCheckBox(self.tab_config)
+        self.checkBox_startupConnect.setChecked(True)
         self.checkBox_startupConnect.setObjectName(_fromUtf8("checkBox_startupConnect"))
         self.gridLayout_3.addWidget(self.checkBox_startupConnect, 2, 0, 1, 2)
         self.checkBox_pktHZ = QtGui.QCheckBox(self.tab_config)
@@ -207,7 +208,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QObject.connect(self.horizontalSlider_pktHZ, QtCore.SIGNAL(_fromUtf8("valueChanged(int)")), self.spinBox_pktHZ.setValue)
         QtCore.QObject.connect(self.spinBox_pktHZ, QtCore.SIGNAL(_fromUtf8("valueChanged(int)")), self.horizontalSlider_pktHZ.setValue)
         QtCore.QObject.connect(self.checkBox_pktHZ, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.horizontalSlider_pktHZ.setEnabled)

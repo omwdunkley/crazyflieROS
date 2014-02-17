@@ -90,6 +90,7 @@ class DriverWindow(QtGui.QMainWindow ):
 
 
 
+
         self.state = STATE.DISCONNECTED
         self.ros = ROSNode()
         self.flie = FlieControl()
@@ -152,6 +153,16 @@ class DriverWindow(QtGui.QMainWindow ):
         init_drivers(enable_debug_driver=False)
         self.startScanURI()
 
+
+    def closeEvent(self, event):
+        logger.info("Close Event")
+        if self.state < STATE.GEN_DISCONNECTED:
+            logger.info("Triggering flie disconnect for shutdown")
+            self.ui.pushButton_connect.setText("Shutting Down...")
+            self.flie.requestDisconnect()
+
+        # Clean up ROS
+        event.accept()
 
     @pyqtSlot(bool)
     def setBeep(self, on):
