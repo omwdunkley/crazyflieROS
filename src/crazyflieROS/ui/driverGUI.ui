@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab_connection">
        <attribute name="title">
@@ -143,7 +143,7 @@
       </widget>
       <widget class="QWidget" name="tab_config">
        <attribute name="title">
-        <string>Configuration</string>
+        <string>Config</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="0" column="0">
@@ -247,9 +247,15 @@
       </widget>
       <widget class="QWidget" name="tab_param">
        <attribute name="title">
-        <string>Parameters</string>
+        <string>Param</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout"/>
+      </widget>
+      <widget class="QWidget" name="tab_log">
+       <attribute name="title">
+        <string>Log</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3"/>
       </widget>
       <widget class="QWidget" name="tab_info">
        <attribute name="title">

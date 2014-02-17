@@ -3,6 +3,7 @@ import logging, os, time
 from PyQt4 import QtGui, uic
 from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot, QThread, QObject, QTimer
 
+from logManager import LogManager
 from paramManager import ParamManager
 from ui.driverGUI import Ui_MainWindow
 from cflib.crtp import scan_interfaces, init_drivers, get_interfaces_status
@@ -100,6 +101,8 @@ class DriverWindow(QtGui.QMainWindow ):
         self.paramManager = ParamManager(self.flie.crazyflie, self)
         self.ui.tab_param.layout().addWidget(self.paramManager)
 
+        self.logManager = LogManager(self.flie.crazyflie, self)
+        self.ui.tab_log.layout().addWidget(self.logManager)
 
 
 
@@ -128,6 +131,7 @@ class DriverWindow(QtGui.QMainWindow ):
         self.paramManager.sig_test.connect(lambda name, p: self.ui.labelTest[str(name)].setText("Pass" if p else "FAIL"))
         self.paramManager.sig_firmware.connect(lambda fw, mod: self.ui.label_fw.setText(fw))
         self.paramManager.sig_firmware.connect(lambda fw, mod: self.ui.label_fwMod.setText(mod))
+        self.logManager.sig_batteryUpdated.connect(self.ui.progressbar_bat.setValue)
 
 
         # Connections GUI to GUI
@@ -169,6 +173,7 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.label_crv.setText(interface_status["radio"])
 
     def resetInfo(self):
+        """ Resets the labels on the info tab """
         self.ui.label_baroFound.setText("")
         self.ui.label_magTest.setText("")
         self.ui.label_baroTest.setText("")

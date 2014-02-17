@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'driverGUI.ui'
 #
-# Created: Mon Feb 17 15:36:19 2014
+# Created: Mon Feb 17 16:27:03 2014
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -121,6 +121,11 @@ class Ui_MainWindow(object):
         self.verticalLayout = QtGui.QVBoxLayout(self.tab_param)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.tabWidget.addTab(self.tab_param, _fromUtf8(""))
+        self.tab_log = QtGui.QWidget()
+        self.tab_log.setObjectName(_fromUtf8("tab_log"))
+        self.verticalLayout_3 = QtGui.QVBoxLayout(self.tab_log)
+        self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
+        self.tabWidget.addTab(self.tab_log, _fromUtf8(""))
         self.tab_info = QtGui.QWidget()
         self.tab_info.setObjectName(_fromUtf8("tab_info"))
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.tab_info)
@@ -202,7 +207,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(3)
+        self.tabWidget.setCurrentIndex(2)
         QtCore.QObject.connect(self.horizontalSlider_pktHZ, QtCore.SIGNAL(_fromUtf8("valueChanged(int)")), self.spinBox_pktHZ.setValue)
         QtCore.QObject.connect(self.spinBox_pktHZ, QtCore.SIGNAL(_fromUtf8("valueChanged(int)")), self.horizontalSlider_pktHZ.setValue)
         QtCore.QObject.connect(self.checkBox_pktHZ, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.horizontalSlider_pktHZ.setEnabled)
@@ -227,8 +232,9 @@ class Ui_MainWindow(object):
         self.checkBox_startupConnect.setText(QtGui.QApplication.translate("MainWindow", "Connect on startup", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_pktHZ.setText(QtGui.QApplication.translate("MainWindow", "Packet Rate", None, QtGui.QApplication.UnicodeUTF8))
         self.spinBox_pktHZ.setSuffix(QtGui.QApplication.translate("MainWindow", " HZ", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_config), QtGui.QApplication.translate("MainWindow", "Configuration", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_param), QtGui.QApplication.translate("MainWindow", "Parameters", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_config), QtGui.QApplication.translate("MainWindow", "Config", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_param), QtGui.QApplication.translate("MainWindow", "Param", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_log), QtGui.QApplication.translate("MainWindow", "Log", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox.setTitle(QtGui.QApplication.translate("MainWindow", "Version Info", None, QtGui.QApplication.UnicodeUTF8))
         self.label_fwMod.setText(QtGui.QApplication.translate("MainWindow", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
         self.label_8.setText(QtGui.QApplication.translate("MainWindow", "Firmware Modified:", None, QtGui.QApplication.UnicodeUTF8))
