@@ -73,14 +73,19 @@ class DriverWindow(QtGui.QMainWindow ):
     sig_requestDisconnect = pyqtSignal()
 
     def __init__(self):
-        QtGui.QMainWindow .__init__(self)
-        #super(DriverWindow, self).__init__()
+        super(DriverWindow, self).__init__()
         #uic.loadUi('ui/driverGUI.ui', self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.ui.tabWidget.setCurrentIndex(0)
+
+        # Defaults according to settings within GUI
         self.beepOn = self.ui.checkBox_beep.isChecked()
         self.killOn = self.ui.checkBox_kill.isChecked()
-        self.autoReconnect = self.ui.checkBox_reconnect.isChecked()
+        self.autoReconnectOn = self.ui.checkBox_reconnect.isChecked()
+        self.startupConnectOn = self.ui.checkBox_startupConnect.isChecked()
+
+
 
         self.state = STATE.DISCONNECTED
         self.ros = ROSNode()
@@ -107,6 +112,11 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.comboBox_connect.currentIndexChanged.connect(self.uriSelected)
         self.ui.spinBox_pktHZ.valueChanged.connect(self.setPacketRateHZ) #TODO: disable elements if its 0
 
+        self.ui.checkBox_beep.toggled.connect(self.setBeep)
+        self.ui.checkBox_kill.toggled.connect(self.setKill)
+        self.ui.checkBox_reconnect.toggled.connect(self.setAutoReconnect)
+        self.ui.checkBox_startupConnect.toggled.connect(self.setStartupConnect)
+
 
         # Connections to GUI
         self.flie.sig_packetSpeed.connect(self.updatePacketRate)
@@ -129,6 +139,21 @@ class DriverWindow(QtGui.QMainWindow ):
         # Intiate an initial Scan
         init_drivers(enable_debug_driver=False)
         self.startScanURI()
+
+
+    @pyqtSlot(bool)
+    def setBeep(self, on):
+        self.beepOn = on
+    @pyqtSlot(bool)
+    def setKill(self, on):
+        self.killOn = on
+    @pyqtSlot(bool)
+    def setAutoReconnect(self, on):
+        self.autoReconnectOn = on
+    @pyqtSlot(bool)
+    def setStartupConnect(self, on):
+        self.startupConnectOn = on
+
 
     @pyqtSlot(int)
     def setPacketRateHZ(self, hz):
@@ -195,6 +220,10 @@ class DriverWindow(QtGui.QMainWindow ):
 
         self.ui.comboBox_connect.addItem("Rescan")
 
+        if self.startupConnectOn:
+            logger.info("Auto connecting to first found flie [ConnectOnStartUp = TRUE]")
+            self.ui.pushButton_connect.clicked.emit(False)
+
 
     def uriSelected(self, uri):
         """ The user clicked on a URI or a scan request
@@ -241,41 +270,51 @@ class DriverWindow(QtGui.QMainWindow ):
         """ Function that receives all the state updates from the flie.
         """
         self.state = state
-        if state == STATE.CONNECTED:
-            self.beepMsg(Message(msg="Connected to [%s]" % uri, freq=2300, length=40, repeat=2))
-            self.ui.pushButton_connect.setText("Disconnect")
-            self.ui.pushButton_connect.setEnabled(True)
 
 
-        elif state == STATE.CONNECTION_REQUESTED:
+        if state == STATE.CONNECTION_REQUESTED:
             self.beepMsg(Message(msg="Connection to [%s] requested" % uri))
 
 
         elif state == STATE.LINK_ESTABLISHED:
-            self.beepMsg(Message(msg="Link to [%s] established" % uri, freq=2300, length=40, repeat=2))
+            self.beepMsg(Message(msg="Link to [%s] established" % uri, freq=3300, length=25, repeat=1))
             self.ui.pushButton_connect.setText("Download TOC...")
 
+        elif state == STATE.CONNECTED:
+            self.beepMsg(Message(msg="Connected to [%s]" % uri, freq=3500, length=10, repeat=2))
+            self.ui.pushButton_connect.setText("Disconnect")
+            self.ui.pushButton_connect.setEnabled(True)
 
         elif state == STATE.DISCONNECTED:
-            self.beepMsg(Message(msg="Disconnected from [%s]" % uri, freq=120, length=200))
-
+            self.beepMsg(Message(msg="Disconnected from [%s]" % uri, freq=120, length=0))
+            self.ui.pushButton_connect.setText("Connect")
+            self.ui.comboBox_connect.setEnabled(True)
+            self.ui.pushButton_connect.setEnabled(True)
 
         elif state == STATE.CONNECTION_FAILED:
-            self.beepMsg(Message(msgtype=MSGTYPE.WARN, msg="Connecting to [%s] failed: %s" % (uri, msg), freq=100, length=60, repeat=4))
-
+            self.beepMsg(Message(msgtype=MSGTYPE.WARN, msg="Connecting to [%s] failed: %s" % (uri, msg)))
+            if self.autoReconnectOn:
+                QTimer.singleShot(1000, lambda: self.ui.pushButton_connect.clicked.emit(False))
+                self.ui.pushButton_connect.setText("Auto Retrying...")
+            else:
+                self.ui.pushButton_connect.setText("Connect")
+                self.ui.comboBox_connect.setEnabled(True)
+                self.ui.pushButton_connect.setEnabled(True)
 
         elif state == STATE.CONNECTION_LOST:
-            self.beepMsg(Message(msgtype=MSGTYPE.WARN, msg="Connected lost from [%s]: %s" % (uri, msg), freq=1500, length=30, repeat=8))
-
+            self.beepMsg(Message(msgtype=MSGTYPE.WARN, msg="Connected lost from [%s]: %s" % (uri, msg), freq=1200, length=10, repeat=6))
+            if self.autoReconnectOn:
+                logger.info("Attempting to auto reconnect [autoReconnect = TRUE]")
+                self.ui.pushButton_connect.clicked.emit(False)
+            else:
+                self.ui.pushButton_connect.setText("Connect")
+                self.ui.comboBox_connect.setEnabled(True)
+                self.ui.pushButton_connect.setEnabled(True)
 
         else:
             logger.error("Unknown State")
 
-
         if state>STATE.GEN_DISCONNECTED:
-            self.ui.pushButton_connect.setText("Connect")
-            self.ui.comboBox_connect.setEnabled(True)
-            self.ui.pushButton_connect.setEnabled(True)
             self.ui.progressbar_bat.setValue(3000)
             self.ui.progressbar_link.setValue(0)
             self.ui.progressBar_pktIn.setValue(0)
