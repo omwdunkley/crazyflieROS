@@ -46,6 +46,9 @@ class LogItem(QTreeWidgetItem):
         super(LogItem, self).__init__(parent)
         self.log = log
         self.setText(0, log.name)
+        self.setText(1, str(log.ident))
+        self.setText(2, log.ctype)
+        self.setText(3, "RO" if log.access else "RW")
 
 
 class LogGroup(QTreeWidgetItem):
@@ -62,23 +65,13 @@ class LogGroup(QTreeWidgetItem):
         for c in children.keys():
             self.addChild(LogItem(self, children[c]))
 
-
-
-
-
-
-
 class LogManager(QTreeWidget):
     """ Class to manage all things logging.
         One can turn on/off log group/names,
         monitor their frequency,
         change their frequency
     """
-
-    sig_blockAdded  = pyqtSignal(object)
-    sig_disconnected   = pyqtSignal(str)
     sig_batteryUpdated = pyqtSignal(int)
-    sig_logError       = pyqtSignal(object, str)
 
     def __init__(self, cf, parent=None):
         super(LogManager, self).__init__(parent)
@@ -90,15 +83,18 @@ class LogManager(QTreeWidget):
         self.setHeaderLabels(self.headers)
         self.setAlternatingRowColors(True)
 
+        self.cf.connected.add_callback(self.newToc)
+        self.cf.disconnected.add_callback(self.purgeToc)
 
-
-        self.cf.connected.add_callback(self.newTOC)
-
-    def newTOC(self, uri):
+    def newToc(self, uri):
         self.toc = self.cf.log._toc.toc
 
         for g in self.toc.keys():
             self.addTopLevelItem(LogGroup(self, g, self.toc[g]))
+
+
+    def purgeToc(self, uri):
+        self.clear()
 
 
 
