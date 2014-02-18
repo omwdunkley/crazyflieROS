@@ -146,17 +146,20 @@
         <string>Config</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
-        <item row="0" column="0">
-         <widget class="QCheckBox" name="checkBox_beep">
-          <property name="text">
-           <string>Enable Sounds</string>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="0" colspan="3">
          <widget class="QCheckBox" name="checkBox_reconnect">
           <property name="text">
            <string>Auto Reconnect</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QCheckBox" name="checkBox_logHZ">
+          <property name="text">
+           <string>Log HZ</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -173,10 +176,71 @@
         <item row="3" column="0">
          <widget class="QCheckBox" name="checkBox_pktHZ">
           <property name="text">
-           <string>Packet Rate</string>
+           <string>Packet HZ</string>
           </property>
           <property name="checked">
            <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="checkBox_beep">
+          <property name="text">
+           <string>Enable Sounds</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0" colspan="5">
+         <widget class="QPushButton" name="pushButton_genRosMsg">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Generate ROS msgs from ToC</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="4">
+         <widget class="QSpinBox" name="spinBox_pktHZ">
+          <property name="suffix">
+           <string> HZ</string>
+          </property>
+          <property name="prefix">
+           <string/>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>30</number>
+          </property>
+          <property name="singleStep">
+           <number>5</number>
+          </property>
+          <property name="value">
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1" colspan="3">
+         <widget class="QSlider" name="horizontalSlider_logHZ">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>5</number>
+          </property>
+          <property name="pageStep">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>2</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::TicksBelow</enum>
           </property>
          </widget>
         </item>
@@ -211,29 +275,7 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="4">
-         <widget class="QSpinBox" name="spinBox_pktHZ">
-          <property name="suffix">
-           <string> HZ</string>
-          </property>
-          <property name="prefix">
-           <string/>
-          </property>
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <number>30</number>
-          </property>
-          <property name="singleStep">
-           <number>5</number>
-          </property>
-          <property name="value">
-           <number>5</number>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="2">
+        <item row="5" column="2">
          <spacer name="verticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -245,6 +287,22 @@
            </size>
           </property>
          </spacer>
+        </item>
+        <item row="4" column="4">
+         <widget class="QSpinBox" name="spinBox_logHZ">
+          <property name="suffix">
+           <string> HZ</string>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>5</number>
+          </property>
+          <property name="value">
+           <number>2</number>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -445,11 +503,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>239</x>
-     <y>121</y>
+     <y>177</y>
     </hint>
     <hint type="destinationlabel">
      <x>369</x>
-     <y>115</y>
+     <y>171</y>
     </hint>
    </hints>
   </connection>
@@ -461,11 +519,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>359</x>
-     <y>125</y>
+     <y>181</y>
     </hint>
     <hint type="destinationlabel">
      <x>220</x>
-     <y>120</y>
+     <y>176</y>
     </hint>
    </hints>
   </connection>
@@ -477,11 +535,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>89</x>
-     <y>124</y>
+     <y>180</y>
     </hint>
     <hint type="destinationlabel">
      <x>206</x>
-     <y>128</y>
+     <y>184</y>
     </hint>
    </hints>
   </connection>
@@ -493,11 +551,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>121</x>
-     <y>115</y>
+     <y>171</y>
     </hint>
     <hint type="destinationlabel">
      <x>349</x>
-     <y>127</y>
+     <y>183</y>
     </hint>
    </hints>
   </connection>
@@ -509,10 +567,10 @@
    <hints>
     <hint type="sourcelabel">
      <x>83</x>
-     <y>118</y>
+     <y>174</y>
     </hint>
     <hint type="destinationlabel">
-     <x>207</x>
+     <x>204</x>
      <y>209</y>
     </hint>
    </hints>
@@ -525,11 +583,75 @@
    <hints>
     <hint type="sourcelabel">
      <x>83</x>
-     <y>118</y>
+     <y>174</y>
     </hint>
     <hint type="destinationlabel">
-     <x>207</x>
-     <y>240</y>
+     <x>395</x>
+     <y>209</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_logHZ</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>horizontalSlider_logHZ</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>75</x>
+     <y>214</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>209</x>
+     <y>224</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_logHZ</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>spinBox_logHZ</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>134</x>
+     <y>211</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>360</x>
+     <y>209</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>horizontalSlider_logHZ</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>spinBox_logHZ</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>288</x>
+     <y>220</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>351</x>
+     <y>219</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_logHZ</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>horizontalSlider_logHZ</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>353</x>
+     <y>212</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>280</x>
+     <y>226</y>
     </hint>
    </hints>
   </connection>

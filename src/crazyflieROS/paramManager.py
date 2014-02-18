@@ -131,7 +131,6 @@ class ParamManager(QTreeWidget):
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.itemDoubleClicked.connect(self.userStartEdit)
 
-
     def userStartEdit(self, item, col):
         if col == 2:
             self.editItem(item, col)
@@ -203,7 +202,17 @@ class ParamManager(QTreeWidget):
                 for p in g.getChildren():
                     p.requestUpdate()
 
+    def setWidths(self, ws):
+        """ Set Column Widths """
+        for i in range(min(len(ws), self.columnCount())):
+            self.setColumnWidth(i,ws[i].toInt()[0])
 
+    def getWidths(self):
+        """ Get colum Width for restoring later """
+        ws = []
+        for i in range(self.columnCount()):
+            ws.append(str(self.columnWidth(i)))
+        return ws
 
     def getParams(self,RO=False):
         """ Get a list of group of list of params
