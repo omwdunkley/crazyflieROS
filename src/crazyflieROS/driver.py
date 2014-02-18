@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-import roslib, logging
-roslib.load_manifest("crazyflieROS")
+#import roslib,
+import logging
+#roslib.load_manifest("crazyflieROS")
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

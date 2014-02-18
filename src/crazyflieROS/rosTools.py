@@ -1,8 +1,8 @@
 __author__ = 'ollie'
-__all__= ['generateRosMessages', 'FreqMonitor','ROSNode']
+__all__= ['generateRosMessages', 'FreqMonitor','ROSNode','KBSecMonitor']
 import logging
 from roslib.packages import get_pkg_dir
-from PyQt4.QtCore import QObject
+from PyQt4.QtCore import QObject, QThread, QTimer, pyqtSignal, pyqtSlot
 
 from time import time
 
@@ -87,3 +87,75 @@ class FreqMonitor():
             self.last_printed_tn = self.msg_tn
         self.last_rate = rate
         return rate
+
+
+
+
+from bisect import bisect_left
+class KBSecMonitor(QObject):
+    """
+    Reports kb per second at X hz
+    """
+    sig_KBPS = pyqtSignal(int)
+
+    def __init__(self):
+        super(KBSecMonitor, self).__init__()
+        self.times = []
+        self.amounts = []
+        self.sum = 0 # Quicker to keep a running sum
+        self.timer = QTimer()
+        self.hz = 0
+        self.timer.timeout.connect(self.getKBPS)
+        self.falseStopped = False # If we stop cause hz was set to 0, be able to resume
+
+
+    @pyqtSlot(int)
+    def setHZ(self, hz):
+        if hz <= 0:
+            self.stop()
+            self.falseStopped = True
+        else:
+            self.timer.setInterval(1000/hz)
+            if self.falseStopped:
+                self.start()
+        self.hz = hz
+        print "packet Hz updated:", hz
+
+    @pyqtSlot()
+    def stop(self):
+        self.timer.stop()
+        self.clear()
+        self.falseStopped = False
+        self.sig_KBPS.emit(0)
+        print "packet hz stopped"
+
+    @pyqtSlot()
+    def start(self):
+        if self.hz>0:
+            self.timer.start()
+            print "packet hz started"
+        else:
+            self.falseStopped = True
+
+    @pyqtSlot(int)
+    def count(self, kb):
+        self.times.append(time())
+        self.amounts.append(kb)
+        self.sum += kb
+
+    @pyqtSlot(int, result=int)
+    def getKBPS(self):
+        i = bisect_left( self.times , time()-1)
+        self.sum -= sum(self.amounts[0:i])
+        self.times = self.times[i:]
+        self.amounts = self.amounts[i:]
+        self.sig_KBPS.emit(self.sum)
+        return sum
+
+    @pyqtSlot()
+    def clear(self):
+        self.times = []
+        self.amounts = []
+        self.sum = 0 # Quicker to keep a running sum
+
+

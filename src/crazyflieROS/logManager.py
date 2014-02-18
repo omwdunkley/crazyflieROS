@@ -1,8 +1,3 @@
-from gi.overrides import keysyms
-from guiqwt.io import _add_all_supported_files
-from cflib.crazyflie import Crazyflie
-
-import rospy
 import roslib
 roslib.load_manifest('crazyflieROS')
 from crazyflieROS import msg
@@ -84,7 +79,6 @@ class LogGroup(QTreeWidgetItem):
 
         # Read target HZ
         hzQv = settings.value("log_"+self.name+"_hz",QVariant(20))
-        self.fm = FreqMonitor(window=hzQv.toInt()[0])
         QtGui.QTreeWidgetItem.setData(self, 2, Qt.DisplayRole, hzQv)
 
         # Read if checked. If partially checked, uncheck
@@ -110,13 +104,13 @@ class LogGroup(QTreeWidgetItem):
 
     def updateFM(self):
         # if not self.isActive()
-        QtGui.QTreeWidgetItem.setData(self, 3, Qt.DisplayRole, self.fm.get_hz())
+        if self.fm:
+            QtGui.QTreeWidgetItem.setData(self, 3, Qt.DisplayRole, self.fm.get_hz())
 
 
     def logDataCB(self, ts, data, lg):
         """ Our data from the log """
-        print "LogCB data:", data.keys()
-
+        #print "LogCB data:", data.keys()
         # Update out HZ monitor
         if self.fmOn:
             self.fm.count()
@@ -227,6 +221,7 @@ class LogGroup(QTreeWidgetItem):
         if self.lg:
             self.lg.delete()
 
+        self.fm = FreqMonitor(window=max(10, int(self.text(2))))
         self.lg = LogConfig(self.name, 1000/int(self.text(2)))
         for x in range(self.childCount()):
             c = self.child(x)
@@ -381,6 +376,10 @@ class LogManager(QTreeWidget):
 
     def newToc(self, uri):
         """ Called when a new TOC has been downloaded. Populate the table, create and start log configs"""
+
+        # Sometimes its called twice, eg after a fast/weird reconnect
+        if self.toc:
+            self.purgeToc()
 
         # Populate Table recursively
         self.toc = self.cf.log._toc.toc

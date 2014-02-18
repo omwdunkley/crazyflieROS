@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'driverGUI.ui'
 #
-# Created: Tue Feb 18 13:45:56 2014
+# Created: Wed Feb 19 00:03:19 2014
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -231,7 +231,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QObject.connect(self.horizontalSlider_pktHZ, QtCore.SIGNAL(_fromUtf8("valueChanged(int)")), self.spinBox_pktHZ.setValue)
         QtCore.QObject.connect(self.spinBox_pktHZ, QtCore.SIGNAL(_fromUtf8("valueChanged(int)")), self.horizontalSlider_pktHZ.setValue)
         QtCore.QObject.connect(self.checkBox_pktHZ, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.horizontalSlider_pktHZ.setEnabled)
@@ -251,8 +251,8 @@ class Ui_MainWindow(object):
         self.comboBox_connect.setItemText(1, QtGui.QApplication.translate("MainWindow", "Test2", None, QtGui.QApplication.UnicodeUTF8))
         self.progressbar_bat.setFormat(QtGui.QApplication.translate("MainWindow", "Battery: %v mV", None, QtGui.QApplication.UnicodeUTF8))
         self.progressbar_link.setFormat(QtGui.QApplication.translate("MainWindow", "Link quality: %p%", None, QtGui.QApplication.UnicodeUTF8))
-        self.progressBar_pktOut.setFormat(QtGui.QApplication.translate("MainWindow", "Packets out/sec: %p", None, QtGui.QApplication.UnicodeUTF8))
-        self.progressBar_pktIn.setFormat(QtGui.QApplication.translate("MainWindow", "Packets in/sec: %p", None, QtGui.QApplication.UnicodeUTF8))
+        self.progressBar_pktOut.setFormat(QtGui.QApplication.translate("MainWindow", "Out Byte/s: %v/%m", None, QtGui.QApplication.UnicodeUTF8))
+        self.progressBar_pktIn.setFormat(QtGui.QApplication.translate("MainWindow", "In Byte/s: %v/%m", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_kill.setText(QtGui.QApplication.translate("MainWindow", "Kill Switch", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_connection), QtGui.QApplication.translate("MainWindow", "Connection", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_reconnect.setText(QtGui.QApplication.translate("MainWindow", "Auto Reconnect", None, QtGui.QApplication.UnicodeUTF8))

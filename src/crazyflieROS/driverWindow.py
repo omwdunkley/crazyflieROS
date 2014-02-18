@@ -58,17 +58,22 @@ class DriverWindow(QtGui.QMainWindow ):
         self.state = STATE.DISCONNECTED
         self.ros = ROSNode()
         self.flie = FlieControl()
+        self.ui.checkBox_pktHZ.toggled.connect(lambda on: self.flie.setPacketUpdateSpeed(self.ui.spinBox_pktHZ.value() if on else 0 ))
+        self.ui.spinBox_pktHZ.valueChanged.connect(self.flie.inKBPS.setHZ)
+        self.ui.spinBox_pktHZ.valueChanged.connect(self.flie.outKBPS.setHZ)
+        self.ui.spinBox_pktHZ.valueChanged.emit(self.ui.spinBox_pktHZ.value()) # force update
 
         # Set up ParamManager
         self.paramManager = ParamManager(self.flie.crazyflie, self)
         self.ui.tab_param.layout().addWidget(self.paramManager)
-        self.ui.checkBox_pktHZ.toggled.connect(lambda on: self.flie.setPacketUpdateSpeed(self.ui.spinBox_pktHZ.value() if on else 0 ))
 
         # Set up LogManager
         self.logManager = LogManager(self.flie.crazyflie, self)
         self.ui.tab_log.layout().addWidget(self.logManager)
         self.ui.checkBox_logHZ.toggled.connect(self.logManager.setEstimateHzOn)
         self.ui.spinBox_logHZ.valueChanged.connect(self.logManager.setFreqMonitorFreq)
+
+
 
 
         # init previous settings
@@ -80,9 +85,8 @@ class DriverWindow(QtGui.QMainWindow ):
         self.autoReconnectOn = self.ui.checkBox_reconnect.isChecked()
         self.startupConnectOn = self.ui.checkBox_startupConnect.isChecked()
 
-        self.estimatedMaxPktHz = 100
-        self.packetRateHZ = self.ui.spinBox_pktHZ.value()
-        self.setPacketRateHZ(self.ui.spinBox_pktHZ.value())
+
+
 
         # Set up URI scanner
         self.scanner = ScannerThread()
@@ -92,7 +96,6 @@ class DriverWindow(QtGui.QMainWindow ):
         # Connections from GUI
         self.ui.pushButton_connect.clicked.connect(lambda : self.connectPressed(self.ui.comboBox_connect.currentText())) # Start button -> connect
         self.ui.comboBox_connect.currentIndexChanged.connect(self.uriSelected)
-        self.ui.spinBox_pktHZ.valueChanged.connect(self.setPacketRateHZ) #TODO: disable elements if its 0
 
         self.ui.checkBox_beep.toggled.connect(self.setBeep)
         self.ui.checkBox_kill.toggled.connect(self.setKill)
@@ -110,6 +113,8 @@ class DriverWindow(QtGui.QMainWindow ):
         self.paramManager.sig_firmware.connect(lambda fw, mod: self.ui.label_fw.setText(fw))
         self.paramManager.sig_firmware.connect(lambda fw, mod: self.ui.label_fwMod.setText(mod))
         self.logManager.sig_batteryUpdated.connect(self.ui.progressbar_bat.setValue)
+        self.flie.inKBPS.sig_KBPS.connect(lambda hz: self.updatePacketRate(self.ui.progressBar_pktIn,hz))
+        self.flie.outKBPS.sig_KBPS.connect(lambda hz: self.updatePacketRate(self.ui.progressBar_pktOut,hz))
 
 
         # Connections GUI to GUI
@@ -126,7 +131,7 @@ class DriverWindow(QtGui.QMainWindow ):
         # Show window
         self.show()
 
-        # Intiate an initial Scan
+        # Initiate an initial Scan
         init_drivers(enable_debug_driver=False)
         self.startScanURI()
 
@@ -226,34 +231,13 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.label_fwMod.setText("")
         self.ui.label_crv.setText("")
 
-
-    @pyqtSlot(int)
-    def setPacketRateHZ(self, hz):
-        """ Update our window for measuring packets / second and update the progress bars max values) """
-        # Update the progress bars to the estimated packets per meaasurement (depends on hz)
-        self.packetRateHZ = hz
-        self.flie.setPacketUpdateSpeed(hz)
-        m = self.estimatedMaxPktHz/hz
-        self.ui.progressBar_pktIn.setMaximum(m)
-        self.ui.progressBar_pktOut.setMaximum(m)
-
-
-
     @pyqtSlot(int,int)
-    def updatePacketRate(self, inHZ, outHZ):
-        """ Updates the two packet rate progress bars """
-        #logger.info("In: %d | Out: %d", inHZ, outHZ)
-
-        m = max(inHZ,outHZ)
-        if m>self.ui.progressBar_pktIn.maximum():
-            self.estimatedMaxPktHz = m*self.packetRateHZ
-            mn = self.estimatedMaxPktHz/self.packetRateHZ
-            logger.warn("Maximum Packets Changed from %d/s -> %d/s", self.ui.progressBar_pktIn.maximum()/self.packetRateHZ, mn)
-            self.ui.progressBar_pktIn.setMaximum(mn)
-            self.ui.progressBar_pktOut.setMaximum(mn)
-
-        self.ui.progressBar_pktIn.setValue(inHZ)
-        self.ui.progressBar_pktOut.setValue(outHZ)
+    def updatePacketRate(self, pb, hz):
+        """ Updates the number of pb with hz ensuring we adjust the maximum incase max<hz """
+        if hz>pb.maximum():
+            logger.warn("Maximum Packets Changed from %d/s -> %d/s", pb.maximum(), hz)
+            pb.setMaximum(hz)
+        pb.setValue(hz)
 
 
     def startScanURI(self):

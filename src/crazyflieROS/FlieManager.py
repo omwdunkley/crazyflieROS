@@ -4,7 +4,9 @@ __all__=['FlieControl','STATE']
 
 from PyQt4 import QtGui, uic
 from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot, QObject, QTimer
+from rosTools import KBSecMonitor
 from cflib.crazyflie import Crazyflie
+from rosTools import FreqMonitor
 import logging
 logger = logging.getLogger(__name__)
 
@@ -47,20 +49,17 @@ class FlieControl(QObject):
         #cache_dir =  cache_dir[0:cache_dir.find("src/crazyflieROS")]+"cache/"
 
         # Parameters
-        self.updatePacketSpeed = 5# Window length in hz of packet rate estimation
 
         # Members
         self.console_cache = "" # Used to buffer crazyflie console messages that go over newlines
         self.crazyflie = Crazyflie()
         #self.crazyflie = Crazyflie(cache_dir+"/ro", cache_dir+"/rw")
         self.linkQuality = LinkQuality(window=50)
-        self.counterPacketIn  = 0 # Counts packets within self.updatePacketSpeed window
-        self.counterPacketOut = 0 # Counts packets within self.updatePacketSpeed window
         self.status = STATE.DISCONNECTED
 
         # Timers
-        self.timerPacket = QTimer(self)
-        self.timerPacket.timeout.connect(self.updatePacketCount)
+        self.inKBPS = KBSecMonitor()
+        self.outKBPS = KBSecMonitor()
 
 
         # Callbacks
@@ -71,47 +70,10 @@ class FlieControl(QObject):
         self.crazyflie.connection_requested.add_callback(self.connectionRequestedCB) # Called when the user requests a connection
         self.crazyflie.link_established.add_callback(self.linkEstablishedCB)         # Called when the first packet in a new link is received
         self.crazyflie.link_quality_updated.add_callback(self.linkQualityCB)         # Called when the link driver updates the link quality measurement
-        self.crazyflie.packet_received.add_callback(self.packetReceived)             # Called for every packet received
-        self.crazyflie.packet_sent.add_callback(self.packetSent)                     # Called for every packet sent
+        self.crazyflie.packet_received.add_callback(self.packetReceivedCB)             # Called for every packet received
+        self.crazyflie.packet_sent.add_callback(self.packetSentCB)                     # Called for every packet sent
         self.crazyflie.console.receivedChar.add_callback(self.consoleCB)             # Called with console text
 
-
-    ### SET PARAMS
-    @pyqtSlot(int)
-    def setPacketUpdateSpeed(self, hz):
-        """ Sets the rate at which packet in/out rates are estimated. This defines the window length in hz
-            Adds / Removes the packet update callbacks """
-        if hz <= 0:
-            # Turned off: stop timer, remove callbacks
-            self.timerPacket.stop()
-            #self.crazyflie.packet_received.remove_callback(self.packetReceived)
-            #self.crazyflie.packet_sent.remove_callback(self.packetSent)
-            logger.info("Stopped estimating packet rates")
-        else:
-            # Update timer and if turning off->on add callbacks
-            if self.updatePacketSpeed<=0:
-                # Turned on as it was off: add callbacks
-                #self.crazyflie.packet_received.add_callback(self.packetReceived)
-                #self.crazyflie.packet_sent.add_callback(self.packetSent)
-                logger.info("Started estimating packet rates")
-
-            # This makes sure we only start the timer if we supply the function with the same hz,
-            # or we only change the value if its running already
-            if self.timerPacket.isActive() or self.updatePacketSpeed == hz:
-                self.updatePacketSpeed = hz
-                self.timerPacket.start(1000./self.updatePacketSpeed)
-            self.updatePacketSpeed = hz
-            logger.info("Packet rate estimation window set to %.1fms", 1000/self.updatePacketSpeed)
-
-
-    ### TIMER CALLBACKS
-    def updatePacketCount(self):
-        """ Counts packets per second going coming in """
-        inHz  = self.counterPacketIn/self.updatePacketSpeed
-        outHz = self.counterPacketOut/self.updatePacketSpeed
-        self.counterPacketIn = 0
-        self.counterPacketOut = 0
-        self.sig_packetSpeed.emit(round(inHz), round(outHz))
 
 
     ### CRAZYFLIE CALLBACKS
@@ -123,35 +85,41 @@ class FlieControl(QObject):
 
     def disconnectedCB(self, uri, msg=""):
         """ Called on disconnect, no matter the reason """
-        # stop counting packets
-        self.setPacketUpdateSpeed(0)
+        self.inKBPS.stop()
+        self.outKBPS.stop()
+        self.crazyflie.packet_received.remove_callback(self.packetReceivedCB)
+        self.crazyflie.packet_sent.remove_callback(self.packetSentCB)
         self.sig_stateUpdate.emit(STATE.DISCONNECTED, uri, msg)
 
 
     def connectionLostCB(self, uri, msg=""):
         """ Called on unintentional disconnect only """
         self.sig_stateUpdate.emit(STATE.CONNECTION_LOST, uri, msg)
-        # TODO: try to reconnect?
 
 
     def connectionFailedCB(self, uri, msg=""):
         """ Called if establishing of the link fails (i.e times out) """
         # stop counting packets
-        self.setPacketUpdateSpeed(0)
+        self.inKBPS.stop()
+        self.outKBPS.stop()
+        self.crazyflie.packet_received.remove_callback(self.packetReceivedCB)
+        self.crazyflie.packet_sent.remove_callback(self.packetSentCB)
         self.sig_stateUpdate.emit(STATE.CONNECTION_FAILED, uri, msg)
 
 
     def connectionRequestedCB(self, uri, msg=""):
         """ Called when the user requests a connection """
         # Start counting packets
-        self.setPacketUpdateSpeed(self.updatePacketSpeed)
+        self.inKBPS.start()
+        self.outKBPS.start()
+        self.crazyflie.packet_received.add_callback(self.packetReceivedCB)
+        self.crazyflie.packet_sent.add_callback(self.packetSentCB)
         self.sig_stateUpdate.emit(STATE.CONNECTION_REQUESTED, uri, msg)
 
 
     def linkEstablishedCB(self, uri, msg=""):
         """ Called when the first packet in a new link is received """
         self.sig_stateUpdate.emit(STATE.LINK_ESTABLISHED, uri, msg)
-        # TODO: set up logging
 
 
     def linkQualityCB(self, percentage):
@@ -160,17 +128,7 @@ class FlieControl(QObject):
         #q = self.linkQuality.addMeasurementAvg(percentage)
         q = self.linkQuality.addMeasurementCount(percentage)
         if q is not None:
-            self.sig_flieLink.emit(percentage) # TODO measure how fast this happens, cap at 30hz or so
-
-
-    def packetReceived(self, pk=None):
-        """ Called for every packet received """
-        self.counterPacketIn += 1
-
-
-    def packetSent(self, pk=None):
-        """ Called for every packet sent """
-        self.counterPacketOut += 1
+            self.sig_flieLink.emit(percentage)
 
 
     def consoleCB(self, msg):
@@ -188,6 +146,14 @@ class FlieControl(QObject):
             self.sig_console.emit(msg)
             self.console_cache = ""
 
+
+    def packetReceivedCB(self, pk=None):
+        """ Called for every packet received """
+        self.inKBPS.count(1+len(pk.datal))
+
+    def packetSentCB(self, pk=None):
+        """ Called for every packet sent """
+        self.outKBPS.count(1+len(pk.datal)) #TODO: write function that gets the size directly
 
 
     ### LOG CALLBACKS
