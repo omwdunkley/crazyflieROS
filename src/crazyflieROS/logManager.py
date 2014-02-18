@@ -194,17 +194,24 @@ class LogGroup(QTreeWidgetItem):
             self.fm.count()
 
 
-    def logStartedCB(self, smth):
-        print "LogCB Started"
+    def logStartedCB(self, on):
         """ Called when we actually start logging """
-        QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Checked)
-        QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "On")
+        if on:
+            print "LogCB Started"
+            QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Checked)
+            QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "On")
+            self.setAllState(Qt.Checked, activeOnly=True)
+        else:
+            if self.allSelected():
+                self.setAllState(Qt.Unchecked)
+            QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Unchecked)
+            QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "Off")
 
-    def logAddedCB(self, l):
-        """ Called when log added """
-        print "LogCB added"
-        QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Checked)
-        QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "Added")
+    # def logAddedCB(self, l):
+    #     """ Called when log added """
+    #     print "LogCB added"
+    #     QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Checked)
+    #     QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "Added")
 
 
     def requestLog(self):
@@ -216,17 +223,16 @@ class LogGroup(QTreeWidgetItem):
             self.setAllState(Qt.PartiallyChecked, activeOnly=True)
         QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.PartiallyChecked)
         QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "Requested")
-        #TODO
 
+        # Make and start log config
+        self.makeLog()
 
 
     def stopLog(self):
         """ User request halt """
         print "Requested log stop"
-        if self.allSelected():
-            self.setAllState(Qt.Unchecked)
-        QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Unchecked)
-        QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "Off")
+        self.lg.delete() #Invokes logStarted(False)
+        self.lg = None
 
 
     def errorLog(self, block, msg):
@@ -242,7 +248,7 @@ class LogGroup(QTreeWidgetItem):
         """ Only allow changing of the check state and the hz """
 
         # GROUP ON/OFF
-        preValue = self.data(0, Qt.CheckStateRole)
+        preValue = self.checkState(0)
         if role == Qt.CheckStateRole and column == 0 and preValue != value:
             # Check box changed, allow and trigger
 
@@ -257,13 +263,19 @@ class LogGroup(QTreeWidgetItem):
 
 
         # HZ CHANGED
-        if column == 2 and self.data(column, Qt.DisplayRole) != value:
-            if preValue==Qt.PartiallyChecked:
-                print "Waiting for log callback, cannot change hz now"
-            else:
-                print "hz changed from %d to %d", self.data(column, Qt.DisplayRole).toInt(), value.toInt()
-                QtGui.QTreeWidgetItem.setData(self, column, role, value)
-                self.requestLog()
+        if column == 2:
+            hz = min(max(value.toInt()[0],1),100)
+            preHz = self.data(column, Qt.DisplayRole).toInt()[0]
+            if hz!=preHz:
+                if preValue==Qt.PartiallyChecked:
+                    print "Waiting for log callback, cannot change hz now"
+                elif preValue==Qt.Checked:
+                    print "hz changed from %d to %d while logging, replace log" % (preHz, hz)
+                    QtGui.QTreeWidgetItem.setData(self, column, role, hz)
+                    self.requestLog()
+                elif preValue==Qt.Unchecked:
+                    print "hz changed from %d to %d, not logging yet" % (preHz, hz)
+                    QtGui.QTreeWidgetItem.setData(self, column, role, hz)
 
     def childStateChanged(self, child, newState):
         if self.checkState(0) == Qt.Unchecked:
@@ -281,46 +293,30 @@ class LogGroup(QTreeWidgetItem):
                 self.requestLog()
 
 
+    def makeLog(self):
+        """ Makes a log. All ative children are added """
 
-    def setupLog(self,hz):
-        """ Update the log by deleteing any previous log and making a new one """
-        # Delete the current log
         if self.lg:
             self.lg.delete()
-        if self.isActive():
-            self.lg = LogConfig(self.name, 1000/hz)
-            for x in range(self.childCount()):
-                c = self.child(x)
-                if c.isActive():
-                    name = c.log.group+".l"+c.log.name
-            self.lg.add_variable(name, c.log.ctype)
-            self.treeWidget().cf.log.add_config(self.lg)
-            if self.lg.valid:
-                self.lg.data_received_cb.add_callback(self.logDataCB)
-                self.lg.error_cb.add_callback(self.treeWidget().sig_logError.emit)
-                #if self.isActive():
-                self.lg.start()
-            else:
-                logger.warning("logging block [%s] not valid!", self.lg.name)
-                QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Unchecked)
 
-
-    def makeLog(self):
         self.lg = LogConfig(self.name, 1000/int(self.text(2)))
         for x in range(self.childCount()):
             c = self.child(x)
-            if c.isActive():
+            if c.isChecked():
                 name = c.log.group+"."+c.log.name
-        self.lg.add_variable(name, c.log.ctype)
+                self.lg.add_variable(name, c.log.ctype)
+
         self.treeWidget().cf.log.add_config(self.lg)
         if self.lg.valid:
             self.lg.data_received_cb.add_callback(self.logDataCB)
             self.lg.started_cb.add_callback(self.logStartedCB)
             self.lg.error_cb.add_callback(self.treeWidget().sig_logError.emit)
-            return True
+            self.lg.error_cb.add_callback(self.errorLog)
+            self.lg.start()
         else:
-            logger.warning("logging block [%s] not valid!", self.lg.name)
-            return False
+            self.errorLog(None, "Invalid Config")
+            self.lg = None
+
 
 
     def setAllState(self, chkState, activeOnly=False):
