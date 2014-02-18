@@ -4,9 +4,9 @@ from cflib.crazyflie import Crazyflie
 
 import rospy
 import roslib
-from time import time
 roslib.load_manifest('crazyflieROS')
 from crazyflieROS import msg
+from rosTools import FreqMonitor
 
 __author__ = 'OMWDunkley'
 __all__ = ['LogManager']
@@ -19,78 +19,6 @@ from cflib.crazyflie.log import Log, LogConfig, LogVariable
 
 import logging
 logger = logging.getLogger(__name__)
-
-
-
-# class DefaultType:
-#     def __init__(self, parent, name, hz):
-#         self.parent = parent
-#         self.name = name
-#         self.type = eval("msg."+name)
-#         self.func = eval("parent."+"name+CB")
-#         self.hz = 50
-
-
-
-
-class FreqMonitor():
-    """
-    Modified from ros_comm / tools / rostopic / src / rostopic / __init__.py
-    ROSTopicHz receives messages for a topic and computes frequency stats
-    """
-    def __init__(self,window=200):
-        self.last_printed_tn = 0
-        self.msg_t0 = -1.
-        self.msg_tn = 0
-        self.times =[]
-        self.window_size = window
-        self.last_rate = 0
-
-
-    def count(self):
-        # curr_rostime = rospy.get_rostime()
-        # # time reset
-        # if curr_rostime.is_zero():
-        #     if len(self.times) > 0:
-        #         # print("time has reset, resetting counters")
-        #         self.times = []
-        #     return
-        curr = time()
-        if self.msg_t0 < 0 or self.msg_t0 > curr:
-            self.msg_t0 = curr
-            self.msg_tn = curr
-            self.times = []
-        else:
-            self.times.append(curr - self.msg_tn)
-            self.msg_tn = curr
-
-        #only keep statistics for the last X messages so as not to run out of memory
-        if len(self.times) > self.window_size - 1:
-            self.times.pop(0)
-
-    def get_hz(self,use_cached = False):
-        if use_cached:
-            return self.last_rate
-        if not self.times:
-            rate = 0
-        elif self.msg_tn == self.last_printed_tn:
-            rate = 0
-        else:
-            n = len(self.times)
-            #rate = (n - 1) / (rospy.get_time() - self.msg_t0)
-            mean = sum(self.times) / n
-            rate = 1./mean if mean > 0. else 0
-            self.last_printed_tn = self.msg_tn
-        self.last_rate = rate
-        return rate
-
-
-
-
-
-
-
-
 
 
 class LogGroup(QTreeWidgetItem):
@@ -397,10 +325,8 @@ class LogItem(QTreeWidgetItem):
 
 
 class LogManager(QTreeWidget):
-    """ Class to manage all things logging.
-        One can turn on/off log group/names,
-        monitor their frequency,
-        change their frequency
+    """ Class to manage all things logging. One can turn groups/vars on and off,
+        save configs between sessions, set and monitor the update frequencies
     """
     sig_batteryUpdated = pyqtSignal(int)
     sig_logError = pyqtSignal(object, str) # block, msg
@@ -495,66 +421,3 @@ class LogManager(QTreeWidget):
                 self.header().hideSection(3)
                 if self.toc:
                     self.timerHZUpdate.stop()
-
-
-# SIMPLE VIEWER
-
-
-# class LogItem(QTreeWidgetItem):
-#     """ Subname
-#         Can be turned on/off
-#     """
-#
-#     def __init__(self, parent, log):
-#         super(LogItem, self).__init__(parent)
-#         self.log = log
-#         self.setText(0, log.name)
-#         self.setText(1, str(log.ident))
-#         self.setText(2, log.ctype)
-#         self.setText(3, "RO" if log.access else "RW")
-#
-#
-# class LogGroup(QTreeWidgetItem):
-#     """ Group
-#         Can be turned on/off
-#     """
-#
-#     def __init__(self, parent, name, children):
-#         super(LogGroup, self).__init__(parent)
-#         self.setText(0, name)
-#         # add checkbox
-#         # add hz
-#         # add hz
-#         for c in children.keys():
-#             self.addChild(LogItem(self, children[c]))
-#
-# class LogManager(QTreeWidget):
-#     """ Class to manage all things logging.
-#         One can turn on/off log group/names,
-#         monitor their frequency,
-#         change their frequency
-#     """
-#     sig_batteryUpdated = pyqtSignal(int)
-#
-#     def __init__(self, cf, parent=None):
-#         super(LogManager, self).__init__(parent)
-#         self.cf = cf
-#         self.toc = None
-#
-#         self.headers = ['ID','Name', 'On', 'HZ Desired', 'HZ Actual']
-#         self.setColumnCount(len(self.headers))
-#         self.setHeaderLabels(self.headers)
-#         self.setAlternatingRowColors(True)
-#
-#         self.cf.connected.add_callback(self.newToc)
-#         self.cf.disconnected.add_callback(self.purgeToc)
-#
-#     def newToc(self, uri):
-#         self.toc = self.cf.log._toc.toc
-#
-#         for g in self.toc.keys():
-#             self.addTopLevelItem(LogGroup(self, g, self.toc[g]))
-#
-#
-#     def purgeToc(self, uri):
-#         self.clear()
