@@ -128,6 +128,7 @@ class LogGroup(QTreeWidgetItem):
 
         # Show text
         QtGui.QTreeWidgetItem.setData(self, 0, Qt.DisplayRole, QVariant(name))
+        QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "Off")
         QtGui.QTreeWidgetItem.setData(self, 3, Qt.DisplayRole, QVariant(0))
         self.readSettings()
 
@@ -135,28 +136,17 @@ class LogGroup(QTreeWidgetItem):
         for c in sorted(children.keys()):
             self.addChild(LogItem(self, children[c]))
 
-
         # Now everything is initialised except the logging
+        # Start logging if active
+        if self.checkState(0) == Qt.Checked:
+            self.requestLog()
+
+
 
     def setEstimateHzOn(self, on):
         """ If on then we esstiamte the HZ """
+        self.fmOn = on
 
-    def makeLog(self):
-        self.lg = LogConfig(self.name, 1000/int(self.text(2)))
-        for x in range(self.childCount()):
-            c = self.child(x)
-            if c.isActive():
-                name = c.log.group+"."+c.log.name
-        self.lg.add_variable(name, c.log.ctype)
-        self.treeWidget().cf.log.add_config(self.lg)
-        if self.lg.valid:
-            self.lg.data_received_cb.add_callback(self.logDataCB)
-            self.lg.started_cb.add_callback(self.logStartedCB)
-            self.lg.error_cb.add_callback(self.treeWidget().sig_logError.emit)
-            return True
-        else:
-            logger.warning("logging block [%s] not valid!", self.lg.name)
-            return False
 
 
 
@@ -194,6 +184,104 @@ class LogGroup(QTreeWidgetItem):
         # if not self.isActive()
         QtGui.QTreeWidgetItem.setData(self, 3, Qt.DisplayRole, self.fm.get_hz())
 
+
+    def logDataCB(self, ts, data, lg):
+        """ Our data from the log """
+        print "LogCB data:", data.keys()
+
+        # Update out HZ monitor
+        if self.fmOn:
+            self.fm.count()
+
+
+    def logStartedCB(self, smth):
+        print "LogCB Started"
+        """ Called when we actually start logging """
+        QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Checked)
+        QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "On")
+
+    def logAddedCB(self, l):
+        """ Called when log added """
+        print "LogCB added"
+        QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Checked)
+        QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "Added")
+
+
+    def requestLog(self):
+        """ user requested start """
+        print "Requested log start"
+        if self.noneSelected():
+            self.setAllState(Qt.PartiallyChecked)
+        else:
+            self.setAllState(Qt.PartiallyChecked, activeOnly=True)
+        QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.PartiallyChecked)
+        QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "Requested")
+        #TODO
+
+
+
+    def stopLog(self):
+        """ User request halt """
+        print "Requested log stop"
+        if self.allSelected():
+            self.setAllState(Qt.Unchecked)
+        QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Unchecked)
+        QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "Off")
+
+
+    def errorLog(self, block, msg):
+        """ When a log error occurs """
+        print "Log error: %s:", msg
+        QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "Err: %s"%msg)
+        QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Unchecked)
+        if self.allSelected():
+            self.setAllState(Qt.Unchecked)
+
+
+    def setData(self, column, role, value):
+        """ Only allow changing of the check state and the hz """
+
+        # GROUP ON/OFF
+        preValue = self.data(0, Qt.CheckStateRole)
+        if role == Qt.CheckStateRole and column == 0 and preValue != value:
+            # Check box changed, allow and trigger
+
+            if preValue==Qt.PartiallyChecked:
+                print "Waiting for log callback, cannot change config now"
+
+            elif value==Qt.Checked:
+                self.requestLog()
+
+            elif value==Qt.Unchecked:
+                self.stopLog()
+
+
+        # HZ CHANGED
+        if column == 2 and self.data(column, Qt.DisplayRole) != value:
+            if preValue==Qt.PartiallyChecked:
+                print "Waiting for log callback, cannot change hz now"
+            else:
+                print "hz changed from %d to %d", self.data(column, Qt.DisplayRole).toInt(), value.toInt()
+                QtGui.QTreeWidgetItem.setData(self, column, role, value)
+                self.requestLog()
+
+    def childStateChanged(self, child, newState):
+        if self.checkState(0) == Qt.Unchecked:
+            print "Child Changed while not logging"
+            QtGui.QTreeWidgetItem.setData(child, 0, Qt.CheckStateRole, newState)
+        elif self.checkState(0) == Qt.PartiallyChecked:
+            print "Waiting for log callback"
+        elif self.checkState(0) == Qt.Checked:
+            QtGui.QTreeWidgetItem.setData(child, 0, Qt.CheckStateRole, newState)
+            if self.noneSelected():
+                print "Last child unselected, remove logger"
+                self.stopLog()
+            else:
+                print "Child Changed while logging, update logger"
+                self.requestLog()
+
+
+
     def setupLog(self,hz):
         """ Update the log by deleteing any previous log and making a new one """
         # Delete the current log
@@ -217,98 +305,49 @@ class LogGroup(QTreeWidgetItem):
                 QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Unchecked)
 
 
-    def logDataCB(self, ts, data, lg):
-        """ Our data from the log """
-        print data.keys()
-
-        # Update out HZ monitor
-        if self.fmOn:
-            self.fm.count()
-
-
-    def logStartedCB(self, smth):
-        """ Called when we actually start logging """
-        QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Checked)
-
-
-    def setData(self, column, role, value):
-        """ Only allow changing of the check state and the hz """
-        if role == Qt.CheckStateRole and column == 0 and self.data(0, Qt.CheckStateRole) != value:
-            # Check box changed, allow and trigger
-
-            if value==Qt.Checked:
-                print "Group Turned On, starting log"
-                # Use turned on
-                # update children
-                # set to tristate
-                # make log
-                # log callback sets checked
-                # self.checkChildren()
-                QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.PartiallyChecked)
-                self.lg.start()
-
-            if value==Qt.PartiallyChecked:
-                print "Waiting for log callback"
-                return
-
-            if value==Qt.Unchecked:
-                print "Group Turned off, stopping log"
-                self.lg.stop()
-
-        if column == 2 and self.data(column, Qt.DisplayRole) != value:
-            print "hz changed from %d to %d", self.data(column, Qt.DisplayRole).toInt(), value.toInt()
-            QtGui.QTreeWidgetItem.setData(self, column, role, value)
-
-
-
-
-
-
-
-
-
-    # def setData(self, column, role, value):
-    #     """ Detect changes in the check row. Possibly uncheck/check all children
-    #     """
-    #     preState = self.isActive()
-    #     QtGui.QTreeWidgetItem.setData(self, column, role, value)
-    #     postState = self.isActive()
-    #     if role == Qt.CheckStateRole and preState != postState:
-    #         if postState:
-    #             print "   group", self.name, "checked"
-    #         else:
-    #             print  "   group", self.name, "unchecked"
-    #
-    #         if self.cAll and not postState:
-    #             # Uncheck all children
-    #             for x in range(self.childCount()):
-    #                 self.child(x).setActive(False)
-    #
-    #         if self.cNone and postState:
-    #             # Uncheck all children
-    #             for x in range(self.childCount()):
-    #                 self.child(x).setActive(True)
-
-    def checkChildren(self):
-        """ Make sure the group is not selected if none of the children are selected
-            If all children are selected """
-
-        cAll = True
-        cNone = True
+    def makeLog(self):
+        self.lg = LogConfig(self.name, 1000/int(self.text(2)))
         for x in range(self.childCount()):
-            if self.child(x).isActive():
-                cNone = False
-            if not self.child(x).isActive():
-                cAll = False
+            c = self.child(x)
+            if c.isActive():
+                name = c.log.group+"."+c.log.name
+        self.lg.add_variable(name, c.log.ctype)
+        self.treeWidget().cf.log.add_config(self.lg)
+        if self.lg.valid:
+            self.lg.data_received_cb.add_callback(self.logDataCB)
+            self.lg.started_cb.add_callback(self.logStartedCB)
+            self.lg.error_cb.add_callback(self.treeWidget().sig_logError.emit)
+            return True
+        else:
+            logger.warning("logging block [%s] not valid!", self.lg.name)
+            return False
 
-        if cAll and cAll != self.cAll:
-            QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Checked)
-            self.cAll = cAll
+
+    def setAllState(self, chkState, activeOnly=False):
+        """ Set all children on or off without their setData function. If activeOnly only set ones who are not off """
+        if activeOnly:
+            for x in range(self.childCount()):
+                if self.child(x).isChecked():
+                    self.child(x).setState(chkState)
+        else:
+            for x in range(self.childCount()):
+                self.child(x).setState(chkState)
 
 
-        if cNone and cNone != self.cNone:
-            QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Unchecked)
-            self.cNone = cNone
+    def allSelected(self):
+        """ Returns true if all children are selected """
+        for x in range(self.childCount()):
+            if not self.child(x).isChecked():
+                return False
+        return True
+
+
+    def noneSelected(self):
+        """ Returns true if no children are selected """
+        for x in range(self.childCount()):
+            if self.child(x).isChecked():
+                return False
+        return True
 
 
 
@@ -328,41 +367,33 @@ class LogItem(QTreeWidgetItem):
 
 
     def setData(self, column, role, value):
-        """ Detect changes in the check box and report these to the parent
-        """
-        preState = self.isActive()
-        QtGui.QTreeWidgetItem.setData(self, column, role, value)
-        postState = self.isActive()
-        if role == Qt.CheckStateRole and preState != postState:
-            if postState:
-                print "param", self.log.name, "checked"
-            else:
-                print "param", self.log.name, "unchecked"
-            self.parent().checkChildren()
+        """ Detect changes in the check box by the user. Report to parent"""
+        if role == Qt.CheckStateRole and column == 0 and self.getState() != value:
+            self.parent().childStateChanged(self, value)
 
-    def isActive(self):
-        return self.checkState(0) == Qt.Checked
 
-    def setActive(self, on=True, cb=True):
-        """ Sets the checkbox to on/off. Changing the checkbox invokes a call to setData which can be bypassed if cb==False
-        """
-        if cb:
-            # Call the usual set function, invokes setData
-            self.setCheckState(0, Qt.Checked if on else Qt.Unchecked)
-        else:
-            # Avoid calling setData after changing the checkstate
-            QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Checked if on else Qt.Unchecked)
+    def isChecked(self):
+        """ returns true if the item is checked or partially checked """
+        return self.checkState(0) != Qt.Unchecked
+
+    def setState(self, chkState=Qt.Checked):
+        """ Sets the checkbox to on/off without calling the setData CB """
+        QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, chkState)
+
+    def getState(self):
+        """ Sets the checkbox to on/off without calling the setData CB """
+        return self.checkState(0)
 
     def readSettings(self):
         """ Read the HZ and selected things to log from previous session """
         settings = QSettings("omwdunkley", "flieROS")
         # Read if checked
         onQv = settings.value("log_"+self.log.group+"."+self.log.name+"_on", QVariant(Qt.Unchecked))
-        QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, onQv)
+        QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, onQv if onQv.toInt()[0]!=Qt.PartiallyChecked else Qt.Checked) #Default to checked
 
 
     def writeSettings(self):
-        """ Save the HZ and selected things to log between sessions"""
+        """ Save the HZ and selected group.names to log between sessions"""
         settings = QSettings("omwdunkley", "flieROS")
         # Save checked state
         settings.setValue("log_"+self.log.group+"."+self.log.name+"_on", self.data(0, Qt.CheckStateRole))
@@ -387,7 +418,7 @@ class LogManager(QTreeWidget):
         self.setFreqMonitorFreq(hz=2)
         self.estimateHzOn = True
 
-        self.headers = ['Name','Type', 'HZ Desired', 'HZ Actual']
+        self.headers = ['Name','State', 'HZ Desired', 'HZ Actual']
         self.setHeaderLabels(self.headers)
         self.header().setStretchLastSection(True)
         self.header().setResizeMode(0, QHeaderView.Stretch)
@@ -400,6 +431,7 @@ class LogManager(QTreeWidget):
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.itemDoubleClicked.connect(self.userStartEdit)
 
+        # All log groups send errors to this signal
         self.sig_logError.connect(self.logError)
 
         self.cf.connected.add_callback(self.newToc)
@@ -409,7 +441,6 @@ class LogManager(QTreeWidget):
         """ Make sure only the target HZ can be changed """
         if col == 2:
             self.editItem(item, col)
-
 
     def setFreqMonitorFreq(self, hz=2):
         """ set how fast we with to estimate the log frequency """
@@ -421,24 +452,30 @@ class LogManager(QTreeWidget):
         for i in range(self.topLevelItemCount()):
             self.topLevelItem(i).updateFM()
 
-
     def logError(self, block, msg):
+        """ All logging configurations report errors to this function """
         logger.error("Logging error with %s: %s", block.name, msg )
 
 
     def newToc(self, uri):
+        """ Called when a new TOC has been downloaded. Populate the table, create and start log configs"""
+
+        # Populate Table recursively
         self.toc = self.cf.log._toc.toc
         for g in sorted(self.toc.keys()):
             self.addTopLevelItem(LogGroup(self, g, self.toc[g]))
 
+        # Start monitoring log throughput
         if self.estimateHzOn:
             self.timerHZUpdate.start()
 
     def saveSettings(self):
+        """ This function is called when the flie disconnects. It saves the state of each log configuration (on/off, subset of params, hz) """
         for i in range(self.topLevelItemCount()):
             self.topLevelItem(i).writeSettings()
 
     def purgeToc(self, uri):
+        """ Called when the flie disconnects. Stop monitoring HZ, saves the state clears the treeview """
         self.timerHZUpdate.stop()
         self.saveSettings()
         self.clear()
