@@ -1,3 +1,4 @@
+
 <package>
   <description brief="crazyflieROS">
 
@@ -10,6 +11,8 @@
   <url>http://ros.org/wiki/crazyflieROS</url>
   <depend package="rospy"/>
   <depend package="tf"/>
+  <depend package="joy"/>
+  <depend package="sensor_msgs"/>
 
 </package>
 

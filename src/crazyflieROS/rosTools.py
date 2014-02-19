@@ -1,6 +1,8 @@
 __author__ = 'ollie'
 __all__= ['generateRosMessages','ROSNode']
-import logging
+
+
+
 
 from PyQt4.QtCore import QObject, pyqtSignal, pyqtSlot
 
@@ -8,17 +10,27 @@ import rospy
 import roslib
 from roslib.packages import get_pkg_dir
 roslib.load_manifest('crazyflieROS')
-
 from crazyflieROS import msg as msgCF
-from time import time
+from crazyflieROS.msg import cmd as cmdMSG
 
-from commonTools import hasAllKeys, hasGroup, getGroup, getNames
+import tf
+
+
+from math import radians
+import logging
+
+from commonTools import hasAllKeys, isGroup, getGroup, getNames
 
 
 logger = logging.getLogger(__name__)
 
 
 
+MIN_THRUST = 10000
+MAX_THRUST_CMD = 60000.0 # as command to the flie
+MAX_THRUST_FLIE  = 65535.0 # as value from the flie
+def thrustToPercentage(thrust,flie=True):
+    return (float(thrust-MIN_THRUST)/((MAX_THRUST_FLIE if flie else MAX_THRUST_CMD)-MIN_THRUST))*100.0
 
 
 class ROSNode(QObject):
@@ -29,8 +41,16 @@ class ROSNode(QObject):
     def __init__(self):
         super(ROSNode, self).__init__()
         rospy.init_node('CrazyflieDriver')
-        self.publishers = {}
-        self.compiledMsgs = [m for m in dir(msgCF) if m[0]!="_"]
+        self.compiledMsgs = [m for m in dir(msgCF) if m[0]!="_"] # Mmessages that are previously auto-compiled and we can send
+
+
+        # Publishers
+        self.publishers   = {} #Generated publishers will go here
+        self.pub_tf       = tf.TransformBroadcaster()
+
+        # Subscribers
+        self.sub_tf    = tf.TransformListener()
+        self.sub_joy   = rospy.Subscriber("/cfjoy", cmdMSG, self.receiveJoystick)
 
 
     def pub(self, group, msg):
@@ -45,14 +65,14 @@ class ROSNode(QObject):
             rospy.logerr("Please generate messages: %s.msg does not exist", group)
 
 
-    def genMsg(self, data, ts):
-        """ generates a message using sexy python magic"""
+    def genMsg(self, data, ts,f=lambda x: x):
+        """ generates a message using sexy python magic. Supply an optional function to apply to each member"""
         group = getGroup(data)
         msgt = eval("msgCF."+group)
         msg = msgt()
         msg.header.stamp = ts
         for name in getNames(data):
-            setattr(msg, name, data[group+"."+name]) # sexy python magic
+            setattr(msg, name, f(data[group+"."+name])) # sexy python magic
         return msg
 
 
@@ -61,22 +81,29 @@ class ROSNode(QObject):
     def receiveCrazyflieLog(self, log, tsCF, tsROS):
         """ Handle sending messages to ROS """
 
-        # SPECIALLY HANDLED MESSAGES
-        if hasGroup(log, "baro"):
-            # BAROMETER - send what we have
-            if hasAllKeys(log, [], "baro"):
-                m = msgCF.baro()
-                m.header.stamp = tsROS
-                m.temp = 555
-            self.pub(getGroup(log), m)
-
-        # DEFAULTS
+        ## SPECIALLY HANDLED MESSAGES
+        if isGroup(log, "gyro"):
+            self.pub(getGroup(log), self.genMsg(log, tsROS, f=radians))
+        elif isGroup(log, "motor", ):
+            self.pub(getGroup(log), self.genMsg(log, tsROS), f=thrustToPercentage)
+        ## AUTOMATICALLY GENERATED HERE
         else:
             self.pub(getGroup(log), self.genMsg(log, tsROS))
+
+        ##ADITIONALLY HANDLED
+        if isGroup(log, "stabilizer"):
+            if hasAllKeys(log,["roll","pitch","yaw"]):
+                self.pub_tf.sendTransform((0, 0, 0),tf.transformations.quaternion_from_euler(
+                    radians(log["stabilizer.roll"]),
+                    -radians(log["stabilizer.pitch"]),
+                    -radians(log["stabilizer.yaw"]),'sxyz'), tsROS, "/cf", "/world")
+
 
 
     def receiveJoystick(self, joy):
         print joy
+
+
 
 
 

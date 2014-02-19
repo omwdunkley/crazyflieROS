@@ -16,7 +16,7 @@ from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot,  QVariant, QTimer, QSettings,
 from PyQt4.QtGui import  QTreeWidget, QTreeWidgetItem, QAbstractItemView,QHeaderView,QCheckBox
 from cflib.crazyflie.log import Log, LogConfig, LogVariable
 
-from commonTools import FreqMonitor, hasAllKeys, hasGroup
+from commonTools import FreqMonitor, hasAllKeys, isGroup
 
 
 
@@ -510,7 +510,7 @@ class LogManager(QTreeWidget):
         """ All incoming data is routed to this function """
         #self.sigHandler.handleData(data, ts)
         """ BATTERY """
-        if hasGroup(data, "pm"):
+        if isGroup(data, "pm"):
             if hasAllKeys(data, ["vbat"], "pm"):
                 self.sig_batteryUpdated.emit(int(1000*data["pm.vbat"]))
 

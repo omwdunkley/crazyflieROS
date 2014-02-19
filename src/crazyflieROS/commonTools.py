@@ -1,6 +1,6 @@
 __author__ = 'ollie'
 __author__ = 'ollie'
-__all__= ['FreqMonitor','KBSecMonitor','hasAllKeys','hasGroup', 'getGroup', 'getNames']
+__all__= ['FreqMonitor','KBSecMonitor','hasAllKeys', 'isGroup', 'getGroup', 'getNames']
 import logging
 from PyQt4.QtCore import QObject, QThread, QTimer, pyqtSignal, pyqtSlot
 
@@ -134,7 +134,7 @@ def getGroup(data):
 def getNames(data):
     return [key[key.rfind(".")+1:] for key in data]
 
-def hasGroup( data, g):
+def isGroup( data, g):
     return g+"." in data.keys()[0]
 
 
