@@ -308,9 +308,6 @@ class DriverWindow(QtGui.QMainWindow ):
             self.startScanURI()
             return
 
-        if not auto:
-            print "============= MANUAL"
-
 
         if self.state == STATE.CONNECTED:
             self.requestFlieDisconnect()

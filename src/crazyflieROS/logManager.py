@@ -58,10 +58,15 @@ class LogGroup(QTreeWidgetItem):
         for c in sorted(children.keys()):
             self.addChild(LogItem(self, children[c]))
 
+        self.c = 0
+
+
         # Now everything is initialised except the logging
         # Start logging if active
         if self.checkState(0) == Qt.Checked:
             self.requestLog()
+
+
 
 
 
@@ -118,18 +123,25 @@ class LogGroup(QTreeWidgetItem):
     #TODO: there is bug here where the callbacks are called twice!! Holds for this + deleted CB
     def logStartedCB(self, on):
         """ Called when we actually start logging """
+        self.c+=1
+        #print "counter[%s]"%self.name, self.c
+        #if self.c % 2 == 1:
+         #   return
+
+
         if on:
-            print "LogCB Started"
+            print "[%s:%d]LogCB STARTED(%d)" % (self.name, self.lg.id, self.c)
             QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Checked)
             QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "On")
             self.setAllState(Qt.Checked, activeOnly=True)
         else:
-            if self.allSelected():
-                self.setAllState(Qt.Unchecked)
-            else:
-                self.setAllState(Qt.Checked, activeOnly=True)
-            QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Unchecked)
-            QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "Off")
+            print "[%s]LogCB ENDED(%d) " % (self.name, self.c)
+            #if self.allSelected():
+            #    self.setAllState(Qt.Unchecked)
+            ##else:
+            ##    self.setAllState(Qt.Checked, activeOnly=True)
+            #QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Unchecked)
+            #QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "Off")
 
     # def logAddedCB(self, l):
     #     """ Called when log added """
@@ -141,10 +153,9 @@ class LogGroup(QTreeWidgetItem):
     def requestLog(self):
         """ user requested start """
         print "Requested log start"
-        if self.noneSelected():
-            self.setAllState(Qt.PartiallyChecked)
-        else:
-            self.setAllState(Qt.PartiallyChecked, activeOnly=True)
+
+        print "None selected:",self.noneSelected()
+        self.setAllState(Qt.PartiallyChecked, activeOnly=not self.noneSelected())
         QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.PartiallyChecked)
         QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "Requested")
 
@@ -158,6 +169,12 @@ class LogGroup(QTreeWidgetItem):
         if self.lg:
             self.lg.delete() #Invokes logStarted(False)
             self.lg = None
+        if self.allSelected():
+            self.setAllState(Qt.Unchecked)
+        #else:
+        #    self.setAllState(Qt.Checked, activeOnly=True)
+        QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Unchecked)
+        QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "Off")
 
 
     def errorLog(self, block, msg):
@@ -179,13 +196,16 @@ class LogGroup(QTreeWidgetItem):
         if role == Qt.CheckStateRole and column == 0 and preValue != value:
             # Check box changed, allow and trigger
 
+            print "\n\nCONFIG CHANGED\n"
             if preValue==Qt.PartiallyChecked:
-                print "Waiting for log callback, cannot change config now"
+                print "User clicked: Waiting for log callback, cannot change config now"
 
             elif value==Qt.Checked:
+                print "User clicked: request logging"
                 self.requestLog()
 
             elif value==Qt.Unchecked:
+                print "User clicked: request delete logging"
                 self.stopLog()
 
 
@@ -193,6 +213,7 @@ class LogGroup(QTreeWidgetItem):
         if column == 2:
             hz = min(max(value.toInt()[0],1),100)
             preHz = self.data(column, Qt.DisplayRole).toInt()[0]
+            print "\n\nHZ CHANGED\n"
             if hz!=preHz:
                 if preValue==Qt.PartiallyChecked:
                     print "Waiting for log callback, cannot change hz now"
@@ -225,26 +246,34 @@ class LogGroup(QTreeWidgetItem):
 
     def makeLog(self):
         """ Makes a log. All ative children are added """
-
+        print " -> Making new Log"
         if self.lg:
+            print " ---> Previous Log detected, removing first"
             self.lg.delete()
+
 
         self.fm = FreqMonitor(window=max(10, int(self.text(2))))
         self.lg = LogConfig(self.name, 1000/int(self.text(2)))
+        print " ---> Adding children to new log"
         for x in range(self.childCount()):
             c = self.child(x)
             if c.isChecked():
                 name = c.log.group+"."+c.log.name
                 self.lg.add_variable(name, c.log.ctype)
+                print " --- --> Adding child[%d]: [%s] to new log"%(x, name)
 
+        print " ---> Checking log with TOC"
         self.treeWidget().cf.log.add_config(self.lg)
         if self.lg.valid:
+            print " --- --> PASS"
             self.lg.data_received_cb.add_callback(self.logDataCB)
             self.lg.started_cb.add_callback(self.logStartedCB)
             self.lg.error_cb.add_callback(self.treeWidget().sig_logError.emit)
             self.lg.error_cb.add_callback(self.errorLog)
+            print " --- --> callbacks added, starting new log NOW"
             self.lg.start()
         else:
+            print " --- --> FAIL"
             self.errorLog(None, "Invalid Config")
             self.lg = None
 
@@ -252,12 +281,16 @@ class LogGroup(QTreeWidgetItem):
     def setAllState(self, chkState, activeOnly=False):
         """ Set all children on or off without their setData function. If activeOnly only set ones who are not off """
         if activeOnly:
+            print " -> Setting all ACTIVE children to checkstate [%d]", chkState
             for x in range(self.childCount()):
                 if self.child(x).isChecked():
                     self.child(x).setState(chkState)
+                    print " --->", self.child(x).log.name
         else:
+            print " -> Setting all children to checkstate [%d]", chkState
             for x in range(self.childCount()):
                 self.child(x).setState(chkState)
+                print " --->", self.child(x).log.name
 
 
     def allSelected(self):

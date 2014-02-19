@@ -171,7 +171,7 @@ class ParamManager(QTreeWidget):
             self.fw["mod"] = "Modified" if eval(val) else "Clean"
 
         if len(self.fw)==3:
-            firmware = "{:x}{:x})".format(self.fw["v0"], self.fw["v1"])
+            firmware = "{:x}{:x}".format(self.fw["v0"], self.fw["v1"])
             self.sig_firmware.emit(firmware, self.fw["mod"])
 
 

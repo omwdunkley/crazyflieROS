@@ -119,7 +119,6 @@ class KBSecMonitor(QObject):
             if self.falseStopped:
                 self.start()
         self.hz = hz
-        print "packet Hz updated:", hz
 
     @pyqtSlot()
     def stop(self):
@@ -127,13 +126,11 @@ class KBSecMonitor(QObject):
         self.clear()
         self.falseStopped = False
         self.sig_KBPS.emit(0)
-        print "packet hz stopped"
 
     @pyqtSlot()
     def start(self):
         if self.hz>0:
             self.timer.start()
-            print "packet hz started"
         else:
             self.falseStopped = True
 
