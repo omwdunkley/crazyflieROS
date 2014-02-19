@@ -178,7 +178,6 @@ class ParamManager(QTreeWidget):
 
     def imuSensorsCB(self, name, val):
         """Callback for sensor found paramters"""
-        print name, eval(val)
         if "MS5611" in name:
             self.sig_baroFound.emit(eval(val))
         elif "HMC5883L" in name:

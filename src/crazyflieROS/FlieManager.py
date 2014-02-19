@@ -29,6 +29,7 @@ class STATE:
     DISCONNECTED         = 10 # not connected
     CONNECTION_FAILED    = 11 # Tried to connect but failed
     CONNECTION_LOST      = 12 # Unintentional Disconnect
+    CONNECTION_RETRYWAIT = 13 # Connect lost/failed and now waiting a second to retry again
 
 class FlieControl(QObject):
     """ Class that andles the flie library """

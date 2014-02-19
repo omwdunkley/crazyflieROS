@@ -73,6 +73,12 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.checkBox_logHZ.toggled.connect(self.logManager.setEstimateHzOn)
         self.ui.spinBox_logHZ.valueChanged.connect(self.logManager.setFreqMonitorFreq)
 
+        self.autoRetryTimer = QTimer()
+        self.autoRetryTimer.setInterval(1500)
+        self.autoRetryTimer.timeout.connect(lambda : self.connectPressed(self.ui.comboBox_connect.currentText(), auto=True))
+        self.autoRetryTimer.setSingleShot(True)
+
+
 
 
 
@@ -94,7 +100,7 @@ class DriverWindow(QtGui.QMainWindow ):
 
 
         # Connections from GUI
-        self.ui.pushButton_connect.clicked.connect(lambda : self.connectPressed(self.ui.comboBox_connect.currentText())) # Start button -> connect
+        self.ui.pushButton_connect.clicked.connect(lambda : self.connectPressed(self.ui.comboBox_connect.currentText(), auto=False)) # Start button -> connect
         self.ui.comboBox_connect.currentIndexChanged.connect(self.uriSelected)
 
         self.ui.checkBox_beep.toggled.connect(self.setBeep)
@@ -149,6 +155,7 @@ class DriverWindow(QtGui.QMainWindow ):
     def closeEvent(self, event):
         """ Intercept shutdowns to cleanly disconnect from the flie and cleanly shut ROS down too """
         logger.info("Close Event")
+        #self.autoRetryTimer.stop()
 
         # Shut Down the Flie
         if self.state < STATE.GEN_DISCONNECTED:
@@ -216,8 +223,6 @@ class DriverWindow(QtGui.QMainWindow ):
 
     def getCRTPStatus(self):
         interface_status =get_interfaces_status()
-        for key in interface_status.keys():
-            print key#,interface_status[key]
         self.ui.label_crv.setText(interface_status["radio"])
 
     def resetInfo(self):
@@ -288,18 +293,34 @@ class DriverWindow(QtGui.QMainWindow ):
         if self.ui.comboBox_connect.currentText() == "Rescan":
             self.startScanURI()
 
-    def connectPressed(self, uri):
+    def connectPressed(self, uri, auto=False):
         """ The user pressed the connect button.
             Either rescan if there is no URI or
             Connect to the flie
         """
+
+
+        print "------STATE %s ------ MODE %s ------ URI %s" % (self.state, "auto" if auto else "manual", uri)
+
+
         # No URI Found
         if uri=="":
             self.startScanURI()
             return
 
+        if not auto:
+            print "============= MANUAL"
+
+
         if self.state == STATE.CONNECTED:
             self.requestFlieDisconnect()
+        elif self.state == STATE.CONNECTION_RETRYWAIT and not auto:
+            # User aborted auto retry
+            self.autoRetryTimer.stop()
+            self.state = STATE.DISCONNECTED
+            self.ui.pushButton_connect.setText("Connect")
+            self.ui.comboBox_connect.setEnabled(True)
+            print "Aborted auto reconnect"
         else:
             self.requestFlieConnect(uri)
 
@@ -325,7 +346,6 @@ class DriverWindow(QtGui.QMainWindow ):
     def updateFlieState(self, state, uri, msg):
         """ Function that receives all the state updates from the flie.
         """
-        self.state = state
 
         if state == STATE.CONNECTION_REQUESTED:
             self.beepMsg(Message(msg="Connection to [%s] requested" % uri))
@@ -344,15 +364,19 @@ class DriverWindow(QtGui.QMainWindow ):
         elif state == STATE.DISCONNECTED:
             self.beepMsg(Message(msg="Disconnected from [%s]" % uri, freq=120, length=0))
             self.ui.pushButton_connect.setText("Connect")
-            self.ui.comboBox_connect.setEnabled(True)
             self.ui.pushButton_connect.setEnabled(True)
             self.resetInfo()
 
         elif state == STATE.CONNECTION_FAILED:
             self.beepMsg(Message(msgtype=MSGTYPE.WARN, msg="Connecting to [%s] failed: %s" % (uri, msg)))
             if self.autoReconnectOn:
-                QTimer.singleShot(1000, lambda: self.ui.pushButton_connect.clicked.emit(False))
+                logger.info("Attempting to auto reconnect after failing to connect")
+
+                #QTimer.singleShot(1000, lambda : self.connectPressed(self.ui.comboBox_connect.currentText(), auto=True))
                 self.ui.pushButton_connect.setText("Auto Retrying...")
+                self.state = STATE.CONNECTION_RETRYWAIT
+                self.ui.pushButton_connect.setEnabled(False)
+                self.autoRetryTimer.start()
             else:
                 self.ui.pushButton_connect.setText("Connect")
                 self.ui.comboBox_connect.setEnabled(True)
@@ -361,8 +385,11 @@ class DriverWindow(QtGui.QMainWindow ):
         elif state == STATE.CONNECTION_LOST:
             self.beepMsg(Message(msgtype=MSGTYPE.WARN, msg="Connected lost from [%s]: %s" % (uri, msg), freq=1200, length=10, repeat=6))
             if self.autoReconnectOn:
-                logger.info("Attempting to auto reconnect [autoReconnect = TRUE]")
-                self.ui.pushButton_connect.clicked.emit(False)
+                logger.info("Attempting to auto reconnect after losing connection")
+                self.ui.pushButton_connect.setText("Auto Retrying...")
+                self.state = STATE.CONNECTION_RETRYWAIT
+                self.ui.pushButton_connect.setEnabled(False)
+                self.autoRetryTimer.start()
             else:
                 self.ui.pushButton_connect.setText("Connect")
                 self.ui.comboBox_connect.setEnabled(True)
@@ -378,6 +405,7 @@ class DriverWindow(QtGui.QMainWindow ):
             self.ui.progressBar_pktOut.setValue(0)
             self.ui.pushButton_genRosMsg.setEnabled(False)
 
+        self.state = state
 
 
     @pyqtSlot(object) # Message

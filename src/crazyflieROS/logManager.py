@@ -36,7 +36,6 @@ class LogGroup(QTreeWidgetItem):
         super(LogGroup, self).__init__(parent)
         self.name = name
         self.setFlags(self.flags() | Qt.ItemIsEditable | Qt.ItemIsUserCheckable)
-        #self.setCheckState(0, Qt.Unchecked)
 
         # Keep track of if all/none of the children are active
         self.cAll = True
@@ -72,7 +71,6 @@ class LogGroup(QTreeWidgetItem):
 
 
 
-
     def readSettings(self):
         """ Read the HZ and selected things to log from previous session """
         settings = QSettings("omwdunkley", "flieROS")
@@ -105,7 +103,7 @@ class LogGroup(QTreeWidgetItem):
     def updateFM(self):
         # if not self.isActive()
         if self.fm:
-            QtGui.QTreeWidgetItem.setData(self, 3, Qt.DisplayRole, self.fm.get_hz())
+            QtGui.QTreeWidgetItem.setData(self, 3, Qt.DisplayRole, round(self.fm.get_hz(),2))
 
 
     def logDataCB(self, ts, data, lg):
@@ -116,6 +114,8 @@ class LogGroup(QTreeWidgetItem):
             self.fm.count()
 
 
+
+    #TODO: there is bug here where the callbacks are called twice!! Holds for this + deleted CB
     def logStartedCB(self, on):
         """ Called when we actually start logging """
         if on:
@@ -126,6 +126,8 @@ class LogGroup(QTreeWidgetItem):
         else:
             if self.allSelected():
                 self.setAllState(Qt.Unchecked)
+            else:
+                self.setAllState(Qt.Checked, activeOnly=True)
             QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Unchecked)
             QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "Off")
 
@@ -153,8 +155,9 @@ class LogGroup(QTreeWidgetItem):
     def stopLog(self):
         """ User request halt """
         print "Requested log stop"
-        self.lg.delete() #Invokes logStarted(False)
-        self.lg = None
+        if self.lg:
+            self.lg.delete() #Invokes logStarted(False)
+            self.lg = None
 
 
     def errorLog(self, block, msg):
@@ -164,6 +167,8 @@ class LogGroup(QTreeWidgetItem):
         QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Unchecked)
         if self.allSelected():
             self.setAllState(Qt.Unchecked)
+        else:
+            self.setAllState(Qt.Checked, activeOnly=True)
 
 
     def setData(self, column, role, value):
@@ -210,6 +215,9 @@ class LogGroup(QTreeWidgetItem):
             if self.noneSelected():
                 print "Last child unselected, remove logger"
                 self.stopLog()
+            elif self.allSelected():
+                print "All children selected while logging, update logger"
+                self.requestLog()
             else:
                 print "Child Changed while logging, update logger"
                 self.requestLog()
@@ -239,7 +247,6 @@ class LogGroup(QTreeWidgetItem):
         else:
             self.errorLog(None, "Invalid Config")
             self.lg = None
-
 
 
     def setAllState(self, chkState, activeOnly=False):
@@ -379,7 +386,7 @@ class LogManager(QTreeWidget):
 
         # Sometimes its called twice, eg after a fast/weird reconnect
         if self.toc:
-            self.purgeToc()
+            self.purgeToc(uri)
 
         # Populate Table recursively
         self.toc = self.cf.log._toc.toc

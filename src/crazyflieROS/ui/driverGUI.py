@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'driverGUI.ui'
 #
-# Created: Wed Feb 19 00:03:19 2014
+# Created: Wed Feb 19 02:17:20 2014
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -63,12 +63,12 @@ class Ui_MainWindow(object):
         self.console.setObjectName(_fromUtf8("console"))
         self.gridLayout.addWidget(self.console, 8, 0, 1, 2)
         self.progressBar_pktOut = QtGui.QProgressBar(self.tab_connection)
-        self.progressBar_pktOut.setMaximum(20)
+        self.progressBar_pktOut.setMaximum(480)
         self.progressBar_pktOut.setProperty("value", 0)
         self.progressBar_pktOut.setObjectName(_fromUtf8("progressBar_pktOut"))
         self.gridLayout.addWidget(self.progressBar_pktOut, 6, 1, 1, 1)
         self.progressBar_pktIn = QtGui.QProgressBar(self.tab_connection)
-        self.progressBar_pktIn.setMaximum(20)
+        self.progressBar_pktIn.setMaximum(3000)
         self.progressBar_pktIn.setProperty("value", 0)
         self.progressBar_pktIn.setObjectName(_fromUtf8("progressBar_pktIn"))
         self.gridLayout.addWidget(self.progressBar_pktIn, 6, 0, 1, 1)
