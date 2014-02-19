@@ -1,22 +1,22 @@
-import bisect
-import roslib
-roslib.load_manifest('crazyflieROS')
-from crazyflieROS import msg
-from rosTools import FreqMonitor
-
 __author__ = 'OMWDunkley'
 __all__ = ['LogManager']
 
 
-from PyQt4 import QtGui, uic
-from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot,  QVariant, QTimer, QSettings
-from PyQt4.QtGui import  QTreeWidget, QTreeWidgetItem, QAbstractItemView,QMessageBox,QHeaderView
-from cflib.crazyflie.log import Log, LogConfig, LogVariable
+import bisect
 
 from collections import OrderedDict
 from math import ceil, floor
 import logging
 logger = logging.getLogger(__name__)
+
+import rospy
+
+from PyQt4 import QtGui, uic
+from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot,  QVariant, QTimer, QSettings, QObject
+from PyQt4.QtGui import  QTreeWidget, QTreeWidgetItem, QAbstractItemView,QHeaderView,QCheckBox
+from cflib.crazyflie.log import Log, LogConfig, LogVariable
+
+from commonTools import FreqMonitor
 
 
 
@@ -37,6 +37,18 @@ class LogGroup(QTreeWidgetItem):
 
     """
 
+    #def genRosCB(self, group, names):
+    #    """Function to generate functions that send data over the ros network """
+    #
+    #    t = eval("msg."+group)
+    #    def f(timestamp, data, lg):
+    #        m = t
+    #        m.header.stamp = rospy.Time.now()
+    #    return f
+
+
+
+
     def __init__(self, parent, name, children, hz=50):
         super(LogGroup, self).__init__(parent)
         self.name = name
@@ -56,8 +68,10 @@ class LogGroup(QTreeWidgetItem):
 
         # Show text
         QtGui.QTreeWidgetItem.setData(self, 0, Qt.DisplayRole, QVariant(name))
+        QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Unchecked)
         QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "Off")
         QtGui.QTreeWidgetItem.setData(self, 3, Qt.DisplayRole, QVariant(0))
+        #QtGui.QTreeWidgetItem.setData(self, 4, Qt.CheckStateRole, Qt.Unchecked)
         self.readSettings()
 
         # Initialise Children
@@ -104,6 +118,9 @@ class LogGroup(QTreeWidgetItem):
         onQv = settings.value("log_"+self.name+"_on", QVariant(Qt.Unchecked))
         QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, onQv if onQv.toInt()[0]!=Qt.PartiallyChecked else Qt.Unchecked)
 
+        #onRos = settings.value("ros_"+self.name+"_on", QVariant(Qt.Unchecked))
+        #QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, onRos)
+
 
     def writeSettings(self):
         """ Save the HZ and selected things to log between sessions"""
@@ -114,6 +131,7 @@ class LogGroup(QTreeWidgetItem):
 
         # Save checked state
         settings.setValue("log_"+self.name+"_on", self.data(0, Qt.CheckStateRole))
+        #settings.setValue("ros_"+self.name+"_on", self.data(4, Qt.CheckStateRole))
 
         # Save children state too
 
@@ -134,6 +152,9 @@ class LogGroup(QTreeWidgetItem):
         if self.fmOn:
             self.fm.count()
 
+        #TODO: add a checkbox in the row if we wanan send or not
+        self.treeWidget().incomingData(data, ts)
+        self.treeWidget().sig_rosData.emit(data, ts, rospy.Time.now()) # Wall time ??
 
 
     #TODO: there is bug here where the callbacks are called twice!! Holds for this + deleted CB
@@ -388,23 +409,33 @@ class LogManager(QTreeWidget):
     """
     sig_batteryUpdated = pyqtSignal(int)
     sig_logError = pyqtSignal(object, str) # block, msg
+    sig_rosData = pyqtSignal(object, int, object) # data, time, rostime
+
+    #sig_batteryCB = pyqtSignal(object, int)
 
     def __init__(self, cf, parent=None):
         super(LogManager, self).__init__(parent)
         self.cf = cf
+        #self.sigHandler = SigHandler()
+        #self.sigHandler.addSig("BatteryGUI", self.sig_batteryCB, "pm", ["vbat"], )
+        #self.sig_batteryCB.connect(self.batteryCB)
+
+
+
         self.toc = None
         self.timerHZUpdate = QTimer()
         self.timerHZUpdate.timeout.connect(self.updateFreqMonitor)
         self.setFreqMonitorFreq(hz=2)
         self.estimateHzOn = True
 
-        self.headers = ['Name','State', 'HZ Desired', 'HZ Actual']
+        self.headers = ['Name','State', 'HZ Desired', 'HZ Actual']#, 'ROS']
         self.setHeaderLabels(self.headers)
         self.header().setStretchLastSection(True)
         self.header().setResizeMode(0, QHeaderView.Stretch)
         self.header().setResizeMode(1, QHeaderView.ResizeToContents)
         self.header().setResizeMode(2, QHeaderView.ResizeToContents)
         self.header().setResizeMode(3, QHeaderView.ResizeToContents)
+        #self.header().setResizeMode(4, QHeaderView.ResizeToContents)
         self.setAlternatingRowColors(True)
 
         # So we can select which cols we can change
@@ -416,6 +447,9 @@ class LogManager(QTreeWidget):
 
         self.cf.connected.add_callback(self.newToc)
         self.cf.disconnected.add_callback(self.purgeToc)
+
+    def batteryCB(self, data, ts):
+        print "SIGNAL CB: %d" % ts, data
 
     def userStartEdit(self, item, col):
         """ Make sure only the target HZ can be changed """
@@ -435,7 +469,6 @@ class LogManager(QTreeWidget):
     def logError(self, block, msg):
         """ All logging configurations report errors to this function """
         logger.error("Logging error with %s: %s", block.name, msg )
-
 
     def newToc(self, uri):
         """ Called when a new TOC has been downloaded. Populate the table, create and start log configs"""
@@ -483,3 +516,133 @@ class LogManager(QTreeWidget):
                 self.header().hideSection(3)
                 if self.toc:
                     self.timerHZUpdate.stop()
+
+
+    def incomingData(self, data, ts):
+        """ All incoming data is routed to this function """
+        #self.sigHandler.handleData(data, ts)
+        """ BATTERY """
+        if self.hasGroup(data, "pm"):
+            if self.hasAllKeys(data, ["vbat"], "pm"):
+                self.sig_batteryUpdated.emit(int(1000*data["pm.vbat"]))
+
+
+
+    def hasGroup(self, data, g):
+        return g+"." in data.keys()[0]
+
+
+    def hasAllKeys(self, d, keys, g=""):
+        """ returns True if all specified group vars are in the group """
+        g+="." # Prepend Group name
+        return all (g+k in d for k in keys)
+
+
+
+
+
+#
+#     def addSig(self, ident, sig, group, names, hz=0):
+#         self.sigHandler.addSig(ident, sig, group, names, hz)
+#
+#
+#
+#
+# class SigHandler(QObject):
+#     """ code else where can submit their signals for being called when the right data is available
+#             0 hz means it is called as soon as it arrives, X hz means its called at X hz with the latest available data"""
+#     def __init__(self, parent=None):
+#         super(SigHandler, self).__init__(parent)
+#         self.signals = {}
+#
+#         # stores ID: Signal
+#         self.id_sig = {}
+#         # Stores incoming data: List of ids
+#         self.data_id = {}
+#
+#
+#     #This could probably do with some love...
+#     def addSig(self, ident, sig, group, names, hz=0):
+#         """ Add a callback signal """
+#         # Make a key from the requested names
+#         k = self.makeKeyName(group, names)
+#
+#         # Store our signals
+#         if self.id_sig.has_key(ident):
+#             print "WARNING: replacing signal[%d] as it already exist" % ident
+#         self.id_sig[ident] = Sig(self, sig, hz)
+#
+#         # build data -> signal relationship
+#         if not self.data_id.has_key(k):
+#             self.data_id[k] = [ident]
+#         else:
+#             self.data_id[k].append(ident)
+#
+#     def setHZ(self, ident, hz):
+#         if self.id_sig.has_key(ident):
+#             self.id_sig[ident].setHZ(hz)
+#         else:
+#             print "Could not set HZ of signal[%d] as it does not exist" % ident
+#
+#     def removeSig(self, ident):
+#         if self.id_sig.has_key(ident):
+#             del self.id_sig[ident]
+#         else:
+#             print "Could delete signal[%d] as it does not exist" % ident
+#
+#     def makeKeyData(self, data):
+#         group=data.keys()[0]
+#         group = group[:group.find(".")]
+#         return group+"_"+".".join(sorted([key[key.rfind(".")+1:] for key in data.keys()]))
+#
+#     def makeKeyName(self, group, names):
+#         return group+"_"+".".join(sorted(set(names)))
+#
+#     def handleData(self, data, ts):
+#         k = self.makeKeyData(data)
+#         if self.data_id.has_key(k):
+#             for ident in self.data_id[k]:
+#                 self.id_sig[ident].setData(data,ts)
+#
+#
+# class Sig(QObject):
+#     def __init__(self, parent, signal, hz):
+#         super(Sig, self).__init__(parent)
+#         self.signal = signal
+#         self.timer = None
+#         self.data = None
+#         self.timestamp = None
+#         self.hz = None
+#         self.setHZ(hz)
+#
+#     def setData(self, data, ts):
+#         # By emitting directly we pass by reference
+#         if self.hz == 0:
+#             self.signal.emit(data, ts)
+#             return
+#         self.data = data
+#         self.timestamp = ts
+#
+#     def setHZ(self, hz):
+#         """0 = emit when data arrives, >0 means emit at that frequency, <0 means do not emit """
+#         self.hz = hz
+#         if hz>0:
+#             if self.timer:
+#                 self.timer.setInterval(1000/hz)
+#             else:
+#                 self.timer = QTimer(1000/hz)
+#                 self.timer.timeout.connect(self.emitSignal)
+#         elif hz==0:
+#              if self.timer:
+#                  self.timer.stop()
+#                  self.timer = None
+#         else:
+#              if self.timer:
+#                  self.timer.stop()
+#                  self.timer = None
+#
+#     def emitSignal(self):
+#         if self.data:
+#             self.signal.emit(self.timestamp, self.data)
+#
+#

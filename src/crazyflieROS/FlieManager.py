@@ -4,9 +4,8 @@ __all__=['FlieControl','STATE']
 
 from PyQt4 import QtGui, uic
 from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot, QObject, QTimer
-from rosTools import KBSecMonitor
+from commonTools import KBSecMonitor, FreqMonitor
 from cflib.crazyflie import Crazyflie
-from rosTools import FreqMonitor
 import logging
 logger = logging.getLogger(__name__)
 

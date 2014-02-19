@@ -72,6 +72,7 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.tab_log.layout().addWidget(self.logManager)
         self.ui.checkBox_logHZ.toggled.connect(self.logManager.setEstimateHzOn)
         self.ui.spinBox_logHZ.valueChanged.connect(self.logManager.setFreqMonitorFreq)
+        self.logManager.sig_rosData.connect(self.ros.receiveCrazyflieLog)
 
         self.autoRetryTimer = QTimer()
         self.autoRetryTimer.setInterval(1500)
