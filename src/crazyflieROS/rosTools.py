@@ -9,11 +9,16 @@ import roslib
 from roslib.packages import get_pkg_dir
 roslib.load_manifest('crazyflieROS')
 
-from crazyflieROS import msg
+from crazyflieROS import msg as msgCF
 from time import time
+
+from commonTools import hasAllKeys, hasGroup, getGroup, getNames
 
 
 logger = logging.getLogger(__name__)
+
+
+
 
 
 class ROSNode(QObject):
@@ -24,27 +29,54 @@ class ROSNode(QObject):
     def __init__(self):
         super(ROSNode, self).__init__()
         rospy.init_node('CrazyflieDriver')
+        self.publishers = {}
+        self.compiledMsgs = [m for m in dir(msgCF) if m[0]!="_"]
+
+
+    def pub(self, group, msg):
+        """ Generates publishers if needed """
+        if group in self.compiledMsgs:
+            if group in self.publishers:
+                self.publishers[group].publish(msg)
+            else:
+                self.publishers[group] = rospy.Publisher("/cf/"+group, eval("msgCF."+group))
+                self.publishers[group].publish(msg)
+        else:
+            rospy.logerr("Please generate messages: %s.msg does not exist", group)
+
+
+    def genMsg(self, data, ts):
+        """ generates a message using sexy python magic"""
+        group = getGroup(data)
+        msgt = eval("msgCF."+group)
+        msg = msgt()
+        msg.header.stamp = ts
+        for name in getNames(data):
+            setattr(msg, name, data[group+"."+name]) # sexy python magic
+        return msg
+
 
 
     @pyqtSlot(object, int, object)
     def receiveCrazyflieLog(self, log, tsCF, tsROS):
         """ Handle sending messages to ROS """
 
-        # GENERATED MESSAGES
-        print log.keys()[0]
+        # SPECIALLY HANDLED MESSAGES
+        if hasGroup(log, "baro"):
+            # BAROMETER - send what we have
+            if hasAllKeys(log, [], "baro"):
+                m = msgCF.baro()
+                m.header.stamp = tsROS
+                m.temp = 555
+            self.pub(getGroup(log), m)
 
-
-
-
-        # SPECIAL CASES
+        # DEFAULTS
+        else:
+            self.pub(getGroup(log), self.genMsg(log, tsROS))
 
 
     def receiveJoystick(self, joy):
         print joy
-
-
-
-
 
 
 

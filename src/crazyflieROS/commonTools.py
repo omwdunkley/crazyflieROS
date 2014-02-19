@@ -1,6 +1,6 @@
 __author__ = 'ollie'
 __author__ = 'ollie'
-__all__= ['FreqMonitor','KBSecMonitor']
+__all__= ['FreqMonitor','KBSecMonitor','hasAllKeys','hasGroup', 'getGroup', 'getNames']
 import logging
 from PyQt4.QtCore import QObject, QThread, QTimer, pyqtSignal, pyqtSlot
 
@@ -126,5 +126,21 @@ class KBSecMonitor(QObject):
         self.times = []
         self.amounts = []
         self.sum = 0 # Quicker to keep a running sum
+
+def getGroup(data):
+    group=data.keys()[0]
+    return group[:group.find(".")]
+
+def getNames(data):
+    return [key[key.rfind(".")+1:] for key in data]
+
+def hasGroup( data, g):
+    return g+"." in data.keys()[0]
+
+
+def hasAllKeys( d, keys, g=""):
+    """ returns True if all specified group vars are in the group """
+    g+="." # Prepend Group name
+    return all (g+k in d for k in keys)
 
 

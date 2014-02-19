@@ -16,7 +16,7 @@ from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot,  QVariant, QTimer, QSettings,
 from PyQt4.QtGui import  QTreeWidget, QTreeWidgetItem, QAbstractItemView,QHeaderView,QCheckBox
 from cflib.crazyflie.log import Log, LogConfig, LogVariable
 
-from commonTools import FreqMonitor
+from commonTools import FreqMonitor, hasAllKeys, hasGroup
 
 
 
@@ -36,18 +36,6 @@ class LogGroup(QTreeWidgetItem):
 
 
     """
-
-    #def genRosCB(self, group, names):
-    #    """Function to generate functions that send data over the ros network """
-    #
-    #    t = eval("msg."+group)
-    #    def f(timestamp, data, lg):
-    #        m = t
-    #        m.header.stamp = rospy.Time.now()
-    #    return f
-
-
-
 
     def __init__(self, parent, name, children, hz=50):
         super(LogGroup, self).__init__(parent)
@@ -522,21 +510,9 @@ class LogManager(QTreeWidget):
         """ All incoming data is routed to this function """
         #self.sigHandler.handleData(data, ts)
         """ BATTERY """
-        if self.hasGroup(data, "pm"):
-            if self.hasAllKeys(data, ["vbat"], "pm"):
+        if hasGroup(data, "pm"):
+            if hasAllKeys(data, ["vbat"], "pm"):
                 self.sig_batteryUpdated.emit(int(1000*data["pm.vbat"]))
-
-
-
-    def hasGroup(self, data, g):
-        return g+"." in data.keys()[0]
-
-
-    def hasAllKeys(self, d, keys, g=""):
-        """ returns True if all specified group vars are in the group """
-        g+="." # Prepend Group name
-        return all (g+k in d for k in keys)
-
 
 
 
