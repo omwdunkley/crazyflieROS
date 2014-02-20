@@ -234,8 +234,7 @@ where you might need to replace 0 with your joystick nr.
 
 # Motion Capture System
 [Video example](http://youtu.be/WPi__Q6CNdQ?t=2m4s)
-## Setting it up
-Qualisys
+### Setting it up Qualisys
  * Log on, using the PW I gave you
  * Turn on the capture system (white power socket, so the red light is on)
  * Wait for them to boot up (observe IDs being displayed on the cameras)
@@ -254,10 +253,16 @@ Qualisys
      * Tools | Project Options | 6 DOF Tracking
      * Translate to point/mean, etc etc
      * Make sure the Euler Angle sub menu is set to: GLOBAL rotation, x,y,z = roll, pitch, yaw
-   * New measurement: observe in 3d, repeat for other objects
- * Read Realtime data with ROS
+   * New measurement: observe in 3d, repeat for wand
+   * 
+   
+### Read Realtime data with ROS
+##### Qualisys ROS Node
    * ```rosrun Qualisys2Ros Qualisys2Ros```
    * For each n of N ridgid bodies defined, this spams out ros tf /Q0, ..., /QN
+   * Use RVIZ to visualise tfs: ```rosrun rviz rviz```
+     * _TODO: default configuration file_
+#### Defining ridig bodies   
    * The order corresponds to the order that the ridig bodies were defined as (see Tools | Project Options | 6 DOF Tracking)
    * Now we neet to link the /Qn transforms to ones used by the PID controler
      * The flie tf is called /cf_gt, the wand is called /wand
@@ -265,18 +270,24 @@ Qualisys
        * ```rosrun tf static_transform_publisher 0 0 0 0 0 0 1 "/world" "/Qualisys" 10```
        * ```rosrun tf static_transform_publisher 0 0 0 0 0 0 1 "/Q0" "/cf_gt" 10```
        * ```rosrun tf static_transform_publisher 0 0 0 0 0 0 1 "/Q1" "/wand" 10```
-     * Use RVIZ to visualise tfs: ```rosrun rviz rviz```
-   * Start the PID controller
-     * ```roslaunch crazyflieROS pid.launch js:=X``` Where x is the joystick you need. 
-       * Use ```ls /dev/input/js*``` and ```jstest /dev/input/x/``` to determine which joystick you need
-     * This launched 3 nodes, and configures them to respawn if closed. Also sets deadzone/caolesce intervals, etc
-       * joy_node, which reads the filesystem for joystick input and outputs a joy msg
-       * joy_pid_controller, read tfs and joy msg to either remote contorl flie or pid control flie
-       * dynamic_reconfigure, a gui to change the parameters of the joy node
-         * 
-#### Defining ridig bodies
+
+
+        
+
+### PID Node
+ * Start the PID controller
+   * ```roslaunch crazyflieROS pid.launch js:=X``` Where x is the joystick you need. 
+     * Use ```ls /dev/input/js*``` and ```jstest /dev/input/x/``` to determine which joystick you need
+   * This launched 3 nodes, and configures them to respawn if closed. Also sets deadzone/caolesce intervals, etc
+     * joy_node, which reads the filesystem for joystick input and outputs a joy msg
+     * joy_pid_controller, read tfs and joy msg to either remote contorl flie or pid control flie
+     * dynamic_reconfigure, a gui to change the parameters of the joy node
+
+##### Controls
+##### Options
+
+
 #### Required TF transforms
-#### ROS node
 
 
 
