@@ -134,9 +134,9 @@ TODO
 ## Some concepts
 
 # Adding a camera
-Examples
-*  [First person video](http://youtu.be/AWSUMGJKt0U)
-*  [Forum discussion](http://forum.bitcraze.se/viewtopic.php?f=6&t=491)
+  * [First person video](http://youtu.be/AWSUMGJKt0U)
+  * [Forum discussion](http://forum.bitcraze.se/viewtopic.php?f=6&t=491)
+
 ![Camera](https://lh6.googleusercontent.com/-hBCBGpAHvCE/UiWysHlkgzI/AAAAAAAAclU/cc-3S7ftYmI/s640/20130903_112305.jpg)
 
 ## Noise
