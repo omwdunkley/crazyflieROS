@@ -78,7 +78,8 @@ A quick list of useful links
 * [Crazyflie firmware repo](https://bitbucket.org/bitcraze/crazyflie-firmware)
 * [CrazyRADIO repo](https://bitbucket.org/bitcraze/crazyradio-firmware) not so important, can update the FW once in a while
 * [Forum](http://forum.bitcraze.se/) Especially Crazyflie Developer Discussions section is nice :) 
-
+* [Some pics of mine](https://picasaweb.google.com/106913106617973208533/Crazyflie?authuser=0&authkey=Gv1sRgCLuekNLn_siXzQE&feat=directlink)
+* 
 
 
 
@@ -133,6 +134,8 @@ TODO
 ## Some concepts
 
 # Adding a camera
+[First person video](http://youtu.be/AWSUMGJKt0U)
+[Forum discussion](http://forum.bitcraze.se/viewtopic.php?f=6&t=491)
 ![Camera](https://lh6.googleusercontent.com/-hBCBGpAHvCE/UiWysHlkgzI/AAAAAAAAclU/cc-3S7ftYmI/s640/20130903_112305.jpg)
 
 ## Noise
@@ -141,6 +144,7 @@ TODO
 ![Camera]()
 ## Hardware
 ## Viewing in VLC/ROS
+
 
 
 # Client side GUI
@@ -168,6 +172,7 @@ where you might need to replace 0 with your joystick nr.
 
 
 # Motion Capture System
+[Video example](http://youtu.be/WPi__Q6CNdQ?t=2m4s)
 ## Setting it up
 #### Defining ridig bodies
 #### Required TF transforms
