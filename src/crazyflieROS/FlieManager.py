@@ -58,6 +58,7 @@ class FlieControl(QObject):
         self.linkQuality = LinkQuality(window=50)
         self.status = STATE.DISCONNECTED
         self.killswitch = False
+        self.hovering = False
 
         # Timers
         self.inKBPS = KBSecMonitor()
@@ -174,7 +175,21 @@ class FlieControl(QObject):
     def sendCmd(self, roll, pitch, yawrate, thrust, hover):
         """ Send the flie a control command """
         if not self.killswitch:
+            if self.hovering!=hover:
+                self.requestHover(hover)
+                self.hovering = hover
             self.crazyflie.commander.send_setpoint(roll, pitch, yawrate, thrust)
+        else:
+            if self.hovering:
+                self.requestHover(self, on=False)
+                self.hovering = False
+
+
+
+    def requestHover(self, on=True):
+        self.crazyflie.param.set_value("%s.%s" % (self.param.group, self.param.name), on)
+
+
 
     def getLogToC(self):
         return self.crazyflie.log._toc.toc if self.crazyflie.log._toc else None
@@ -198,6 +213,9 @@ class FlieControl(QObject):
     def setKillswitch(self, on):
         rospy.loginfo("GUI KillSwitch " + "on" if on else "off")
         self.killswitch = on
+
+
+
 
 
 class LinkQuality:
