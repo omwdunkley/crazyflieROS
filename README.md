@@ -128,8 +128,28 @@ TODO
 ### Get the code
 ### Arm toolkit
 ### Permissions
+Run ```sudo setup.sh```
 
 # Firmware
+### Download firmware
+hg clone https://bitbucket.org/bitcraze/crazyflie-firmware
+
+
+### install dev environment
+See [Firmware Stuff](http://wiki.bitcraze.se/projects:crazyflie:devenv:index) Important resource for compiling firmware for details. In short, we will use [GNU Tools for ARM Embedded Processors](https://launchpad.net/gcc-arm-embedded)
+  * ```sudo add-apt-repository ppa:terry.guo/gcc-arm-embedded```
+  * ```sudo apt-get update```
+  * ```sudo apt-get install gcc-arm-none-eabi```
+  * 
+Then we can [Download Eclipse for C++](https://www.eclipse.org/downloads/packages/eclipse-ide-cc-developers/keplersr1)
+Untar it, and run eclipse/eclipse
+File | import | existing code as makefile project | next
+Give it a name, chose the crazyflie-firmware directory
+Unclick c++
+Select GNU Autotools Toolchain
+
+See ()[] for details
+
 ## Flashing, coding
 ## Some concepts
 
