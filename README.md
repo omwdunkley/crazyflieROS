@@ -63,23 +63,22 @@ This package / document was created to help some friends get working with the cr
 ### Important Links
 
 
+A quick list of useful links
+* [Bitcraze Crazyflie Blog](http://www.bitcraze.se/) They just got GPS working....
+* [Crazyflie WIKI](http://wiki.bitcraze.se/projects:crazyflie:index) Good index
+* [Client Python API](http://wiki.bitcraze.se/projects:crazyflie:pc_utils:pylib) Most important resource (aside from reading code) if developing client side code
+* [Firmware Stuff](http://wiki.bitcraze.se/projects:crazyflie:devenv:index) Important resource for compiling firmware
+* [Intro](http://wiki.bitcraze.se/projects:crazyflie:userguide:index) Basic info, which side is the front, what leds mean
+* [Assembly](http://wiki.bitcraze.se/projects:crazyflie:mechanics:assembly) Lots of pictures
+* [Installing](http://wiki.bitcraze.se/projects:crazyflie:pc_utils:install)
+* [Balancing, tipc, etc](http://wiki.bitcraze.se/projects:crazyflie:userguide:tips_and_tricks)
+* [Troubleshooting](http://wiki.bitcraze.se/projects:crazyflie:userguide:troubleshooting)
+* [Logging/param tutorial video](http://www.youtube.com/watch?v=chWrNh73YBw) Intro  video on the logging/param frame work. Not Seen this yet..
+* [Crazyflie copter repo](https://bitbucket.org/bitcraze/crazyflie-pc-client)
+* [Crazyflie firmware repo](https://bitbucket.org/bitcraze/crazyflie-firmware)
+* [CrazyRADIO repo](https://bitbucket.org/bitcraze/crazyradio-firmware) not so important, can update the FW once in a while
+* [Forum](http://forum.bitcraze.se/) Especially Crazyflie Developer Discussions section is nice :) 
 
-[Bitcraze Crazyflie Blog](http://www.bitcraze.se/) They just got GPS working....
-[Crazyflie WIKI](http://wiki.bitcraze.se/projects:crazyflie:index) Good index
-[Client Python API](http://wiki.bitcraze.se/projects:crazyflie:pc_utils:pylib) Most important resource (aside from reading code) if developing client side code
-[Firmware Stuff](http://wiki.bitcraze.se/projects:crazyflie:devenv:index) Important resource for compiling firmware
-
-[Intro](http://wiki.bitcraze.se/projects:crazyflie:userguide:index) Basic info, which side is the front, what leds mean
-[Assembly](http://wiki.bitcraze.se/projects:crazyflie:mechanics:assembly) Lots of pictures
-[Installing](http://wiki.bitcraze.se/projects:crazyflie:pc_utils:install)
-[Balancing, tipc, etc](http://wiki.bitcraze.se/projects:crazyflie:userguide:tips_and_tricks)
-[Troubleshooting](http://wiki.bitcraze.se/projects:crazyflie:userguide:troubleshooting)
-[Logging/param tutorial video](http://www.youtube.com/watch?v=chWrNh73YBw) Intro  video on the logging/param frame work. Not Seen this yet..
-[Crazyflie copter repo](https://bitbucket.org/bitcraze/crazyflie-pc-client)
-[Crazyflie firmware repo](https://bitbucket.org/bitcraze/crazyflie-firmware)
-[CrazyRADIO repo](https://bitbucket.org/bitcraze/crazyradio-firmware) not so important, can update the FW once in a while
-[Forum](http://forum.bitcraze.se/) Especially Crazyflie Developer Discussions section is nice :) 
-[]()
 
 
 
@@ -132,6 +131,16 @@ TODO
 # Firmware
 ## Flashing, coding
 ## Some concepts
+
+# Adding a camera
+![Camera](https://lh6.googleusercontent.com/-hBCBGpAHvCE/UiWysHlkgzI/AAAAAAAAclU/cc-3S7ftYmI/s640/20130903_112305.jpg)
+
+## Noise
+![Before](https://lh3.googleusercontent.com/-_w6rI843KNI/UimIDFfRKjI/AAAAAAAAcEU/5aJqA4JwdHU/s640/frame0014.jpg)
+![After](https://lh4.googleusercontent.com/-3_cujmAp8gE/UgNdGynVd-I/AAAAAAAAbcM/kmm1VCktbI8/s640/hud.png)
+![Camera]()
+## Hardware
+## Viewing in VLC/ROS
 
 
 # Client side GUI
