@@ -139,7 +139,7 @@ def isGroup( data, g):
     return g+"." in data.keys()[0]
 
 
-def hasAllKeys( d, keys, g=""):
+def hasAllKeys( d, keys, g):
     """ returns True if all specified group vars are in the group """
     g+="." # Prepend Group name
     return all (g+k in d for k in keys)

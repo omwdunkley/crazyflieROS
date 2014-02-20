@@ -168,7 +168,7 @@ class DriverWindow(QtGui.QMainWindow ):
     @pyqtSlot()
     def updateGui(self):
         """ Execute all funcs in the queue """
-        rospy.loginfo("Draw queue size: %d/%s", len(self.guiUpdateQueue), self.guiUpdateQueueSave)
+        #rospy.loginfo("Draw queue size: %d/%s", len(self.guiUpdateQueue), self.guiUpdateQueueSave)
         for f in self.guiUpdateQueue.values():
             f()
         self.guiUpdateQueue = {}
@@ -293,6 +293,10 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.label_fw.setText("")
         self.ui.label_fwMod.setText("")
         self.ui.label_crv.setText("")
+        self.ui.progressBar_pktIn.setValue(0)
+        self.ui.progressBar_pktOut.setValue(0)
+        self.ui.progressbar_bat.setValue(0)
+        self.ui.progressbar_link.setValue(0)
 
     @pyqtSlot(int,int)
     def updatePacketRate(self, pb, hz):
@@ -421,7 +425,6 @@ class DriverWindow(QtGui.QMainWindow ):
             self.beepMsg(Message(msg="Disconnected from [%s]" % uri, freq=120, length=0))
             self.ui.pushButton_connect.setText("Connect")
             self.ui.pushButton_connect.setEnabled(True)
-            self.resetInfo()
             self.ros.sig_joydataRaw.disconnect(self.flie.sendCmd) # This needs to be after
 
         elif state == STATE.CONNECTION_FAILED:
@@ -456,10 +459,7 @@ class DriverWindow(QtGui.QMainWindow ):
             rospy.logerr("Unknown State")
 
         if state>STATE.GEN_DISCONNECTED:
-            self.ui.progressbar_bat.setValue(3000)
-            self.ui.progressbar_link.setValue(0)
-            self.ui.progressBar_pktIn.setValue(0)
-            self.ui.progressBar_pktOut.setValue(0)
+            self.resetInfo()
             self.ui.pushButton_genRosMsg.setEnabled(False)
 
         self.state = state
