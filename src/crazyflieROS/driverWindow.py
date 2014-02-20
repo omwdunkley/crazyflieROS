@@ -301,7 +301,7 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.label_crv.setText("")
         self.ui.progressBar_pktIn.setValue(0)
         self.ui.progressBar_pktOut.setValue(0)
-        self.ui.progressbar_bat.setValue(0)
+        self.ui.progressbar_bat.setValue(3000)
         self.ui.progressbar_link.setValue(0)
 
     @pyqtSlot(int,int)
