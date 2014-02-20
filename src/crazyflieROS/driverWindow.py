@@ -60,7 +60,7 @@ class DriverWindow(QtGui.QMainWindow ):
 
         # ROS
         self.ros = ROSNode()
-        self.ros.sig_joydata.connect(self.setInputJoy)
+
 
 
         # FLIE
@@ -70,7 +70,9 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.spinBox_pktHZ.valueChanged.connect(self.flie.outKBPS.setHZ)
         self.ui.spinBox_pktHZ.valueChanged.emit(self.ui.spinBox_pktHZ.value()) # force update
         self.ui.checkBox_kill.toggled.connect(self.flie.setKillswitch)
+        self.flie.setKillswitch(self.ui.checkBox_kill.isChecked())
         self.ui.checkBox_xmode.toggled.connect(self.flie.crazyflie.commander.set_client_xmode)
+        self.flie.crazyflie.commander.set_client_xmode( self.ui.checkBox_xmode.isChecked())
 
 
         # Set up ParamManager
@@ -112,6 +114,10 @@ class DriverWindow(QtGui.QMainWindow ):
         self.killOn = self.ui.checkBox_kill.isChecked()
         self.autoReconnectOn = self.ui.checkBox_reconnect.isChecked()
         self.startupConnectOn = self.ui.checkBox_startupConnect.isChecked()
+        self.ui.groupBox_input.toggled.connect(lambda x: self.ros.sig_joydata.connect(self.setInputJoy) if x else self.ros.sig_joydata.disconnect(self.setInputJoy))
+        if self.ui.groupBox_input.isChecked():
+            self.ros.sig_joydata.connect(self.setInputJoy)
+
 
 
 

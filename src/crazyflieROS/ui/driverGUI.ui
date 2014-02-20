@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>416</width>
-    <height>527</height>
+    <width>545</width>
+    <height>585</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,84 +15,92 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_2">
+    <item row="0" column="2">
+     <widget class="QProgressBar" name="progressbar_bat">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimum">
+       <number>3000</number>
+      </property>
+      <property name="maximum">
+       <number>4200</number>
+      </property>
+      <property name="value">
+       <number>3000</number>
+      </property>
+      <property name="textVisible">
+       <bool>true</bool>
+      </property>
+      <property name="invertedAppearance">
+       <bool>false</bool>
+      </property>
+      <property name="textDirection">
+       <enum>QProgressBar::TopToBottom</enum>
+      </property>
+      <property name="format">
+       <string>Battery: %v mV</string>
+      </property>
+     </widget>
+    </item>
     <item row="0" column="0">
+     <widget class="QPushButton" name="pushButton_connect">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Scan</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QComboBox" name="comboBox_connect">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <item>
+       <property name="text">
+        <string>Test1</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Test2</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="2" column="0" colspan="3">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>5</number>
+       <number>0</number>
       </property>
+      <widget class="QWidget" name="tab_param">
+       <attribute name="title">
+        <string>Param</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout"/>
+      </widget>
+      <widget class="QWidget" name="tab_log">
+       <attribute name="title">
+        <string>Log</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3"/>
+      </widget>
       <widget class="QWidget" name="tab_connection">
        <attribute name="title">
-        <string>Connection</string>
+        <string>Console</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="0">
-         <widget class="QPushButton" name="pushButton_connect">
-          <property name="text">
-           <string>Scan</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QComboBox" name="comboBox_connect">
-          <item>
-           <property name="text">
-            <string>Test1</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Test2</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-        <item row="3" column="0" colspan="2">
-         <widget class="QProgressBar" name="progressbar_bat">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimum">
-           <number>3000</number>
-          </property>
-          <property name="maximum">
-           <number>4200</number>
-          </property>
-          <property name="value">
-           <number>3000</number>
-          </property>
-          <property name="textVisible">
-           <bool>true</bool>
-          </property>
-          <property name="invertedAppearance">
-           <bool>false</bool>
-          </property>
-          <property name="textDirection">
-           <enum>QProgressBar::TopToBottom</enum>
-          </property>
-          <property name="format">
-           <string>Battery: %v mV</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0" colspan="2">
-         <widget class="QProgressBar" name="progressbar_link">
-          <property name="maximum">
-           <number>100</number>
-          </property>
-          <property name="value">
-           <number>0</number>
-          </property>
-          <property name="textVisible">
-           <bool>true</bool>
-          </property>
-          <property name="format">
-           <string>Link quality: %p%</string>
-          </property>
-         </widget>
-        </item>
         <item row="7" column="0" colspan="2">
          <widget class="QTextEdit" name="console">
           <property name="enabled">
@@ -106,45 +114,7 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="1">
-         <widget class="QProgressBar" name="progressBar_pktOut">
-          <property name="maximum">
-           <number>480</number>
-          </property>
-          <property name="value">
-           <number>0</number>
-          </property>
-          <property name="format">
-           <string>Out Byte/s: %v/%m</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="0">
-         <widget class="QProgressBar" name="progressBar_pktIn">
-          <property name="maximum">
-           <number>3000</number>
-          </property>
-          <property name="value">
-           <number>0</number>
-          </property>
-          <property name="format">
-           <string>In Byte/s: %v/%m</string>
-          </property>
-         </widget>
-        </item>
        </layout>
-      </widget>
-      <widget class="QWidget" name="tab_log">
-       <attribute name="title">
-        <string>Log</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3"/>
-      </widget>
-      <widget class="QWidget" name="tab_param">
-       <attribute name="title">
-        <string>Param</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout"/>
       </widget>
       <widget class="QWidget" name="tab_info">
        <attribute name="title">
@@ -328,7 +298,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="groupBox_4">
+         <widget class="QGroupBox" name="groupBox_input">
           <property name="title">
            <string>Monitor Inputs</string>
           </property>
@@ -687,6 +657,57 @@
       </widget>
      </widget>
     </item>
+    <item row="1" column="2">
+     <widget class="QProgressBar" name="progressbar_link">
+      <property name="maximum">
+       <number>100</number>
+      </property>
+      <property name="value">
+       <number>0</number>
+      </property>
+      <property name="textVisible">
+       <bool>true</bool>
+      </property>
+      <property name="format">
+       <string>Link quality: %p%</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QProgressBar" name="progressBar_pktIn">
+      <property name="maximum">
+       <number>3000</number>
+      </property>
+      <property name="value">
+       <number>0</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="invertedAppearance">
+       <bool>false</bool>
+      </property>
+      <property name="textDirection">
+       <enum>QProgressBar::TopToBottom</enum>
+      </property>
+      <property name="format">
+       <string>In Byte/s: %v/%m</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="2">
+     <widget class="QProgressBar" name="progressBar_pktOut">
+      <property name="maximum">
+       <number>480</number>
+      </property>
+      <property name="value">
+       <number>0</number>
+      </property>
+      <property name="format">
+       <string>Out Byte/s: %v/%m</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -694,7 +715,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>416</width>
+     <width>545</width>
      <height>25</height>
     </rect>
    </property>
@@ -758,7 +779,7 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>121</x>
+     <x>118</x>
      <y>171</y>
     </hint>
     <hint type="destinationlabel">
@@ -822,7 +843,7 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>134</x>
+     <x>118</x>
      <y>211</y>
     </hint>
     <hint type="destinationlabel">
@@ -892,6 +913,166 @@
     <hint type="destinationlabel">
      <x>243</x>
      <y>259</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>groupBox_input</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>doubleSpinBox_r</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>53</x>
+     <y>140</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>115</x>
+     <y>163</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>groupBox_input</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>label_2</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>81</x>
+     <y>145</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>55</x>
+     <y>167</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>groupBox_input</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>doubleSpinBox_p</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>85</x>
+     <y>142</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>160</x>
+     <y>200</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>groupBox_input</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>doubleSpinBox_y</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>276</x>
+     <y>138</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>288</x>
+     <y>233</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>groupBox_input</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>doubleSpinBox_t</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>192</x>
+     <y>138</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>265</x>
+     <y>267</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>groupBox_input</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>label_hover</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>170</x>
+     <y>142</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>201</x>
+     <y>291</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>groupBox_input</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>label_6</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>26</x>
+     <y>297</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>44</x>
+     <y>297</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>groupBox_input</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>label_5</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>72</x>
+     <y>244</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>71</x>
+     <y>264</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>groupBox_input</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>label_4</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>32</x>
+     <y>140</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>58</x>
+     <y>234</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>groupBox_input</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>label_3</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>30</x>
+     <y>158</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>46</x>
+     <y>199</y>
     </hint>
    </hints>
   </connection>
