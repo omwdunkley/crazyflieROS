@@ -340,16 +340,7 @@ Remember
 # Todo
 
 Items
- * add udev script, then ```sudo python setup.py install```
- * file permissions (cfg, etc) - not working not thanks to NTFS
- * talk about ubuntu versions, tested on 12.04
- * add to ros path
- * add python package deps
-   * ```sudo apt-get install python2.7 python-usb python-pygame python-qt4 python-guiqwt```
- * common tools
-   * pycharm
-   * eclipse
-   * terminator
  * add rviz configuration with grids and TF
+ * thrust bug when first connecting
 
  
