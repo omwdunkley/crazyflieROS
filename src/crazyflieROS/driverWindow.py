@@ -1,4 +1,5 @@
-import logging, os, time
+import os, time
+#import logging
 
 from PyQt4 import QtGui, uic
 from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot, QThread, QObject, QTimer, QSettings, QPoint, QSize, QVariant
@@ -9,9 +10,9 @@ from FlieManager import FlieControl, STATE
 from rosTools import generateRosMessages, ROSNode
 from ui.driverGUI import Ui_MainWindow
 from cflib.crtp import scan_interfaces, init_drivers, get_interfaces_status
-
-logger = logging.getLogger(__name__)
-
+from functools import partial
+import rospy
+#logger = logging.getLogger(__name__)
 
 
 
@@ -54,14 +55,23 @@ class DriverWindow(QtGui.QMainWindow ):
         self.resetInfo()
         self.ui.labelTest = {"MS5611": self.ui.label_baroTest, "MPU6050": self.ui.label_MPUTest, "HMC5883L": self.ui.label_magTest}
 
-        # FLIE and ROS members
         self.state = STATE.DISCONNECTED
+
+
+        # ROS
         self.ros = ROSNode()
+        self.ros.sig_joydata.connect(self.setInputJoy)
+
+
+        # FLIE
         self.flie = FlieControl()
         self.ui.checkBox_pktHZ.toggled.connect(lambda on: self.flie.setPacketUpdateSpeed(self.ui.spinBox_pktHZ.value() if on else 0 ))
         self.ui.spinBox_pktHZ.valueChanged.connect(self.flie.inKBPS.setHZ)
         self.ui.spinBox_pktHZ.valueChanged.connect(self.flie.outKBPS.setHZ)
         self.ui.spinBox_pktHZ.valueChanged.emit(self.ui.spinBox_pktHZ.value()) # force update
+        self.ui.checkBox_kill.toggled.connect(self.flie.setKillswitch)
+        self.ui.checkBox_xmode.toggled.connect(self.flie.crazyflie.commander.set_client_xmode)
+
 
         # Set up ParamManager
         self.paramManager = ParamManager(self.flie.crazyflie, self)
@@ -85,6 +95,17 @@ class DriverWindow(QtGui.QMainWindow ):
 
         # init previous settings
         self.readSettings()
+
+
+
+        # Updateing the GUI (if we didnt do this, every change would result in an update...)
+        self.guiUpdateQueue = {}
+        self.guiUpdateQueueSave = 0
+        self.guiUpdateTimer = QTimer()
+        self.guiUpdateTimer.setInterval(1000/self.ui.spinBox_guiHZ.value())
+        self.ui.spinBox_guiHZ.valueChanged.connect(lambda x: self.guiUpdateTimer.setInterval(1000/x))
+        self.guiUpdateTimer.timeout.connect(self.updateGui)
+        self.guiUpdateTimer.start()
 
         # Defaults according to settings within GUI
         self.beepOn = self.ui.checkBox_beep.isChecked()
@@ -119,7 +140,7 @@ class DriverWindow(QtGui.QMainWindow ):
         self.paramManager.sig_test.connect(lambda name, p: self.ui.labelTest[str(name)].setText("Pass" if p else "FAIL"))
         self.paramManager.sig_firmware.connect(lambda fw, mod: self.ui.label_fw.setText(fw))
         self.paramManager.sig_firmware.connect(lambda fw, mod: self.ui.label_fwMod.setText(mod))
-        self.logManager.sig_batteryUpdated.connect(self.ui.progressbar_bat.setValue)
+        self.logManager.sig_batteryUpdated.connect( lambda v : self.setToUpdate("vbat",self.ui.progressbar_bat.setValue, v))
         self.flie.inKBPS.sig_KBPS.connect(lambda hz: self.updatePacketRate(self.ui.progressBar_pktIn,hz))
         self.flie.outKBPS.sig_KBPS.connect(lambda hz: self.updatePacketRate(self.ui.progressBar_pktOut,hz))
 
@@ -143,6 +164,30 @@ class DriverWindow(QtGui.QMainWindow ):
         self.startScanURI()
 
 
+
+    @pyqtSlot()
+    def updateGui(self):
+        """ Execute all funcs in the queue """
+        rospy.loginfo("Draw queue size: %d/%s", len(self.guiUpdateQueue), self.guiUpdateQueueSave)
+        for f in self.guiUpdateQueue.values():
+            f()
+        self.guiUpdateQueue = {}
+        self.guiUpdateQueueSave = 0
+
+    def setToUpdate(self, name, func, *args):
+        """ Add functions to call at gui update hz rate"""
+        self.guiUpdateQueue[name] = partial(func, *args)
+        self.guiUpdateQueueSave +=1
+
+    @pyqtSlot(float, float, float, float, bool)
+    def setInputJoy(self, r, p, y, t, h):
+        #TODO: should only do this at a specific hz
+        self.setToUpdate("joyR", self.ui.doubleSpinBox_r.setValue, r)
+        self.setToUpdate("joyP", self.ui.doubleSpinBox_p.setValue, p)
+        self.setToUpdate("joyY", self.ui.doubleSpinBox_y.setValue, y)
+        self.setToUpdate("joyT", self.ui.doubleSpinBox_t.setValue, t)
+        self.ui.label_hover.setText( "On" if h else "Off")
+
     @pyqtSlot()
     def genRosMsg(self):
         #TODO: should do this in its own thread, or even as a progress bar
@@ -155,17 +200,17 @@ class DriverWindow(QtGui.QMainWindow ):
 
     def closeEvent(self, event):
         """ Intercept shutdowns to cleanly disconnect from the flie and cleanly shut ROS down too """
-        logger.info("Close Event")
+        rospy.loginfo("Close Event")
         #self.autoRetryTimer.stop()
 
         # Shut Down the Flie
         if self.state < STATE.GEN_DISCONNECTED:
-            logger.info("Triggering flie disconnect for shutdown")
+            rospy.loginfo("Triggering flie disconnect for shutdown")
             self.ui.pushButton_connect.setText("Shutting Down...")
             self.flie.requestDisconnect()
 
         # Clean up ROS
-        #TODO
+        rospy.signal_shutdown("User closed window")
 
         # Save State
         self.writeSettings()
@@ -175,39 +220,51 @@ class DriverWindow(QtGui.QMainWindow ):
 
     def readSettings(self):
         """ Load setrtings from previous session """
+        rospy.logdebug("Loading previous session settings")
         settings = QSettings("omwdunkley", "flieROS")
         self.resize(settings.value("size", QVariant(QSize(300, 500))).toSize())
         self.move(settings.value("pos", QVariant(QPoint(200, 200))).toPoint())
 
         self.ui.checkBox_reconnect.setChecked(settings.value("autoReconnect", QVariant(self.ui.checkBox_reconnect.isChecked())).toBool())
         self.ui.checkBox_beep.setChecked(settings.value("beepOn", QVariant(self.ui.checkBox_beep.isChecked())).toBool())
+        self.ui.checkBox_xmode.setChecked(settings.value("xmodeOn", QVariant(self.ui.checkBox_xmode.isChecked())).toBool())
+        self.ui.checkBox_kill.setChecked(settings.value("killOn", QVariant(self.ui.checkBox_kill.isChecked())).toBool())
         self.ui.checkBox_startupConnect.setChecked(settings.value("startConnect", QVariant(self.ui.checkBox_startupConnect)).toBool())
 
         self.ui.checkBox_pktHZ.setChecked(settings.value("pktHzOn", QVariant(self.ui.checkBox_pktHZ.isChecked())).toBool())
         self.ui.checkBox_logHZ.setChecked(settings.value("logHzOn", QVariant(self.ui.checkBox_logHZ.isChecked())).toBool())
         self.ui.horizontalSlider_pktHZ.setValue(settings.value("pktHzVal", QVariant(self.ui.horizontalSlider_pktHZ.value())).toInt()[0])
         self.ui.horizontalSlider_logHZ.setValue(settings.value("logHzVal", QVariant(self.ui.horizontalSlider_logHZ.value())).toInt()[0])
+        self.ui.horizontalSlider_guiHZ.setValue(settings.value("guiHzVal", QVariant(self.ui.horizontalSlider_guiHZ.value())).toInt()[0])
 
         self.logManager.header().restoreState(settings.value("logTreeH", self.logManager.header().saveState()).toByteArray())
         self.paramManager.header().restoreState(settings.value("paramTreeH", self.paramManager.header().saveState()).toByteArray())
 
     def writeSettings(self):
         """ Write settings to load at next start up """
+        rospy.logdebug("Saving session settings")
         settings = QSettings("omwdunkley", "flieROS")
         settings.setValue("pos", QVariant(self.pos()))
         settings.setValue("size", QVariant(self.size()))
 
         settings.setValue("autoReconnect", QVariant(self.ui.checkBox_reconnect.isChecked()))
         settings.setValue("beepOn", QVariant(self.ui.checkBox_beep.isChecked()))
+        settings.setValue("xmodeOn", QVariant(self.ui.checkBox_xmode.isChecked()))
+        settings.setValue("killOn", QVariant(self.ui.checkBox_kill.isChecked()))
         settings.setValue("startConnect", QVariant(self.ui.checkBox_startupConnect.isChecked()))
 
         settings.setValue("pktHzOn", QVariant(self.ui.checkBox_pktHZ.isChecked()))
         settings.setValue("logHzOn", QVariant(self.ui.checkBox_logHZ.isChecked()))
         settings.setValue("pktHzVal", QVariant(self.ui.horizontalSlider_pktHZ.value()))
         settings.setValue("logHzVal", QVariant(self.ui.horizontalSlider_logHZ.value()))
+        settings.setValue("guiHzVal", QVariant(self.ui.horizontalSlider_guiHZ.value()))
 
         settings.setValue("logTreeH",QVariant(self.logManager.header().saveState()))
         settings.setValue("paramTreeH",QVariant(self.paramManager.header().saveState()))
+
+
+
+
 
     @pyqtSlot(bool)
     def setBeep(self, on):
@@ -241,7 +298,7 @@ class DriverWindow(QtGui.QMainWindow ):
     def updatePacketRate(self, pb, hz):
         """ Updates the number of pb with hz ensuring we adjust the maximum incase max<hz """
         if hz>pb.maximum():
-            logger.warn("Maximum Packets Changed from %d/s -> %d/s", pb.maximum(), hz)
+            rospy.logwarn("Maximum Packets Changed from %d/s -> %d/s", pb.maximum(), hz)
             pb.setMaximum(hz)
         pb.setValue(hz)
 
@@ -283,7 +340,7 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.comboBox_connect.addItem("Rescan")
 
         if self.startupConnectOn:
-            logger.info("Auto connecting to first found flie [ConnectOnStartUp = TRUE]")
+            rospy.loginfo("Auto connecting to first found flie [ConnectOnStartUp = TRUE]")
             self.ui.pushButton_connect.clicked.emit(False)
 
 
@@ -351,6 +408,7 @@ class DriverWindow(QtGui.QMainWindow ):
         elif state == STATE.LINK_ESTABLISHED:
             self.beepMsg(Message(msg="Link to [%s] established" % uri, freq=3300, length=25, repeat=1))
             self.ui.pushButton_connect.setText("Download TOC...")
+            self.ros.sig_joydataRaw.connect(self.flie.sendCmd) # This needs to be after
 
         elif state == STATE.CONNECTED:
             self.beepMsg(Message(msg="Connected to [%s]" % uri, freq=3500, length=10, repeat=2))
@@ -364,11 +422,12 @@ class DriverWindow(QtGui.QMainWindow ):
             self.ui.pushButton_connect.setText("Connect")
             self.ui.pushButton_connect.setEnabled(True)
             self.resetInfo()
+            self.ros.sig_joydataRaw.disconnect(self.flie.sendCmd) # This needs to be after
 
         elif state == STATE.CONNECTION_FAILED:
             self.beepMsg(Message(msgtype=MSGTYPE.WARN, msg="Connecting to [%s] failed: %s" % (uri, msg)))
             if self.autoReconnectOn:
-                logger.info("Attempting to auto reconnect after failing to connect")
+                rospy.loginfo("Attempting to auto reconnect after failing to connect")
 
                 #QTimer.singleShot(1000, lambda : self.connectPressed(self.ui.comboBox_connect.currentText(), auto=True))
                 self.ui.pushButton_connect.setText("Auto Retrying...")
@@ -383,7 +442,7 @@ class DriverWindow(QtGui.QMainWindow ):
         elif state == STATE.CONNECTION_LOST:
             self.beepMsg(Message(msgtype=MSGTYPE.WARN, msg="Connected lost from [%s]: %s" % (uri, msg), freq=1200, length=10, repeat=6))
             if self.autoReconnectOn:
-                logger.info("Attempting to auto reconnect after losing connection")
+                rospy.loginfo("Attempting to auto reconnect after losing connection")
                 self.ui.pushButton_connect.setText("Auto Retrying...")
                 self.state = STATE.CONNECTION_RETRYWAIT
                 self.ui.pushButton_connect.setEnabled(False)
@@ -394,7 +453,7 @@ class DriverWindow(QtGui.QMainWindow ):
                 self.ui.pushButton_connect.setEnabled(True)
 
         else:
-            logger.error("Unknown State")
+            rospy.logerr("Unknown State")
 
         if state>STATE.GEN_DISCONNECTED:
             self.ui.progressbar_bat.setValue(3000)
@@ -412,15 +471,15 @@ class DriverWindow(QtGui.QMainWindow ):
             os.system("beep -f "+str(msg.f)+"-l "+str(msg.l)+" -r "+str(msg.r)+"&")
         if msg.msg != "":
             if msg.type == MSGTYPE.INFO:
-                logger.info(msg.msg)
+                rospy.loginfo(msg.msg)
             elif msg.type == MSGTYPE.WARN:
-                logger.warn(msg.msg)
+                rospy.logwarn(msg.msg)
             elif msg.type == MSGTYPE.ERROR:
-                logger.error(msg.msg)
+                rospy.logerr(msg.msg)
             elif msg.type == MSGTYPE.DEBUG:
-                logger.debug(msg.msg)
+                rospy.logdebug(msg.msg)
             else:
-                logger.error("UNKNOWN MESSAGE TYPE: %s", msg.msg)
+                rospy.logerr("UNKNOWN MESSAGE TYPE: %s", msg.msg)
             self.ui.statusbar.showMessage(msg.msg, 0)
             print msg.msg
 

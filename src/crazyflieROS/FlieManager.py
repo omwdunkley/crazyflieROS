@@ -6,8 +6,9 @@ from PyQt4 import QtGui, uic
 from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot, QObject, QTimer
 from commonTools import KBSecMonitor, FreqMonitor
 from cflib.crazyflie import Crazyflie
-import logging
-logger = logging.getLogger(__name__)
+import rospy
+#import logging
+#logger = logging.getLogger(__name__)
 
 class STATE:
     """ Class to keep track of flie state.
@@ -56,6 +57,7 @@ class FlieControl(QObject):
         #self.crazyflie = Crazyflie(cache_dir+"/ro", cache_dir+"/rw")
         self.linkQuality = LinkQuality(window=50)
         self.status = STATE.DISCONNECTED
+        self.killswitch = False
 
         # Timers
         self.inKBPS = KBSecMonitor()
@@ -70,8 +72,8 @@ class FlieControl(QObject):
         self.crazyflie.connection_requested.add_callback(self.connectionRequestedCB) # Called when the user requests a connection
         self.crazyflie.link_established.add_callback(self.linkEstablishedCB)         # Called when the first packet in a new link is received
         self.crazyflie.link_quality_updated.add_callback(self.linkQualityCB)         # Called when the link driver updates the link quality measurement
-        self.crazyflie.packet_received.add_callback(self.packetReceivedCB)             # Called for every packet received
-        self.crazyflie.packet_sent.add_callback(self.packetSentCB)                     # Called for every packet sent
+        self.crazyflie.packet_received.add_callback(self.packetReceivedCB)           # Called for every packet received
+        self.crazyflie.packet_sent.add_callback(self.packetSentCB)                   # Called for every packet sent
         self.crazyflie.console.receivedChar.add_callback(self.consoleCB)             # Called with console text
 
 
@@ -85,6 +87,7 @@ class FlieControl(QObject):
 
     def disconnectedCB(self, uri, msg=""):
         """ Called on disconnect, no matter the reason """
+        self.console_cache = ""
         self.inKBPS.stop()
         self.outKBPS.stop()
         self.crazyflie.packet_received.remove_callback(self.packetReceivedCB)
@@ -137,13 +140,18 @@ class FlieControl(QObject):
         if len(msg)==30:
             self.console_cache += msg
         else:
-            #CSI = "\x1b["
-            #cyan = CSI+"36m"
-            #reset = CSI+"m"
             #msg = cyan+(self.console_cache+msg).strip("\n")+reset
-            msg = (self.console_cache+msg).strip("\n")+"\n"
-            logger.info(msg)
-            self.sig_console.emit(msg)
+            msg = (self.console_cache+msg).strip("\n")
+            self.sig_console.emit(msg+"\n")
+
+
+            CSI = "\x1b["
+            cyan = CSI+"36m"
+            reset = CSI+"m"
+            msg = cyan+(self.console_cache+msg).strip("\n")+reset
+            rospy.loginfo(msg)
+
+
             self.console_cache = ""
 
 
@@ -161,20 +169,12 @@ class FlieControl(QObject):
 
     ### OUTGOING
 
-    def sendCmd(self, cmd):
-        """ Send the flie a control command
-        """
-        pass
 
-    def sendParam(self, param):
-        """ Send the flie an updated parameter
-        """
-        pass
-
-    def setupLogging(self):
-        """ Send the flie a logging request
-        """
-        pass
+    @pyqtSlot(float, float, float, int, bool)
+    def sendCmd(self, roll, pitch, yawrate, thrust, hover):
+        """ Send the flie a control command """
+        if not self.killswitch:
+            self.crazyflie.commander.send_setpoint(roll, pitch, yawrate, thrust)
 
     def getLogToC(self):
         return self.crazyflie.log._toc.toc if self.crazyflie.log._toc else None
@@ -184,19 +184,20 @@ class FlieControl(QObject):
     @pyqtSlot(str)
     def requestConnect(self, uri):
         """ Request connection to the flie """
-        logger.info("Requesting connection to [%s]", uri)
+        rospy.loginfo("Requesting connection to [%s]", uri)
         self.crazyflie.open_link(uri)
 
     @pyqtSlot()
     def requestDisconnect(self):
         """ Request shutdown to flie """
-        logger.info("Requesting disconnect")
+        rospy.loginfo("Requesting disconnect")
         self.crazyflie.close_link()
 
 
-
-
-
+    @pyqtSlot(bool)
+    def setKillswitch(self, on):
+        rospy.loginfo("GUI KillSwitch " + "on" if on else "off")
+        self.killswitch = on
 
 
 class LinkQuality:

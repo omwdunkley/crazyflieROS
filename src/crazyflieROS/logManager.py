@@ -6,8 +6,8 @@ import bisect
 
 from collections import OrderedDict
 from math import ceil, floor
-import logging
-logger = logging.getLogger(__name__)
+#import logging
+#logger = logging.getLogger(__name__)
 
 import rospy
 
@@ -90,7 +90,7 @@ class LogGroup(QTreeWidgetItem):
         vHZ =  min(self.validHZ[max(0, i-1): i+2], key=lambda t: abs(hz - t))
         print "Converting HZ: %f = %f" %(hz, vHZ)
         if hz!=vHZ:
-            logger.info("Could not set HZ to specific value [%d], rounded to valid HZ [%d]", hz, vHZ)
+            rospy.loginfo("Could not set HZ to specific value [%d], rounded to valid HZ [%d]", hz, vHZ)
         return vHZ
 
 
@@ -155,11 +155,12 @@ class LogGroup(QTreeWidgetItem):
 
 
         if on:
-            #print "[%s:%d]LogCB STARTED(%d)" % (self.name, self.lg.id, self.c)
+            rospy.loginfo( "[%d: %s] LogCB STARTED" % (self.lg.id, self.name))
             QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Checked)
             QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "On")
             self.setAllState(Qt.Checked, activeOnly=True)
         else:
+            rospy.loginfo( "[%d] LogCB STOPPED" % (self.name))
             pass
             #print "[%s]LogCB ENDED(%d) " % (self.name, self.c)
             #if self.allSelected():
@@ -436,8 +437,6 @@ class LogManager(QTreeWidget):
         self.cf.connected.add_callback(self.newToc)
         self.cf.disconnected.add_callback(self.purgeToc)
 
-    def batteryCB(self, data, ts):
-        print "SIGNAL CB: %d" % ts, data
 
     def userStartEdit(self, item, col):
         """ Make sure only the target HZ can be changed """
@@ -446,7 +445,7 @@ class LogManager(QTreeWidget):
 
     def setFreqMonitorFreq(self, hz=2):
         """ set how fast we with to estimate the log frequency """
-        logger.info("Log rate estimation window set to %.2fms", 1000./hz)
+        rospy.logdebug("Log rate estimation window set to %.2fms", 1000./hz)
         self.timerHZUpdate.setInterval(1000./hz)
 
     def updateFreqMonitor(self):
@@ -456,7 +455,7 @@ class LogManager(QTreeWidget):
 
     def logError(self, block, msg):
         """ All logging configurations report errors to this function """
-        logger.error("Logging error with %s: %s", block.name, msg )
+        rospy.logerr("Logging error with %s: %s", block.name, msg )
 
     def newToc(self, uri):
         """ Called when a new TOC has been downloaded. Populate the table, create and start log configs"""
@@ -491,7 +490,7 @@ class LogManager(QTreeWidget):
         """ Turn on HZ estimation """
         if on != self.estimateHzOn:
             self.estimateHzOn = on
-            logger.info("Log HZ Estimation %s", "ON" if on else "OFF")
+            rospy.loginfo("Log HZ Estimation %s", "ON" if on else "OFF")
             for i in range(self.topLevelItemCount()):
                 self.topLevelItem(i).setEstimateHzOn(on)
             if on:
@@ -507,9 +506,10 @@ class LogManager(QTreeWidget):
 
 
     def incomingData(self, data, ts):
-        """ All incoming data is routed to this function """
+        """ All incoming data is routed to this function. Ros data is spammed from the tree groups """
         #self.sigHandler.handleData(data, ts)
         """ BATTERY """
+        #TODO: cap at 5hz
         if isGroup(data, "pm"):
             if hasAllKeys(data, ["vbat"], "pm"):
                 self.sig_batteryUpdated.emit(int(1000*data["pm.vbat"]))

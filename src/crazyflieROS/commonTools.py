@@ -1,12 +1,13 @@
 __author__ = 'ollie'
 __author__ = 'ollie'
 __all__= ['FreqMonitor','KBSecMonitor','hasAllKeys', 'isGroup', 'getGroup', 'getNames']
-import logging
+#import logging
 from PyQt4.QtCore import QObject, QThread, QTimer, pyqtSignal, pyqtSlot
 
 from time import time
+import rospy
 
-logger = logging.getLogger(__name__)
+#logger = logging.getLogger(__name__)
 
 
 class FreqMonitor():
@@ -24,13 +25,13 @@ class FreqMonitor():
 
 
     def count(self):
-        # curr_rostime = rospy.get_rostime()
-        # # time reset
-        # if curr_rostime.is_zero():
-        #     if len(self.times) > 0:
-        #         # print("time has reset, resetting counters")
-        #         self.times = []
-        #     return
+        #curr_rostime = rospy.get_rostime()
+        ## time reset
+        #if curr_rostime.is_zero():
+        #    if len(self.times) > 0:
+        #        # print("time has reset, resetting counters")
+        #        self.times = []
+        #    return
         curr = time()
         if self.msg_t0 < 0 or self.msg_t0 > curr:
             self.msg_t0 = curr

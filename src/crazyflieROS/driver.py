@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #import roslib,
-import logging
+#import logging
 #roslib.load_manifest("crazyflieROS")
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+#logger = logging.getLogger(__name__)
+#logging.basicConfig(level=logging.INFO)
 
 
 import sys

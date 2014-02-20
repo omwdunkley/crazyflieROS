@@ -9,9 +9,10 @@ __all__ = ['ParamManager']
 from PyQt4 import QtGui, uic
 from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot,  QVariant
 from PyQt4.QtGui import  QTreeWidget, QTreeWidgetItem, QAbstractItemView
+import rospy
 
-import logging
-logger = logging.getLogger(__name__)
+#import logging
+#logger = logging.getLogger(__name__)
 
 
 
@@ -81,7 +82,7 @@ class ParamItem(QTreeWidgetItem):
             self.cf.param.set_value("%s.%s" % (self.param.group, self.param.name), value)
         except NameError, err:
             QtGui.QTreeWidgetItem.setData(self, 2, Qt.DisplayRole, QVariant("Invalid..."))
-            logger.warn("Parameter [%s.%s] could not be updated from [%s] to [%s]: %s ", self.param.group, self.param.name, self.text(2), value, err)
+            rospy.logwarn("Parameter [%s.%s] could not be updated from [%s] to [%s]: %s ", self.param.group, self.param.name, self.text(2), value, err)
             self.requestUpdate()
 
     def setData(self, column, role, value):

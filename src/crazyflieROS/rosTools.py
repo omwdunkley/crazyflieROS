@@ -17,12 +17,12 @@ import tf
 
 
 from math import radians
-import logging
+#import logging
 
 from commonTools import hasAllKeys, isGroup, getGroup, getNames
 
 
-logger = logging.getLogger(__name__)
+#logger = logging.getLogger(__name__)
 
 
 
@@ -38,11 +38,14 @@ class ROSNode(QObject):
         Spamming ROS with crazyflie logs,
         Receiving joystick data
     """
+
+    sig_joydata = pyqtSignal(float, float, float, float, bool) #RPYThrustHover
+    sig_joydataRaw = pyqtSignal(float, float, float, int, bool) #RPYThrustHover
+
     def __init__(self):
         super(ROSNode, self).__init__()
         rospy.init_node('CrazyflieDriver')
         self.compiledMsgs = [m for m in dir(msgCF) if m[0]!="_"] # Mmessages that are previously auto-compiled and we can send
-
 
         # Publishers
         self.publishers   = {} #Generated publishers will go here
@@ -91,6 +94,7 @@ class ROSNode(QObject):
             self.pub(getGroup(log), self.genMsg(log, tsROS))
 
         ##ADITIONALLY HANDLED
+        # spam TF #TODO test this!!
         if isGroup(log, "stabilizer"):
             if hasAllKeys(log,["roll","pitch","yaw"]):
                 self.pub_tf.sendTransform((0, 0, 0),tf.transformations.quaternion_from_euler(
@@ -100,8 +104,15 @@ class ROSNode(QObject):
 
 
 
-    def receiveJoystick(self, joy):
-        print joy
+    def receiveJoystick(self, cmd):
+        """ Incoming Joystick Message """
+        # Emits callback; probably connected to flie and GUI
+        # TODO: have the joydriver.py class integrated in here
+        # TODO: send param set request for hover/on off
+        self.sig_joydata.emit(cmd.roll, cmd.pitch, cmd.yaw, thrustToPercentage(cmd.thrust,flie=False), cmd.hover)
+        self.sig_joydataRaw.emit(cmd.roll, cmd.pitch, cmd.yaw, cmd.thrust, cmd.hover)
+
+
 
 
 
@@ -112,7 +123,7 @@ def generateRosMessages(toc):
     """ Generates the *.msg files for ROS from the TOC
     """
     if not toc:
-        logger.warn("No TOC available to generate ROS messages from")
+        rospy.logwarn("No TOC available to generate ROS messages from")
         return
 
     path = get_pkg_dir('crazyflieROS')+"/msg/"

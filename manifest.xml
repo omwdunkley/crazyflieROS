@@ -13,6 +13,7 @@
   <depend package="tf"/>
   <depend package="joy"/>
   <depend package="sensor_msgs"/>
+  <depend package="dynamic_reconfigure"/>  
 
 </package>
 
