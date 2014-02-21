@@ -1,7 +1,3 @@
-from guiqwt.io import _add_all_supported_files
-
-
-
 __author__ = 'OMWDunkley'
 __all__ = ['ParamManager']
 
