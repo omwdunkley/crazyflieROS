@@ -100,7 +100,7 @@ Before we start to develop for the flie, it makes to test it with the officially
 ### Requirements and source code
 ##### Required packages
 You will need the following, os run:
-```sudo apt-get install python2.7 python-usb python-pygame python-qt4 python-guiqwt beep terminator ipython```
+```sudo apt-get install python2.7 python-usb python-pygame python-qt4 python-guiqwt beep terminator ipython ros-$ROS_DISTRO-joystick-drivers```
 
 To compile the firmware you will need [GNU Tools for ARM Embedded Processors](https://launchpad.net/gcc-arm-embedded)
 ```
@@ -203,24 +203,23 @@ _TODO: Show the function that reads the variables in the firmware and the client
 
 
 ## Using ROS
-### Setting up bluetooth PS3 Controller
-Follow instructions here to install all the requirements: <http://wiki.ros.org/ps3joy>
-For reference:
-
-Connect joy stick with USB, then
+### Setting up bluetooth PS3 Controller using [PS3 Joy](http://wiki.ros.org/ps3joy)
+To connect the PS3 controller with bluetooth, first plug it in with USB, then
 ```
 sudo bash 
 rosrun ps3joy sixpair
 rosrun ps3joy ps3joy.py
 ```
 disconnect your joystick and press the connect button. This exposes your joystick under ```/dev/input/js*```.
-Next you will need to start a ros node to read the joystick data and send it over the ros network. Here Ive made a launch file that launches 3 nodes: one that exposes the controller to ROS; one that reads it and exposes crazyflie controls, and a gui to set some settings. Launch with
+To test it, you can use jstest-gtk: ```jstest-gtk```
 
+Next you will need to start a ros node to read the joystick data and send it over the ros network. Here Ive made a launch file that launches 3 nodes: one that exposes the controller to ROS; one that reads it and exposes crazyflie controls, and a gui to set some settings. Launch with
 ```
-ls /dev/input/js*
-roslaunch crazyflieROS joy.launch js:=0 #
+roslaunch crazyflieROS joy.launch js:=0
 ```
-where you might need to replace 0 with your joystick nr.
+where you will need to replace X with your joystick nr. Now you can visualise the outputs of the nodes:
+* Test the joy_node: ```rostopic echo /joy```
+* Test the crazyflie joy node: ```rostopic echo /cfjoy```
 
 ### CrazyflieROS GUI Application
 #### Running
