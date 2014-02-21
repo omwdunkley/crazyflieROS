@@ -2,7 +2,13 @@
 
 #!! ERROR: py is undefined. Use list command to see defined gitignore types !!#
 
+# python byte code
 *.pyc
+*.cfgc
+#Stupid gedit left overs
+*.*~
+docs/*.wikidoc
+docs/*.dox
 
 
 ### PyCharm ###
@@ -101,6 +107,8 @@ msg/.*Feedback\.msg$
 msg/.*Goal\.msg$
 msg/.*Result\.msg$
 msg/_.*\.py$
+src/*/msg/_*.py*
+src/*/cfg/*.py*
 
 \.pcd$
 .pyc$
