@@ -100,7 +100,7 @@ Before we start to develop for the flie, it makes to test it with the officially
 ### Requirements and source code
 ##### Required packages
 You will need the following, os run:
-```sudo apt-get install python2.7 python-usb python-pygame python-qt4 python-guiqwt beep terminator ipython ros-$ROS_DISTRO-joystick-drivers```
+```sudo apt-get install python2.7 python-usb python-pygame python-qt4 beep terminator ipython ros-$ROS_DISTRO-joystick-drivers```
 
 To compile the firmware you will need [GNU Tools for ARM Embedded Processors](https://launchpad.net/gcc-arm-embedded)
 ```
