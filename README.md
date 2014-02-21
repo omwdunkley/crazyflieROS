@@ -233,6 +233,8 @@ where you will need to replace X with your joystick nr. Now you can visualise th
 
 # Motion Capture System
 [Video example](http://youtu.be/WPi__Q6CNdQ?t=2m4s)
+
+_TODO: Overview, way poin control, wand control, pid.launch_
 ### Setting it up Qualisys
  * Log on, using the PW I gave you
  * Turn on the capture system (white power socket, so the red light is on)
@@ -249,11 +251,12 @@ where you will need to replace X with your joystick nr. Now you can visualise th
      * -> Stop a few seconds later
    * Click 3d, ctrl+click desired markers, right click | define ridgid body | give it a name
    * Define local coord system of new tracked object
+     * X points forwards, Y left, Z up
      * Tools | Project Options | 6 DOF Tracking
      * Translate to point/mean, etc etc
      * Make sure the Euler Angle sub menu is set to: GLOBAL rotation, x,y,z = roll, pitch, yaw
    * New measurement: observe in 3d, repeat for wand
-   * 
+   
    
 ### Read Realtime data with ROS
 ##### Qualisys ROS Node
@@ -265,10 +268,11 @@ where you will need to replace X with your joystick nr. Now you can visualise th
    * The order corresponds to the order that the ridig bodies were defined as (see Tools | Project Options | 6 DOF Tracking)
    * Now we neet to link the /Qn transforms to ones used by the PID controler
      * The flie tf is called /cf_gt, the wand is called /wand
+     * The /wand transform defines the goal position of the flie. Obviously we do not want this to be in side the defined rigid body, so we move it forward in x direction. Notice the 0.7 in the static transfrom publisher below
      * run the following in three terminals, making sure to adjust Q0, Q1 to match wand/flie ridig bodies
        * ```rosrun tf static_transform_publisher 0 0 0 0 0 0 1 "/world" "/Qualisys" 10```
        * ```rosrun tf static_transform_publisher 0 0 0 0 0 0 1 "/Q0" "/cf_gt" 10```
-       * ```rosrun tf static_transform_publisher 0 0 0 0 0 0 1 "/Q1" "/wand" 10```
+       * ```rosrun tf static_transform_publisher 0.7 0 0 0 0 0 1 "/Q1" "/wand" 10```
 
 
         
