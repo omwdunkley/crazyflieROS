@@ -69,7 +69,6 @@ trajectory = [(0.0, 0.0, 0.6, -90), #middle
 """
 
 tid = 0
-
 a = 0.75
 y = -90
 
@@ -170,11 +169,6 @@ Source = enum(Qualisys=0,Cam=1,Synthetic=2)
 #Axes = enum(SLL=0,SLU=1,SRL=2,SRU=3,Up=4,Right=5,Down=6,Left=7,L2=4+8,R2=4+9,L1=4+10,R1=4+11,Triangle=4+12,Circle=4+13,Cross=4+14,Square=4+15,AccL=16,AccF=17,AccU=18,GyroY=19)
 
 
-TF_SYNTH_FLIE    ="/cf"
-TF_CAM_FLIE      = "/cf"
-TF_QUALISYS_RLIE = "/cf_gt"
-
-
 
 MAX_THRUST = 60000.
 def percentageToThrust( percentage):
@@ -187,8 +181,6 @@ def deadband(value, threshold):
         return value-threshold
     else:
         return value+threshold
-
-
 
 class PID:
     """ Classic PID Controller """
@@ -522,7 +514,7 @@ class JoyController:
 
 
                 # Get error from current position to goal if possible
-                [px,py,alt,rz] = self.publishLocalGoal(pubGoal=True)
+                [px,py,alt,rz] = self.getErrorToGoal()
 
                 # Starting control mode
                 if hover and not self.prev_msg.hover:
@@ -671,7 +663,7 @@ class JoyController:
         self.prev_msg.hover = hover
 
 
-    def lookupTransform(self, frame='/cf_gt', forceRealtime = False, ):
+    def lookupTransformInWorld(self, frame='/cf_gt', forceRealtime = False, ):
         now = rospy.Time(0)
         if self.PIDDelay > 0.00001 and not forceRealtime:
             now = rospy.Time.now()-rospy.Duration(self.PIDDelay)
@@ -679,43 +671,42 @@ class JoyController:
         return (trans,rot)
 
 
-    def publishLocalGoal(self, pubGoal=True):
-        # Look up flie position, convert to 2d, publish
+    def getErrorToGoal(self):
+        # Look up flie position, convert to 2d, publish, return error
 
         if self.wandControl:
-            #update goal
+            #update goal using wand
             try:
-                (t,r) = self.lookupTransform(frame='/wand')
+                (t,r) = self.lookupTransformInWorld(frame='/wand', forceRealtime=True)
                 e = tf.transformations.euler_from_quaternion(r)
                 self.goal= [t[0], t[1], t[2], degrees(e[2]-e[0])]
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 rospy.loginfo('Could not find wand')
 
 
-        if pubGoal:
-            # Publish GOAL from world frame
-            q = tf.transformations.quaternion_from_euler(0, 0, radians(self.goal[3]))
-            self.pub_tf.sendTransform((self.goal[0],self.goal[1],self.goal[2]), q, rospy.Time.now(), "/goal", "/Qualisys")
+        # Publish GOAL from world frame
+        q = tf.transformations.quaternion_from_euler(0, 0, radians(self.goal[3]))
+        self.pub_tf.sendTransform((self.goal[0],self.goal[1],self.goal[2]), q, rospy.Time.now(), "/goal", "/world")
 
-        (trans,rot) = self.lookupTransform()
+
+        # Look up 6D flie pose, publish 3d+yaw pose
+        (trans,rot) = self.lookupTransformInWorld(frame='/cf_gt')
         euler = tf.transformations.euler_from_quaternion(rot)
         q = tf.transformations.quaternion_from_euler(0, 0, euler[2])
-        self.pub_tf.sendTransform(trans, q, rospy.Time.now(), "/cf_gt2d", "/Qualisys")
+        self.pub_tf.sendTransform(trans, q, rospy.Time.now(), "/cf_gt2d", "/world")
 
-        if pubGoal:
-            # Publish GOAL from CF frame
-            (trans,rot) = self.sub_tf.lookupTransform('/cf_gt2d', '/goal', rospy.Time(0))
-            self.pub_tf.sendTransform(trans, rot, rospy.Time.now(), "/goalCF", "/cf_gt2d")
-            euler = tf.transformations.euler_from_quaternion(rot)
-
-        return (trans[0],trans[1],trans[2],degrees(euler[2]))
+        # Look up error goal->cf
+        (trans,rot) = self.sub_tf.lookupTransform('/cf_gt2d', '/goal', rospy.Time(0))
+        #self.pub_tf.sendTransform(trans, rot, rospy.Time.now(), "/goalCF", "/cf_gt2d")
+        euler = tf.transformations.euler_from_quaternion(rot)
+        return trans[0], trans[1], trans[2], degrees(euler[2])
 
 
 
 
     def setGoalFromCurrent(self,config={}):
         try:
-            (trans,rot) = self.lookupTransform(forceRealtime=True)
+            (trans,rot) = self.lookupTransformInWorld(frame='/cf_gt', forceRealtime=True)
             euler = tf.transformations.euler_from_quaternion(rot)
             config['x'],config['y'],config['z'],config['rz']= trans[0], trans[1], trans[2], degrees(euler[2])
             rospy.loginfo('Updated goal state: [%.2f %.2f %.2f %.1f]', trans[0], trans[1], trans[2], degrees(euler[2]))

@@ -100,7 +100,7 @@ class ROSNode(QObject):
                 self.pub_tf.sendTransform((0, 0, 0),tf.transformations.quaternion_from_euler(
                     radians(log["stabilizer.roll"]),
                     -radians(log["stabilizer.pitch"]),
-                    radians(log["stabilizer.yaw"]),'sxyz'), tsROS, "/cf", "/world")
+                    radians(log["stabilizer.yaw"]),'sxyz'), tsROS, "/cf", "/cf_xyz")
 
 
 
