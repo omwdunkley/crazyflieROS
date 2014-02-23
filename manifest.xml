@@ -1,19 +1,24 @@
 
 <package>
   <description brief="crazyflieROS">
-
-     crazyflieROS
-
+     This package serves as a server for the crazyflie. It is a python GUI which allows you to connect to a flie, configure params and logging configurations and exposes sensor readings to ROS. One can also send the flie roll/pitch/yaw/thrust commands
   </description>
-  <author>ollie</author>
+  <author>Oliver Dunkley</author>
+  <maintainer email="omwdunkley@gmail.com">Oliver Dunkley</maintainer>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/crazyflieROS</url>
+  <url>https://github.com/omwdunkley/crazyflieROS/blob/master/README.md</url>
+
   <depend package="rospy"/>
   <depend package="tf"/>
   <depend package="joy"/>
   <depend package="sensor_msgs"/>
   <depend package="dynamic_reconfigure"/>  
+  <depend package="cv_bridge"/>
+
+  <!-- Only needs if using the flieTracker node -->
+  <rosdep name="opencv"/> 
+  <rosdep name="freenect_launch"/> 
 
 </package>
 
