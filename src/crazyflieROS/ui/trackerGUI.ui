@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ScrollAreaTracker</class>
+ <widget class="QScrollArea" name="ScrollAreaTracker">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>585</width>
+    <height>763</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ScrollArea</string>
+  </property>
+  <property name="frameShape">
+   <enum>QFrame::NoFrame</enum>
+  </property>
+  <property name="frameShadow">
+   <enum>QFrame::Plain</enum>
+  </property>
+  <property name="lineWidth">
+   <number>0</number>
+  </property>
+  <property name="horizontalScrollBarPolicy">
+   <enum>Qt::ScrollBarAlwaysOff</enum>
+  </property>
+  <property name="widgetResizable">
+   <bool>true</bool>
+  </property>
+  <widget class="QWidget" name="scrollAreaWidgetContents">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>585</width>
+     <height>763</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="0" colspan="2">
+     <widget class="QGroupBox" name="groupBox_qualisys">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="title">
+       <string>Qualisys Configuration</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_10">
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_24">
+         <property name="text">
+          <string>Artificial Detection Delay</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_23">
+         <property name="text">
+          <string>Crazyflie Frame ID</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="comboBox_q1">
+         <property name="currentIndex">
+          <number>1</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>/Q0</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>/Q1</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>/Q2</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_22">
+         <property name="text">
+          <string>Wand Frame ID</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="comboBox_q0">
+         <item>
+          <property name="text">
+           <string>/Q0</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>/Q1</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>/Q2</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QDoubleSpinBox" name="doubleSpinBox_6">
+         <property name="suffix">
+          <string> seconds</string>
+         </property>
+         <property name="maximum">
+          <double>5.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QComboBox" name="comboBox_tracker">
+      <item>
+       <property name="text">
+        <string>Qualisys Motion Tracker</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Kinect</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>MonoSlam</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QPushButton" name="pushButton_trackStart">
+      <property name="text">
+       <string>Enable Tracker</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0" colspan="2">
+     <widget class="QGroupBox" name="groupBox_kinectBG">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="title">
+       <string>Background Detection</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_7">
+       <item row="0" column="0">
+        <widget class="QPushButton" name="pushButton">
+         <property name="text">
+          <string>Reset Background</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="comboBox_method">
+         <property name="currentIndex">
+          <number>1</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>Median</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Minimum</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_17">
+         <property name="text">
+          <string>Method</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_11">
+         <property name="toolTip">
+          <string>Maximum distance in the scenem usually no need to change this</string>
+         </property>
+         <property name="text">
+          <string>Maximum Depth</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QDoubleSpinBox" name="doubleSpinBox_kinMaxDepth">
+         <property name="toolTip">
+          <string>Maximum distance in the scenem usually no need to change this</string>
+         </property>
+         <property name="suffix">
+          <string> m</string>
+         </property>
+         <property name="minimum">
+          <double>2.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>8.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.250000000000000</double>
+         </property>
+         <property name="value">
+          <double>4.500000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QDoubleSpinBox" name="doubleSpinBox_kinObsTime">
+         <property name="prefix">
+          <string/>
+         </property>
+         <property name="suffix">
+          <string> seconds</string>
+         </property>
+         <property name="decimals">
+          <number>1</number>
+         </property>
+         <property name="minimum">
+          <double>0.500000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>10.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.250000000000000</double>
+         </property>
+         <property name="value">
+          <double>3.500000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_18">
+         <property name="text">
+          <string>Observation Time</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="3" column="0" colspan="2">
+     <widget class="QGroupBox" name="groupBox_kinectFG">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="title">
+       <string>Crazyflie Detection</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_12">
+         <property name="toolTip">
+          <string>How far away something has to be from the background to consider it foreground</string>
+         </property>
+         <property name="text">
+          <string>Detection Size</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_13">
+         <property name="toolTip">
+          <string>Maximum distance in the scenem usually no need to change this</string>
+         </property>
+         <property name="text">
+          <string>Tolerance</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_14">
+         <property name="toolTip">
+          <string>Maximum distance in the scenem usually no need to change this</string>
+         </property>
+         <property name="text">
+          <string>Opening Kernel Size</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_15">
+         <property name="toolTip">
+          <string>Maximum distance in the scenem usually no need to change this</string>
+         </property>
+         <property name="text">
+          <string>Opening Kernel Iterations</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_19">
+         <property name="text">
+          <string>Prioritise</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1" colspan="2">
+        <widget class="QComboBox" name="comboBox_prio">
+         <property name="currentIndex">
+          <number>4</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>Estimated Object Size</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Detection Size Pixels</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Distance from background</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Closest to Camera</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Closest to Goal</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_21">
+         <property name="text">
+          <string>Depth Estimation</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1" rowspan="2" colspan="2">
+        <widget class="QComboBox" name="comboBox_depth">
+         <item>
+          <property name="text">
+           <string>Center Pixel Depth</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Median Depth</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Minimum Depth</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="6" column="0" rowspan="2">
+        <widget class="QLabel" name="label_9">
+         <property name="toolTip">
+          <string>Rotation added to crazyflie yaw estimation so 0 degrees on the crazyflie is 0 degrees (ie north) in reality</string>
+         </property>
+         <property name="text">
+          <string>North Offset</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="2" rowspan="2">
+        <widget class="QSlider" name="horizontalSlider">
+         <property name="minimum">
+          <number>-1800</number>
+         </property>
+         <property name="maximum">
+          <number>1800</number>
+         </property>
+         <property name="singleStep">
+          <number>10</number>
+         </property>
+         <property name="pageStep">
+          <number>150</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="tickPosition">
+          <enum>QSlider::TicksBelow</enum>
+         </property>
+         <property name="tickInterval">
+          <number>450</number>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QDoubleSpinBox" name="doubleSpinBox">
+         <property name="suffix">
+          <string>°</string>
+         </property>
+         <property name="minimum">
+          <double>-180.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>180.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1" colspan="2">
+        <widget class="QSpinBox" name="spinBox_kernelIter">
+         <property name="suffix">
+          <string/>
+         </property>
+         <property name="maximum">
+          <number>10</number>
+         </property>
+         <property name="value">
+          <number>1</number>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" colspan="2">
+        <widget class="QDoubleSpinBox" name="doubleSpinBox_tol">
+         <property name="toolTip">
+          <string>Maximum distance in the scenem usually no need to change this</string>
+         </property>
+         <property name="suffix">
+          <string> cm</string>
+         </property>
+         <property name="decimals">
+          <number>1</number>
+         </property>
+         <property name="minimum">
+          <double>2.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>30.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.250000000000000</double>
+         </property>
+         <property name="value">
+          <double>4.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" colspan="2">
+        <widget class="QSpinBox" name="spinBox_kernelSize">
+         <property name="suffix">
+          <string> *2+1</string>
+         </property>
+         <property name="maximum">
+          <number>5</number>
+         </property>
+         <property name="value">
+          <number>1</number>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1" colspan="2">
+        <widget class="QDoubleSpinBox" name="doubleSpinBox_kinDetSize">
+         <property name="suffix">
+          <string> cm</string>
+         </property>
+         <property name="decimals">
+          <number>1</number>
+         </property>
+         <property name="minimum">
+          <double>1.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>30.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>6.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <spacer name="verticalSpacer_4">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>17</width>
+        <height>272</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="4" column="0" colspan="2">
+     <widget class="QGroupBox" name="groupBox_slam">
+      <property name="title">
+       <string>Mono Slam</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -399,6 +399,12 @@ class LogManager(QTreeWidget):
     sig_batteryUpdated = pyqtSignal(int)
     sig_logError = pyqtSignal(object, str) # block, msg
     sig_rosData = pyqtSignal(object, int, object) # data, time, rostime
+    sig_rpy = pyqtSignal(float, float, float)
+
+    #TODO need to impelment and connect the below
+    sig_thrust = pyqtSignal(int)
+    sig_baro = pyqtSignal(float, float, float) # ASL; pressure; temp
+    sig_motors = pyqtSignal(int,int,int,int) # M1 through M4
 
     #sig_batteryCB = pyqtSignal(object, int)
 
@@ -516,109 +522,8 @@ class LogManager(QTreeWidget):
 
 
 
-
-#
-#     def addSig(self, ident, sig, group, names, hz=0):
-#         self.sigHandler.addSig(ident, sig, group, names, hz)
-#
-#
-#
-#
-# class SigHandler(QObject):
-#     """ code else where can submit their signals for being called when the right data is available
-#             0 hz means it is called as soon as it arrives, X hz means its called at X hz with the latest available data"""
-#     def __init__(self, parent=None):
-#         super(SigHandler, self).__init__(parent)
-#         self.signals = {}
-#
-#         # stores ID: Signal
-#         self.id_sig = {}
-#         # Stores incoming data: List of ids
-#         self.data_id = {}
-#
-#
-#     #This could probably do with some love...
-#     def addSig(self, ident, sig, group, names, hz=0):
-#         """ Add a callback signal """
-#         # Make a key from the requested names
-#         k = self.makeKeyName(group, names)
-#
-#         # Store our signals
-#         if self.id_sig.has_key(ident):
-#             print "WARNING: replacing signal[%d] as it already exist" % ident
-#         self.id_sig[ident] = Sig(self, sig, hz)
-#
-#         # build data -> signal relationship
-#         if not self.data_id.has_key(k):
-#             self.data_id[k] = [ident]
-#         else:
-#             self.data_id[k].append(ident)
-#
-#     def setHZ(self, ident, hz):
-#         if self.id_sig.has_key(ident):
-#             self.id_sig[ident].setHZ(hz)
-#         else:
-#             print "Could not set HZ of signal[%d] as it does not exist" % ident
-#
-#     def removeSig(self, ident):
-#         if self.id_sig.has_key(ident):
-#             del self.id_sig[ident]
-#         else:
-#             print "Could delete signal[%d] as it does not exist" % ident
-#
-#     def makeKeyData(self, data):
-#         group=data.keys()[0]
-#         group = group[:group.find(".")]
-#         return group+"_"+".".join(sorted([key[key.rfind(".")+1:] for key in data.keys()]))
-#
-#     def makeKeyName(self, group, names):
-#         return group+"_"+".".join(sorted(set(names)))
-#
-#     def handleData(self, data, ts):
-#         k = self.makeKeyData(data)
-#         if self.data_id.has_key(k):
-#             for ident in self.data_id[k]:
-#                 self.id_sig[ident].setData(data,ts)
-#
-#
-# class Sig(QObject):
-#     def __init__(self, parent, signal, hz):
-#         super(Sig, self).__init__(parent)
-#         self.signal = signal
-#         self.timer = None
-#         self.data = None
-#         self.timestamp = None
-#         self.hz = None
-#         self.setHZ(hz)
-#
-#     def setData(self, data, ts):
-#         # By emitting directly we pass by reference
-#         if self.hz == 0:
-#             self.signal.emit(data, ts)
-#             return
-#         self.data = data
-#         self.timestamp = ts
-#
-#     def setHZ(self, hz):
-#         """0 = emit when data arrives, >0 means emit at that frequency, <0 means do not emit """
-#         self.hz = hz
-#         if hz>0:
-#             if self.timer:
-#                 self.timer.setInterval(1000/hz)
-#             else:
-#                 self.timer = QTimer(1000/hz)
-#                 self.timer.timeout.connect(self.emitSignal)
-#         elif hz==0:
-#              if self.timer:
-#                  self.timer.stop()
-#                  self.timer = None
-#         else:
-#              if self.timer:
-#                  self.timer.stop()
-#                  self.timer = None
-#
-#     def emitSignal(self):
-#         if self.data:
-#             self.signal.emit(self.timestamp, self.data)
-#
-#
+        if isGroup(data, "stabilizer"):
+            if hasAllKeys(data, ["roll","pitch","yaw"], "stabilizer"):
+                self.sig_rpy.emit(data["stabilizer.roll"],data["stabilizer.pitch"],data["stabilizer.yaw"])
+            if hasAllKeys(data, ["thrust"], "stabilizer"):
+                self.sig_thrust.emit(data["thrust"])

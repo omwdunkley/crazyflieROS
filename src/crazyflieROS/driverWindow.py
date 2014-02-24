@@ -4,6 +4,9 @@ import os, time
 from PyQt4 import QtGui, uic
 from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot, QThread, QObject, QTimer, QSettings, QPoint, QSize, QVariant
 
+
+from ui.ai import AttitudeIndicator
+from trackManager import TrackManager
 from logManager import LogManager
 from paramManager import ParamManager
 from FlieManager import FlieControl, STATE
@@ -52,7 +55,7 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.ui.tabWidget.setCurrentIndex(0)
-        self.resetInfo()
+        self.resetInfo(initial=True)
         self.ui.labelTest = {"MS5611": self.ui.label_baroTest, "MPU6050": self.ui.label_MPUTest, "HMC5883L": self.ui.label_magTest}
 
         self.state = STATE.DISCONNECTED
@@ -60,7 +63,6 @@ class DriverWindow(QtGui.QMainWindow ):
 
         # ROS
         self.ros = ROSNode()
-
 
 
         # FLIE
@@ -90,6 +92,19 @@ class DriverWindow(QtGui.QMainWindow ):
         self.autoRetryTimer.setInterval(1500)
         self.autoRetryTimer.timeout.connect(lambda : self.connectPressed(self.ui.comboBox_connect.currentText(), auto=True))
         self.autoRetryTimer.setSingleShot(True)
+
+        # Set up TrackManager
+        self.trackManager = TrackManager(self)
+        self.ui.tab_tracking.layout().addWidget(self.trackManager)
+
+
+        # AI
+        self.ai = AttitudeIndicator(self.ui.tab_hud)
+        self.logManager.sig_rpy.connect(self.ai.setRollPitch)
+        self.ui.tab_hud.layout().addWidget(self.ai)
+        #TODO set update rate from some menu
+        #TODO connect rest of signals
+        # TODO make sure the yaw is also adjusted with the yaw offset
 
 
 
@@ -289,7 +304,7 @@ class DriverWindow(QtGui.QMainWindow ):
         interface_status =get_interfaces_status()
         self.ui.label_crv.setText(interface_status["radio"])
 
-    def resetInfo(self):
+    def resetInfo(self, initial = False):
         """ Resets the labels on the info tab """
         self.ui.label_baroFound.setText("")
         self.ui.label_magTest.setText("")
@@ -303,6 +318,9 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.progressBar_pktOut.setValue(0)
         self.ui.progressbar_bat.setValue(3000)
         self.ui.progressbar_link.setValue(0)
+
+        if not initial:
+            self.ai.reset()
 
     @pyqtSlot(int,int)
     def updatePacketRate(self, pb, hz):

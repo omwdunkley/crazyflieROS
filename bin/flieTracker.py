@@ -134,8 +134,6 @@ class Localiser:
                     mask = cv2.absdiff(med, local) < std
                     new_min = cv2.min(self.depth, local)
                     self.depth[mask] = new_min[mask]
-                    #cv2.imshow("BACKGROUND", self.depth)
-                    #cv2.waitKey(1000/60)
             else:
                 min = np.min(self.acc, 2)
                 self.depth = min
