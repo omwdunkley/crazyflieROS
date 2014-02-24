@@ -342,7 +342,7 @@ Remember
 
 # Todo
 
-Items
+TODO
  * JoyStick needs porting
    * Class
    * UI
@@ -371,9 +371,13 @@ Items
      * The UI needs it
    * Deal with yaw offset in Settings tab
    * Deal with reading/writing the Settings tab values
-   * Add ROS startup check
+   * Add ROS startup check, ie a dialog which says "WAiting ... Cancel"
    * Add Icon, change window name
    * Some things should be undockable!
+   * ctrl+c from the terminal should kill it
+   * parse command line arguments
+     * argument to reset the default QSettings
+   * If multiple drones discovered, dont autoconnect the first time
  * AI
    * needs baro, accel, motors, crash, etc connected to it
    * Add a slider and spin box in the config to set the update hz and turn it on/off
@@ -381,5 +385,17 @@ Items
    * right click functionality
    * Inspiration from c++ code
    * double click full screen
+   
+   
+FIXME
+
+```
+AttributeError: 'FlieControl' object has no attribute 'param'
+Traceback (most recent call last):
+  File "/home/ollie/Dropbox/Code/ROS/crazyflieROS/src/crazyflieROS/FlieManager.py", line 179, in sendCmd
+    self.requestHover(hover)
+  File "/home/ollie/Dropbox/Code/ROS/crazyflieROS/src/crazyflieROS/FlieManager.py", line 190, in requestHover
+  ```
+
 
  
