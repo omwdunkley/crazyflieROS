@@ -349,6 +349,7 @@ Items
    * Trim
    * Visualisation
    * Configuration options (slew, response curves, etc)
+   * Add reading joy from PyGame
  * Tracker needs porting
    * Qualisys TF stuff
    * Kinect
@@ -360,6 +361,7 @@ Items
    * realtime graphing
    * error column in table - add colour info
    * checkboxes in table, 
+   * read/write between sessions, etc
  * General Stuff
    * image topic viewer (for cam, for kinect)
    * label, spinbox, horizontal viewer combo
@@ -367,11 +369,17 @@ Items
    * add the offset of the gyro yaw ASAP, ie right at the source where the logs comes in
      * ROS needs it
      * The UI needs it
-   * Deal with yaw offset in config tab
+   * Deal with yaw offset in Settings tab
+   * Deal with reading/writing the Settings tab values
+   * Add ROS startup check
+   * Add Icon, change window name
+   * Some things should be undockable!
  * AI
    * needs baro, accel, motors, crash, etc connected to it
    * Add a slider and spin box in the config to set the update hz and turn it on/off
    * Show overlay from ROS images
    * right click functionality
    * Inspiration from c++ code
+   * double click full screen
+
  
