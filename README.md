@@ -367,12 +367,11 @@ Items
    * add the offset of the gyro yaw ASAP, ie right at the source where the logs comes in
      * ROS needs it
      * The UI needs it
+   * Deal with yaw offset in config tab
  * AI
    * needs baro, accel, motors, crash, etc connected to it
    * Add a slider and spin box in the config to set the update hz and turn it on/off
    * Show overlay from ROS images
    * right click functionality
    * Inspiration from c++ code
- * 
-
  
