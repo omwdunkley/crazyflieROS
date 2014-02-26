@@ -133,7 +133,7 @@
     <item row="2" column="0" colspan="3">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>5</number>
+       <number>6</number>
       </property>
       <widget class="QWidget" name="tab_param">
        <attribute name="title">
@@ -325,6 +325,12 @@
          </spacer>
         </item>
        </layout>
+      </widget>
+      <widget class="QWidget" name="tab_hud">
+       <attribute name="title">
+        <string>HUD</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_9"/>
       </widget>
       <widget class="QWidget" name="tab_input">
        <attribute name="title">
@@ -613,6 +619,41 @@
         <string>Settings</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
+        <item row="3" column="2">
+         <widget class="QSpinBox" name="spinBox_pktHZ">
+          <property name="suffix">
+           <string> HZ</string>
+          </property>
+          <property name="prefix">
+           <string/>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>30</number>
+          </property>
+          <property name="singleStep">
+           <number>5</number>
+          </property>
+          <property name="value">
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="0" colspan="3">
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
         <item row="2" column="0">
          <widget class="QCheckBox" name="checkBox_startupConnect">
           <property name="toolTip">
@@ -690,14 +731,17 @@
          </widget>
         </item>
         <item row="6" column="0">
-         <widget class="QCheckBox" name="checkBox">
+         <widget class="QCheckBox" name="checkBox_yaw">
           <property name="text">
            <string>Yaw Offset</string>
           </property>
          </widget>
         </item>
         <item row="6" column="1">
-         <widget class="QSlider" name="horizontalSlider">
+         <widget class="QSlider" name="horizontalSlider_yaw">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="minimum">
            <number>-1800</number>
           </property>
@@ -705,10 +749,10 @@
            <number>1800</number>
           </property>
           <property name="singleStep">
-           <number>10</number>
+           <number>1</number>
           </property>
           <property name="pageStep">
-           <number>150</number>
+           <number>5</number>
           </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -721,8 +765,8 @@
           </property>
          </widget>
         </item>
-        <item row="7" column="0">
-         <widget class="QCheckBox" name="checkBox_pktHZ_2">
+        <item row="8" column="0">
+         <widget class="QCheckBox" name="checkBox_AI">
           <property name="toolTip">
            <string extracomment="the rate at which the packet in/out throughput is estimated"/>
           </property>
@@ -734,8 +778,8 @@
           </property>
          </widget>
         </item>
-        <item row="7" column="1">
-         <widget class="QSlider" name="horizontalSlider_pktHZ_2">
+        <item row="8" column="1">
+         <widget class="QSlider" name="horizontalSlider_AI">
           <property name="minimum">
            <number>0</number>
           </property>
@@ -765,8 +809,8 @@
           </property>
          </widget>
         </item>
-        <item row="7" column="2">
-         <widget class="QSpinBox" name="spinBox_pktHZ_2">
+        <item row="8" column="2">
+         <widget class="QSpinBox" name="spinBox_AIHZ">
           <property name="suffix">
            <string> HZ</string>
           </property>
@@ -852,7 +896,10 @@
          </widget>
         </item>
         <item row="6" column="2">
-         <widget class="QDoubleSpinBox" name="doubleSpinBox">
+         <widget class="QDoubleSpinBox" name="doubleSpinBox_yaw">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="suffix">
            <string>°</string>
           </property>
@@ -862,27 +909,8 @@
           <property name="maximum">
            <double>180.000000000000000</double>
           </property>
-         </widget>
-        </item>
-        <item row="3" column="2">
-         <widget class="QSpinBox" name="spinBox_pktHZ">
-          <property name="suffix">
-           <string> HZ</string>
-          </property>
-          <property name="prefix">
-           <string/>
-          </property>
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <number>30</number>
-          </property>
           <property name="singleStep">
-           <number>5</number>
-          </property>
-          <property name="value">
-           <number>5</number>
+           <double>0.100000000000000</double>
           </property>
          </widget>
         </item>
@@ -922,7 +950,7 @@
           </property>
          </widget>
         </item>
-        <item row="8" column="0" colspan="3">
+        <item row="9" column="0" colspan="3">
          <widget class="QGroupBox" name="groupBox_4">
           <property name="title">
            <string>Publish To ROS</string>
@@ -932,7 +960,7 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_10">
            <item row="0" column="2">
-            <widget class="QCheckBox" name="checkBox_3">
+            <widget class="QCheckBox" name="checkBox_rosPID">
              <property name="text">
               <string>PID Data</string>
              </property>
@@ -942,7 +970,7 @@
             </widget>
            </item>
            <item row="0" column="0">
-            <widget class="QCheckBox" name="checkBox_2">
+            <widget class="QCheckBox" name="checkBox_rosLog">
              <property name="text">
               <string>Log Data</string>
              </property>
@@ -952,7 +980,7 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QCheckBox" name="checkBox_4">
+            <widget class="QCheckBox" name="checkBox_rosCmd">
              <property name="text">
               <string>Raw Commands</string>
              </property>
@@ -964,7 +992,7 @@
           </layout>
          </widget>
         </item>
-        <item row="10" column="0" colspan="3">
+        <item row="11" column="0" colspan="3">
          <widget class="QPushButton" name="pushButton_genRosMsg">
           <property name="enabled">
            <bool>false</bool>
@@ -974,18 +1002,15 @@
           </property>
          </widget>
         </item>
-        <item row="9" column="0" colspan="3">
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
+        <item row="7" column="1">
+         <widget class="QPushButton" name="pushButton_north">
+          <property name="enabled">
+           <bool>false</bool>
           </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
+          <property name="text">
+           <string>Set North</string>
           </property>
-         </spacer>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -1305,12 +1330,6 @@
          </widget>
         </item>
        </layout>
-      </widget>
-      <widget class="QWidget" name="tab_hud">
-       <attribute name="title">
-        <string>HUD</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout_9"/>
       </widget>
      </widget>
     </item>
@@ -1683,9 +1702,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>checkBox</sender>
+   <sender>checkBox_yaw</sender>
    <signal>toggled(bool)</signal>
-   <receiver>horizontalSlider</receiver>
+   <receiver>horizontalSlider_yaw</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -1699,9 +1718,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>checkBox</sender>
+   <sender>checkBox_yaw</sender>
    <signal>toggled(bool)</signal>
-   <receiver>doubleSpinBox</receiver>
+   <receiver>doubleSpinBox_yaw</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -1715,34 +1734,82 @@
    </hints>
   </connection>
   <connection>
-   <sender>horizontalSlider_pktHZ_2</sender>
+   <sender>horizontalSlider_AI</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>spinBox_pktHZ_2</receiver>
+   <receiver>spinBox_AIHZ</receiver>
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>397</x>
-     <y>405</y>
+     <y>438</y>
     </hint>
     <hint type="destinationlabel">
      <x>464</x>
-     <y>405</y>
+     <y>438</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>spinBox_pktHZ_2</sender>
+   <sender>spinBox_AIHZ</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>horizontalSlider_pktHZ_2</receiver>
+   <receiver>horizontalSlider_AI</receiver>
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>472</x>
-     <y>396</y>
+     <y>429</y>
     </hint>
     <hint type="destinationlabel">
      <x>346</x>
-     <y>405</y>
+     <y>438</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_AI</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>horizontalSlider_AI</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>157</x>
+     <y>434</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>228</x>
+     <y>439</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_AI</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>spinBox_AIHZ</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>100</x>
+     <y>434</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>478</x>
+     <y>430</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_yaw</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>pushButton_north</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>86</x>
+     <y>358</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>212</x>
+     <y>403</y>
     </hint>
    </hints>
   </connection>

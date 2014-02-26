@@ -17,7 +17,7 @@ from PyQt4.QtGui import  QTreeWidget, QTreeWidgetItem, QAbstractItemView,QHeader
 from cflib.crazyflie.log import Log, LogConfig, LogVariable
 
 from commonTools import FreqMonitor, hasAllKeys, isGroup
-
+import math
 
 
 
@@ -142,7 +142,6 @@ class LogGroup(QTreeWidgetItem):
 
         #TODO: add a checkbox in the row if we wanan send or not
         self.treeWidget().incomingData(data, ts)
-        self.treeWidget().sig_rosData.emit(data, ts, rospy.Time.now()) # Wall time ??
 
 
     #TODO: there is bug here where the callbacks are called twice!! Holds for this + deleted CB
@@ -443,6 +442,27 @@ class LogManager(QTreeWidget):
         self.cf.connected.add_callback(self.newToc)
         self.cf.disconnected.add_callback(self.purgeToc)
 
+        # Yaw offset to compensate for gyro drift
+        self.yawOffset = 0.0
+        self.preYaw = 0.0
+        # If we should spam ROS messages or not
+        self.pubRos = True
+
+
+    @pyqtSlot(float)
+    def setYawOffset(self, yaw):
+        """ Due to gyro drift, we can manually add an offset to any yaw log """
+        self.yawOffset = -yaw
+
+    @pyqtSlot(bool)
+    def setPubToRos(self, on=True):
+        self.pubRos = on
+
+    def getYaw(self):
+        return self.preYaw
+
+
+
 
     def userStartEdit(self, item, col):
         """ Make sure only the target HZ can be changed """
@@ -513,13 +533,17 @@ class LogManager(QTreeWidget):
 
     def incomingData(self, data, ts):
         """ All incoming data is routed to this function. Ros data is spammed from the tree groups """
-        #self.sigHandler.handleData(data, ts)
-        """ BATTERY """
-        #TODO: cap at 5hz
+        rostime = rospy.Time.now()
+
+        # Yaw offset, also negate so its CW #TODO: gyro velocities negated???
+        if data.has_key("stabilizer.yaw"):
+            self.preYaw = -data["stabilizer.yaw"]
+            data["stabilizer.yaw"] = normaliseAngle(self.yawOffset + self.preYaw)
+
+        # Battery
         if isGroup(data, "pm"):
             if hasAllKeys(data, ["vbat"], "pm"):
                 self.sig_batteryUpdated.emit(int(1000*data["pm.vbat"]))
-
 
 
         if isGroup(data, "stabilizer"):
@@ -527,3 +551,16 @@ class LogManager(QTreeWidget):
                 self.sig_rpy.emit(data["stabilizer.roll"],data["stabilizer.pitch"],data["stabilizer.yaw"])
             if hasAllKeys(data, ["thrust"], "stabilizer"):
                 self.sig_thrust.emit(data["thrust"])
+
+        # ROS
+        if self.pubRos:
+            self.sig_rosData.emit(data, ts, rostime) # Wall time ??
+
+
+def normaliseAngle( angle):
+    """ Normalises an angle to +-180 """
+    if angle > 180.0 or angle == -180.0:
+        angle = -180.0 + abs(angle + 180.0) % (abs(-180.0) + abs(180.0))
+    elif angle < -180.0 or angle == 180.0:
+        angle = 180.0 - abs(angle - -180.0) % (abs(-180.0) + abs(180.0))
+    return angle

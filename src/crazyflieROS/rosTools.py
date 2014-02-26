@@ -4,7 +4,8 @@ __all__= ['generateRosMessages','ROSNode']
 
 
 
-from PyQt4.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt4.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
+from PyQt4.QtGui import QDialog, QDialogButtonBox, QVBoxLayout, QLabel
 
 import rospy
 import roslib
@@ -42,8 +43,15 @@ class ROSNode(QObject):
     sig_joydata = pyqtSignal(float, float, float, float, bool) #RPYThrustHover
     sig_joydataRaw = pyqtSignal(float, float, float, int, bool) #RPYThrustHover
 
-    def __init__(self):
-        super(ROSNode, self).__init__()
+    def __init__(self, parent=None):
+        super(ROSNode, self).__init__(parent)
+
+        #RosDialog.ask()
+
+        #d = QDialog(parent)
+        #d.show()
+
+
         rospy.init_node('CrazyflieDriver')
         self.compiledMsgs = [m for m in dir(msgCF) if m[0]!="_"] # Mmessages that are previously auto-compiled and we can send
 
@@ -100,7 +108,7 @@ class ROSNode(QObject):
                 self.pub_tf.sendTransform((0, 0, 0),tf.transformations.quaternion_from_euler(
                     radians(log["stabilizer.roll"]),
                     -radians(log["stabilizer.pitch"]),
-                    radians(log["stabilizer.yaw"]),'sxyz'), tsROS, "/cf", "/cf_xyz")
+                    -radians(log["stabilizer.yaw"]),'sxyz'), tsROS, "/cf", "/cf_xyz")
 
 
 
@@ -139,3 +147,10 @@ def makeMsg(name, path, members):
         t = members[m].ctype[:-2] if members[m].ctype!="float" else members[m].ctype+"32"
         file.write("%s %s\n" % (t, members[m].name))
     file.close()
+
+
+class MyDialog(QDialog):
+    def __init__(self, parent=None):
+        super(MyDialog, self).__init__(parent)
+        rospy.init_node('CrazyflieDriver')
+        super(MyDialog, self).accept()

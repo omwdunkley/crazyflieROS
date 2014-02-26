@@ -14,7 +14,7 @@
         <param name="pixel_format" value="yuyv" />
         <param name="camera_frame_id" value="$(arg FRAME)" />
         <param name="io_method" value="mmap"/>   
-        <remap from="/usb_cam/" to="/cf/cam/"/>     
+        <!-- remap from="/usb_cam/" to="/cf/cam/" -->     
     </node>
 
 

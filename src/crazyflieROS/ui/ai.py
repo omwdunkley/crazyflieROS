@@ -85,9 +85,8 @@ class AttitudeIndicator(QtGui.QWidget):
         self.updateTimer.setInterval(1000/self.hz)
 
     def reset(self):
-        self.setRollPitch(0,0)
+        self.setRollPitchYaw(0,0,0)
         self.setHover(0)
-        #self.setYaw(0)
 
     def updateAI(self):
         if self.msgRemove>0:
@@ -118,7 +117,7 @@ class AttitudeIndicator(QtGui.QWidget):
         self.needUpdate = True
 
     def setYaw(self, yaw):
-        self.yaw = True
+        self.yaw = yaw
         self.needUpdate = True
         
     def setHover(self, target):        
@@ -130,7 +129,7 @@ class AttitudeIndicator(QtGui.QWidget):
         self.hoverASL = asl
         self.needUpdate = True
 
-    def setRollPitch(self, roll, pitch, yaw=None):
+    def setRollPitchYaw(self, roll, pitch, yaw):
         self.roll = roll
         self.pitch = pitch
         self.yaw = yaw

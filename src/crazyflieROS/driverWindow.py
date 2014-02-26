@@ -14,6 +14,7 @@ from rosTools import generateRosMessages, ROSNode
 from ui.driverGUI import Ui_MainWindow
 from cflib.crtp import scan_interfaces, init_drivers, get_interfaces_status
 from functools import partial
+
 import rospy
 #logger = logging.getLogger(__name__)
 
@@ -62,11 +63,11 @@ class DriverWindow(QtGui.QMainWindow ):
 
 
         # ROS
-        self.ros = ROSNode()
+        self.ros = ROSNode(self)
 
 
         # FLIE
-        self.flie = FlieControl()
+        self.flie = FlieControl(self)
         self.ui.checkBox_pktHZ.toggled.connect(lambda on: self.flie.setPacketUpdateSpeed(self.ui.spinBox_pktHZ.value() if on else 0 ))
         self.ui.spinBox_pktHZ.valueChanged.connect(self.flie.inKBPS.setHZ)
         self.ui.spinBox_pktHZ.valueChanged.connect(self.flie.outKBPS.setHZ)
@@ -100,12 +101,21 @@ class DriverWindow(QtGui.QMainWindow ):
 
         # AI
         self.ai = AttitudeIndicator(self.ui.tab_hud)
-        self.logManager.sig_rpy.connect(self.ai.setRollPitch)
+        self.logManager.sig_rpy.connect(self.ai.setRollPitchYaw)
         self.ui.tab_hud.layout().addWidget(self.ai)
-        #TODO set update rate from some menu
-        #TODO connect rest of signals
+        self.ui.checkBox_AI.stateChanged.connect(self.ai.setUpdatesEnabled)
+        self.ui.spinBox_AIHZ.valueChanged.connect(self.ai.setUpdateSpeed)
         # TODO make sure the yaw is also adjusted with the yaw offset
 
+        # Yaw offset
+        self.ui.doubleSpinBox_yaw.valueChanged.connect(lambda yaw: self.ui.horizontalSlider_yaw.setValue(yaw*10))
+        self.ui.horizontalSlider_yaw.valueChanged.connect(lambda yaw: self.ui.doubleSpinBox_yaw.setValue(yaw/10))
+        self.ui.doubleSpinBox_yaw.valueChanged.connect(self.logManager.setYawOffset)
+        self.ui.checkBox_yaw.stateChanged.connect(lambda x: self.logManager.setYawOffset(self.ui.doubleSpinBox_yaw.value() if x else 0))
+        self.ui.checkBox_yaw.stateChanged.emit(self.ui.checkBox_yaw.checkState()) # force update
+
+        self.ui.checkBox_rosLog.stateChanged.connect(self.logManager.setPubToRos)
+        self.ui.pushButton_north.clicked.connect(lambda: self.ui.doubleSpinBox_yaw.setValue(self.logManager.getYaw()))
 
 
 
@@ -148,6 +158,8 @@ class DriverWindow(QtGui.QMainWindow ):
 
         self.ui.checkBox_beep.toggled.connect(self.setBeep)
         self.ui.checkBox_kill.toggled.connect(self.setKill)
+        self.ui.checkBox_kill.toggled.connect(self.ai.setKillSwitch)
+        self.ui.checkBox_kill.toggled.emit(self.ui.checkBox_kill.checkState()) # force update
         self.ui.checkBox_reconnect.toggled.connect(self.setAutoReconnect)
         self.ui.checkBox_startupConnect.toggled.connect(self.setStartupConnect)
         self.ui.pushButton_genRosMsg.clicked.connect(self.genRosMsg)

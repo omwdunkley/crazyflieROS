@@ -10,6 +10,8 @@ from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot, QObject, QTimer
 from PyQt4.QtGui import   QScrollArea, QWidget,  QPushButton
 
 import rospy
+import roslib
+roslib.load_manifest("crazyflieROS")
 import tf
 from sensor_msgs.msg import Image as ImageMSG
 
