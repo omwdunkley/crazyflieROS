@@ -115,6 +115,7 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.checkBox_yaw.stateChanged.emit(self.ui.checkBox_yaw.checkState()) # force update
 
         self.ui.checkBox_rosLog.stateChanged.connect(self.logManager.setPubToRos)
+        self.ui.groupBox_ros.clicked.connect(lambda x: self.logManager.setPubToRos(min(self.ui.groupBox_ros.isChecked(), self.ui.checkBox_rosLog.checkState())))
         self.ui.pushButton_north.clicked.connect(lambda: self.ui.doubleSpinBox_yaw.setValue(self.logManager.getYaw()))
 
 

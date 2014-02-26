@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'driverGUI.ui'
 #
-# Created: Wed Feb 26 23:51:12 2014
+# Created: Thu Feb 27 00:19:22 2014
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -409,24 +409,24 @@ class Ui_MainWindow(object):
         self.label_7 = QtGui.QLabel(self.tab_config)
         self.label_7.setObjectName(_fromUtf8("label_7"))
         self.gridLayout_3.addWidget(self.label_7, 5, 0, 1, 1)
-        self.groupBox_4 = QtGui.QGroupBox(self.tab_config)
-        self.groupBox_4.setCheckable(True)
-        self.groupBox_4.setObjectName(_fromUtf8("groupBox_4"))
-        self.gridLayout_10 = QtGui.QGridLayout(self.groupBox_4)
+        self.groupBox_ros = QtGui.QGroupBox(self.tab_config)
+        self.groupBox_ros.setCheckable(True)
+        self.groupBox_ros.setObjectName(_fromUtf8("groupBox_ros"))
+        self.gridLayout_10 = QtGui.QGridLayout(self.groupBox_ros)
         self.gridLayout_10.setObjectName(_fromUtf8("gridLayout_10"))
-        self.checkBox_rosPID = QtGui.QCheckBox(self.groupBox_4)
+        self.checkBox_rosPID = QtGui.QCheckBox(self.groupBox_ros)
         self.checkBox_rosPID.setChecked(True)
         self.checkBox_rosPID.setObjectName(_fromUtf8("checkBox_rosPID"))
         self.gridLayout_10.addWidget(self.checkBox_rosPID, 0, 2, 1, 1)
-        self.checkBox_rosLog = QtGui.QCheckBox(self.groupBox_4)
+        self.checkBox_rosLog = QtGui.QCheckBox(self.groupBox_ros)
         self.checkBox_rosLog.setChecked(True)
         self.checkBox_rosLog.setObjectName(_fromUtf8("checkBox_rosLog"))
         self.gridLayout_10.addWidget(self.checkBox_rosLog, 0, 0, 1, 1)
-        self.checkBox_rosCmd = QtGui.QCheckBox(self.groupBox_4)
+        self.checkBox_rosCmd = QtGui.QCheckBox(self.groupBox_ros)
         self.checkBox_rosCmd.setChecked(True)
         self.checkBox_rosCmd.setObjectName(_fromUtf8("checkBox_rosCmd"))
         self.gridLayout_10.addWidget(self.checkBox_rosCmd, 0, 1, 1, 1)
-        self.gridLayout_3.addWidget(self.groupBox_4, 9, 0, 1, 3)
+        self.gridLayout_3.addWidget(self.groupBox_ros, 9, 0, 1, 3)
         self.pushButton_genRosMsg = QtGui.QPushButton(self.tab_config)
         self.pushButton_genRosMsg.setEnabled(False)
         self.pushButton_genRosMsg.setObjectName(_fromUtf8("pushButton_genRosMsg"))
@@ -671,7 +671,7 @@ class Ui_MainWindow(object):
         self.checkBox_logHZ.setText(QtGui.QApplication.translate("MainWindow", "Log HZ", None, QtGui.QApplication.UnicodeUTF8))
         self.spinBox_logHZ.setSuffix(QtGui.QApplication.translate("MainWindow", " HZ", None, QtGui.QApplication.UnicodeUTF8))
         self.label_7.setText(QtGui.QApplication.translate("MainWindow", "Gui HZ", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_4.setTitle(QtGui.QApplication.translate("MainWindow", "Publish To ROS", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_ros.setTitle(QtGui.QApplication.translate("MainWindow", "Publish To ROS", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_rosPID.setText(QtGui.QApplication.translate("MainWindow", "PID Data", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_rosLog.setText(QtGui.QApplication.translate("MainWindow", "Log Data", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_rosCmd.setText(QtGui.QApplication.translate("MainWindow", "Raw Commands", None, QtGui.QApplication.UnicodeUTF8))

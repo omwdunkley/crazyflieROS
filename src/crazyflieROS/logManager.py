@@ -457,6 +457,8 @@ class LogManager(QTreeWidget):
     @pyqtSlot(bool)
     def setPubToRos(self, on=True):
         self.pubRos = on
+        rospy.loginfo("ROS Messages turned [%s]", "ON" if on else "OFF")
+
 
     def getYaw(self):
         return self.preYaw
