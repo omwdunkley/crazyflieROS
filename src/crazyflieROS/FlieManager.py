@@ -42,8 +42,8 @@ class FlieControl(QObject):
     sig_flieLink = pyqtSignal(int)
     #sig_flieBattery = pyqtSignal()
 
-    def __init__(self):
-        super(FlieControl, self).__init__()
+    def __init__(self, parent=None):
+        super(FlieControl, self).__init__(parent)
 
         # Temporary
         #cache_dir = os.path.dirname(os.path.realpath(__file__))
@@ -187,7 +187,7 @@ class FlieControl(QObject):
 
 
     def requestHover(self, on=True):
-        self.crazyflie.param.set_value("%s.%s" % (self.param.group, self.param.name), on)
+        self.crazyflie.param.set_value("flightmode.althold", "1" if on else "0")
 
 
 
