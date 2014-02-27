@@ -161,6 +161,11 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.checkBox_kill.toggled.connect(self.setKill)
         self.ui.checkBox_kill.toggled.connect(self.ai.setKillSwitch)
         self.ui.checkBox_kill.toggled.emit(self.ui.checkBox_kill.checkState()) # force update
+        self.ui.checkBox_hover.toggled.connect(self.flie.setHoverAllowed)
+        self.ui.checkBox_hover.toggled.emit(self.ui.checkBox_hover.checkState()) # force update
+
+
+
         self.ui.checkBox_reconnect.toggled.connect(self.setAutoReconnect)
         self.ui.checkBox_startupConnect.toggled.connect(self.setStartupConnect)
         self.ui.pushButton_genRosMsg.clicked.connect(self.genRosMsg)

@@ -25,23 +25,13 @@ from scipy import matrix
 
 WIN_RGB   = "RGB Window"
 
-kernel = np.ones((3, 3), np.uint8)
-
-
 yaw = 0*math.pi # Crazyflie yaw to align crazyflie x axis with world camera x axis
 
-centerX = 319.5
-centerY = 239.5
-depthFocalLength = 525
-
-MAXD = 4.5
-BACKGROUND_THRESH = 0.45
 
 
-def projectRay(u,v,z):
-    x = (u - centerX) * z / depthFocalLength
-    y = (v - centerY) * z / depthFocalLength
-    return [x,y,z]
+    
+
+
 
 
 class Localiser:
@@ -50,8 +40,14 @@ class Localiser:
     def __init__(self):
         
         rospy.init_node('flieLocaliser') 
-
         
+        self.maxDepth = 4.5
+        self.bg_thresh = 0.45
+        self.kernel = np.ones((3, 3), np.uint8)
+        self.centerX = 319.5
+        self.centerY = 239.5
+        self.depthFocalLength = 525
+
         # CV stuff
         self.bridge = CvBridge()
 
@@ -82,6 +78,13 @@ class Localiser:
             print "Shutting down"
             cv2.destroyAllWindows()
 
+
+    def projectRay(self, u,v,z):
+        x = (u - self.centerX) * z / self.depthFocalLength
+        y = (v - self.centerY) * z / self.depthFocalLength
+        return [x,y,z]
+
+
     def ros2cv(self, data, dt="mono8"):
         try:
             cv_image = self.bridge.imgmsg_to_cv2(data, dt)
@@ -99,7 +102,7 @@ class Localiser:
     def new_depth_data(self, data):
         img = self.ros2cv(data, dt="passthrough")
         img = np.asarray(img, dtype=np.float32)
-        img /= MAXD*1000
+        img /= self.maxDepth*1000
         img[np.isnan(img)] = 0
         img[np.isinf(img)] = 0
         img[img<0.01] = 1
@@ -151,9 +154,9 @@ class Localiser:
 
             # Binary image of close objects
             d = self.depth-img
-            #d = cv2.morphologyEx(d, cv2.MORPH_DILATE, kernel, iterations=1)
-            d = cv2.morphologyEx(d, cv2.MORPH_OPEN, kernel, iterations=1)
-            bm = cv2.threshold(d, BACKGROUND_THRESH/MAXD, 255, cv2.THRESH_BINARY)[1]
+            #d = cv2.morphologyEx(d, cv2.MORPH_DILATE, self.kernel, iterations=1)
+            d = cv2.morphologyEx(d, cv2.MORPH_OPEN, self.kernel, iterations=1)
+            bm = cv2.threshold(d, self.bg_thresh/self.maxDepth, 255, cv2.THRESH_BINARY)[1]
             bm = np.asarray(bm, dtype=np.uint8)
             dsts = cv2.distanceTransform(bm, cv2.cv.CV_DIST_L2, 3)
 
@@ -179,14 +182,14 @@ class Localiser:
                 retval, rect = cv2.floodFill(bm, mask, mxl, 0, flags=8 | cv2.FLOODFILL_FIXED_RANGE | cv2.FLOODFILL_MASK_ONLY)
 
                 # Get pose %TODO should compute average over whole blob
-                x, y, z = projectRay(mxl[0], mxl[1], MAXD*img[mxl[1], mxl[0]])
+                x, y, z = projectRay(mxl[0], mxl[1], self.maxDepth*img[mxl[1], mxl[0]])
 
                 # Estimate width
-                xD, yD, zD = projectRay(mxl[0]+dist, mxl[1]+dist, MAXD*img[mxl[1], mxl[0]])
+                xD, yD, zD = projectRay(mxl[0]+dist, mxl[1]+dist, self.maxDepth*img[mxl[1], mxl[0]])
                 w = math.sqrt((x-xD)**2 + (y-yD)**2)*2
 
                 # Estimatea distance from background
-                b_diff = cv2.mean(d, mask=mask[1:-1, 1:-1])[0]*MAXD
+                b_diff = cv2.mean(d, mask=mask[1:-1, 1:-1])[0]*self.maxDepth
 
                 if w<0.02 or w>0.10:
                     if showing:

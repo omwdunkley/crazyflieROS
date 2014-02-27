@@ -59,6 +59,7 @@ class FlieControl(QObject):
         self.status = STATE.DISCONNECTED
         self.killswitch = False
         self.hovering = False
+        self.hoverAllowed = True
 
         # Timers
         self.inKBPS = KBSecMonitor()
@@ -170,6 +171,9 @@ class FlieControl(QObject):
 
     ### OUTGOING
 
+    @pyqtSlot(bool)
+    def setHoverAllowed(self, on=True):
+        self.hoverAllowed=on
 
     @pyqtSlot(float, float, float, int, bool)
     def sendCmd(self, roll, pitch, yawrate, thrust, hover):
@@ -187,7 +191,7 @@ class FlieControl(QObject):
 
 
     def requestHover(self, on=True):
-        self.crazyflie.param.set_value("flightmode.althold", "1" if on else "0")
+        self.crazyflie.param.set_value("flightmode.althold", "1" if on and self.hoverAllowed else "0")
 
 
 
