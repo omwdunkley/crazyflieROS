@@ -299,6 +299,20 @@ One can also use the kinect to track the 3d position of the flie. However, one m
 ```rosrun tf static_transform_publisher -1.5 0 1 0 0 0 /world /camera_link 10```
 ```rosrun tf static_transform_publisher 0 0 0 0 0 0 /cf /cf_gt 10```
 ```roslaunch freenect_launch freenect.launch```
+```roslaunch crazyflieROS pid.launch js:=0```
+```rosrun rviz rviz -d kinect.vcg```
+
+Joy Settings:
+ * control - on
+ * set goal, then
+  * live update - off
+ * xy,yaw, thrust checked
+ * pid passive
+ * max thrust 100
+  
+GUI Settings
+*
+
 
 Todo:
  * Flie Yaw Offset
