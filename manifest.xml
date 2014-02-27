@@ -20,6 +20,20 @@
   <rosdep name="opencv"/> 
   <rosdep name="freenect_launch"/> 
 
+
+
+
+  <depend package="geometry_msgs"/>
+  <depend package="image_geometry"/>
+  <depend package="image_transport"/>
+  <depend package="std_msgs"/>
+  <depend package="std_srvs"/>
+  <depend package="tf_conversions"/>
+  <depend package="rospy"/>
+
+  <rosdep name="python-numpy" />
+
+
 </package>
 
 
