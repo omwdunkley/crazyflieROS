@@ -7,7 +7,7 @@
     <arg name="RECT"   default="false"/>
     <arg name="FRAME"  default="cam"/>
     
-    <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
+    <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" required="true" output="screen" >
         <param name="video_device" value="$(arg DEVICE)" />
         <param name="image_width" value="720" />
         <param name="image_height" value="576" />
@@ -39,8 +39,5 @@
 
     <!-- Publish Transform -->
     <node name="cam_transform" pkg="tf" type="static_transform_publisher" args="0 0 0 1.57 3.14 1.57 /cf_q $(arg FRAME) 10"/>
-    
-    
-    
     
 </launch>
