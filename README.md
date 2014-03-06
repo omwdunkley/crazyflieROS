@@ -377,8 +377,8 @@ TODO
    * Add reading joy from PyGame
  * Tracker needs porting
    * Qualisys TF stuff
-   * Kinect
-   * Show depth image with overlay
+   * ~~Kinect~~
+   * ~~Show depth image with overlay~~ (now on a ros topic)
  * PID needs porting
    * subclass QTableWidget
    * save/load configs
@@ -390,11 +390,11 @@ TODO
  * General Stuff
    * image topic viewer (for cam, for kinect)
    * label, spinbox, horizontal viewer combo
-   * finish all the signals from logManager for the rest of the ui
+   * ~~finish all the signals from logManager for the rest of the ui~~
    * add the offset of the gyro yaw ASAP, ie right at the source where the logs comes in
      * ROS needs it
      * The UI needs it
-   * Deal with yaw offset in Settings tab
+   * ~~Deal with yaw offset in Settings tab~~
    * Deal with reading/writing the Settings tab values
    * Add ROS startup check, ie a dialog which says "WAiting ... Cancel"
    * Add Icon, change window name
@@ -412,15 +412,6 @@ TODO
    * double click full screen
    
    
-FIXME
-
-```
-AttributeError: 'FlieControl' object has no attribute 'param'
-Traceback (most recent call last):
-  File "/home/ollie/Dropbox/Code/ROS/crazyflieROS/src/crazyflieROS/FlieManager.py", line 179, in sendCmd
-    self.requestHover(hover)
-  File "/home/ollie/Dropbox/Code/ROS/crazyflieROS/src/crazyflieROS/FlieManager.py", line 190, in requestHover
-  ```
 
 
  
