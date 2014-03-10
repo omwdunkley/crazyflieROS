@@ -5,7 +5,6 @@ __all__= ['generateRosMessages','ROSNode']
 
 
 from PyQt4.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
-from PyQt4.QtGui import QDialog, QDialogButtonBox, QVBoxLayout, QLabel
 
 import rospy
 import roslib
@@ -21,10 +20,6 @@ from math import radians
 #import logging
 
 from commonTools import hasAllKeys, isGroup, getGroup, getNames
-
-
-#logger = logging.getLogger(__name__)
-
 
 
 MIN_THRUST = 10000
@@ -46,13 +41,6 @@ class ROSNode(QObject):
     def __init__(self, parent=None):
         super(ROSNode, self).__init__(parent)
 
-        #RosDialog.ask()
-
-        #d = QDialog(parent)
-        #d.show()
-
-
-        rospy.init_node('CrazyflieDriver')
         self.compiledMsgs = [m for m in dir(msgCF) if m[0]!="_"] # Mmessages that are previously auto-compiled and we can send
 
         # Publishers
@@ -147,10 +135,3 @@ def makeMsg(name, path, members):
         t = members[m].ctype[:-2] if members[m].ctype!="float" else members[m].ctype+"32"
         file.write("%s %s\n" % (t, members[m].name))
     file.close()
-
-
-class MyDialog(QDialog):
-    def __init__(self, parent=None):
-        super(MyDialog, self).__init__(parent)
-        rospy.init_node('CrazyflieDriver')
-        super(MyDialog, self).accept()

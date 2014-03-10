@@ -1,10 +1,8 @@
-import os, time
+import os, sys
 #import logging
 
 from PyQt4 import QtGui, uic
 from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot, QThread, QObject, QTimer, QSettings, QPoint, QSize, QVariant
-
-
 from ui.ai import AttitudeIndicator
 from trackManager import TrackManager
 from logManager import LogManager
@@ -12,12 +10,11 @@ from paramManager import ParamManager
 from FlieManager import FlieControl, STATE
 from rosTools import generateRosMessages, ROSNode
 from ui.driverGUI import Ui_MainWindow
+from ui.masterDialog import Ui_Dialog
 from cflib.crtp import scan_interfaces, init_drivers, get_interfaces_status
 from functools import partial
 
 import rospy
-#logger = logging.getLogger(__name__)
-
 
 
 class MSGTYPE:
@@ -63,6 +60,7 @@ class DriverWindow(QtGui.QMainWindow ):
 
 
         # ROS
+        self.d = Dialog()
         self.ros = ROSNode(self)
 
 
@@ -539,3 +537,25 @@ class ScannerThread(QThread):
     @pyqtSlot()
     def scan(self):
         self.sig_foundURI.emit(scan_interfaces())
+
+
+class InitThread(QThread):
+    """ Simply runs init_node in a thread"""
+    def __init__(self):
+        QThread.__init__(self)
+    def run(self):
+        rospy.init_node('CrazyflieDriver', log_level=rospy.DEBUG, disable_signals=True)
+
+
+class Dialog(QtGui.QDialog):
+    """ Class to check for master and show a dialog """
+    def __init__(self, parent=None):
+        QtGui.QDialog.__init__(self, parent)
+        self.ui = Ui_Dialog()
+        self.ui.setupUi(self)
+        self.setModal(True)
+        self.wt = InitThread()
+        self.wt.finished.connect(self.accept)
+        self.rejected.connect(lambda : os._exit(0)) # Not very pretty
+        self.wt.start()
+        self.exec_()
