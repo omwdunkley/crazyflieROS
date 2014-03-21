@@ -1,5 +1,6 @@
 <launch>
     <!-- Options -->
+
     <arg name="cam"/>
     <arg name="DEVICE" default="/dev/video$(arg cam)"/>
     <arg name="FPS"    default="25/1"/>
@@ -7,6 +8,8 @@
     <arg name="VIEW"   default="true"/>
     <arg name="RECT"   default="false"/>
     <arg name="FRAME"  default="cam"/>
+
+    <!-- gst-launch v4l2src device=/dev/video0 ! video/x-raw-yuv,format=\(fourcc\)YUY2,width=720,height=576,framerate=25/1 ! ffmpegcolorspace ! xvimagesink -->
 
 
     <!-- GS CAM -->
@@ -40,7 +43,7 @@
 
 
     <!-- Publish Transform -->
-    <node name="cam_transform" pkg="tf" type="static_transform_publisher" args="0 0 0 1.57 3.14 1.57 /cf_q $(arg FRAME) 10"/>
+    <node name="cam_transform" pkg="tf" type="static_transform_publisher" args="0 0 0 1.57 3.14 1.57 /cf $(arg FRAME) 10"/>
 
 
 

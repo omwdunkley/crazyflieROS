@@ -36,7 +36,7 @@ from ui.trackerGUI import Ui_ScrollAreaTracker
 class TrackManager(QScrollArea):
     """ External Flie tracking """
     sig_inView = pyqtSignal(bool) # True if in view, else False
-    def __init__(self, parent=None):
+    def __init__(self, sub_tf, pub_tf, parent=None):
         super(TrackManager, self).__init__(parent)
 
 
@@ -46,8 +46,8 @@ class TrackManager(QScrollArea):
         self.ui.setupUi(self)
 
         # Ros stuff
-        self.sub_tf = tf.TransformListener()
-        self.pub_tf = tf.TransformBroadcaster()
+        self.sub_tf = sub_tf #tf.TransformListener()
+        self.pub_tf = pub_tf #tf.TransformBroadcaster()
 
         # Initialise Trackers
         self.trackers = [KinectTracker(self), QualisysTracker(self)]
@@ -289,7 +289,7 @@ class KinectTracker(Tracker):
         self.setMaxDepth(m=4.5)
         # How far away we need to be from the background to be considered foreground
         self.bg_thresh = None
-        self.setForegroundDist(cm=4.5)
+        self.setForegroundDist(cm=45)
         # Size of kernel for morphalogical operations
         self.kernel = None
         self.setKernel(2) #x*2+1

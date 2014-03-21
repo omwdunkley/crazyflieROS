@@ -8,6 +8,8 @@ from PyQt4.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
 
 import rospy
 import roslib
+import rosgraph
+
 from roslib.packages import get_pkg_dir
 roslib.load_manifest('crazyflieROS')
 from crazyflieROS import msg as msgCF
@@ -38,11 +40,11 @@ class ROSNode(QObject):
     sig_joydata = pyqtSignal(float, float, float, float, bool) #RPYThrustHover
     sig_joydataRaw = pyqtSignal(float, float, float, int, bool) #RPYThrustHover
 
-    def __init__(self, parent=None):
+    def __init__(self, options, parent=None):
         super(ROSNode, self).__init__(parent)
 
         self.compiledMsgs = [m for m in dir(msgCF) if m[0]!="_"] # Mmessages that are previously auto-compiled and we can send
-
+        self.options = options
         # Publishers
         self.publishers   = {} #Generated publishers will go here
         self.pub_tf       = tf.TransformBroadcaster()
@@ -51,6 +53,19 @@ class ROSNode(QObject):
         self.sub_tf    = tf.TransformListener()
         self.sub_joy   = rospy.Subscriber("/cfjoy", cmdMSG, self.receiveJoystick)
 
+        self.master = rosgraph.Master('/rostopic')
+
+
+
+    def getTopics(self):
+        """ Return a list of published topics """
+        #try:
+        state = self.master.getSystemState()
+        pubs, subs, _ = state
+        topics = [t for t, _ in pubs]
+        #except socket.error:
+        #    raise ROSTopicIOException("Unable to communicate with master!")
+        return topics
 
     def pub(self, group, msg):
         """ Generates publishers if needed """
@@ -58,7 +73,7 @@ class ROSNode(QObject):
             if group in self.publishers:
                 self.publishers[group].publish(msg)
             else:
-                self.publishers[group] = rospy.Publisher("/cf/"+group, eval("msgCF."+group))
+                self.publishers[group] = rospy.Publisher("/cf%d/%s" % (self.options.radio, group), eval("msgCF."+group))
                 self.publishers[group].publish(msg)
         else:
             rospy.logerr("Please generate messages: %s.msg does not exist", group)
@@ -96,7 +111,7 @@ class ROSNode(QObject):
                 self.pub_tf.sendTransform((0, 0, 0),tf.transformations.quaternion_from_euler(
                     radians(log["stabilizer.roll"]),
                     -radians(log["stabilizer.pitch"]),
-                    -radians(log["stabilizer.yaw"]),'sxyz'), tsROS, "/cf", "/cf_xyz")
+                    -radians(log["stabilizer.yaw"]),'sxyz'), tsROS, "/cf%d" % self.options.radio, "/cf_xyz")
 
 
 

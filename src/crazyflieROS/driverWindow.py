@@ -47,9 +47,10 @@ class DriverWindow(QtGui.QMainWindow ):
     sig_requestConnect = pyqtSignal(str)
     sig_requestDisconnect = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self,options):
         super(DriverWindow, self).__init__()
         #uic.loadUi('ui/driverGUI.ui', self)
+        self.options = options
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.ui.tabWidget.setCurrentIndex(0)
@@ -60,8 +61,8 @@ class DriverWindow(QtGui.QMainWindow ):
 
 
         # ROS
-        self.d = Dialog()
-        self.ros = ROSNode(self)
+        self.d = Dialog(options)
+        self.ros = ROSNode(options, self)
 
 
         # FLIE
@@ -93,7 +94,7 @@ class DriverWindow(QtGui.QMainWindow ):
         self.autoRetryTimer.setSingleShot(True)
 
         # Set up TrackManager
-        self.trackManager = TrackManager(self)
+        self.trackManager = TrackManager(self.ros.sub_tf, self.ros.pub_tf, self)
         self.ui.tab_tracking.layout().addWidget(self.trackManager)
 
 
@@ -103,7 +104,6 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.tab_hud.layout().addWidget(self.ai)
         self.ui.checkBox_AI.stateChanged.connect(self.ai.setUpdatesEnabled)
         self.ui.spinBox_AIHZ.valueChanged.connect(self.ai.setUpdateSpeed)
-        # TODO make sure the yaw is also adjusted with the yaw offset
 
         # Yaw offset
         self.ui.doubleSpinBox_yaw.valueChanged.connect(lambda yaw: self.ui.horizontalSlider_yaw.setValue(yaw*10))
@@ -147,7 +147,7 @@ class DriverWindow(QtGui.QMainWindow ):
 
 
         # Set up URI scanner
-        self.scanner = ScannerThread()
+        self.scanner = ScannerThread(radio=options.radio)
         self.scanner.start()
 
 
@@ -167,6 +167,8 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.checkBox_reconnect.toggled.connect(self.setAutoReconnect)
         self.ui.checkBox_startupConnect.toggled.connect(self.setStartupConnect)
         self.ui.pushButton_genRosMsg.clicked.connect(self.genRosMsg)
+
+        self.ui.pushButton_baro.clicked.connect(self.updateBaroTopics)
 
 
         # Connections to GUI
@@ -199,6 +201,16 @@ class DriverWindow(QtGui.QMainWindow ):
         # Initiate an initial Scan
         init_drivers(enable_debug_driver=False)
         self.startScanURI()
+
+    @pyqtSlot()
+    def updateBaroTopics(self):
+        topics = self.ros.getTopics()
+        topics = [t for t in topics  if t.endswith("baro")]
+        if len(topics)>0:
+            self.ui.comboBox_baro.addItems(topics)
+        else:
+            self.ui.comboBox_baro.addItem("None Detected")
+
 
 
 
@@ -256,9 +268,9 @@ class DriverWindow(QtGui.QMainWindow ):
         event.accept()
 
     def readSettings(self):
-        """ Load setrtings from previous session """
+        """ Load settings from previous session """
         rospy.logdebug("Loading previous session settings")
-        settings = QSettings("omwdunkley", "flieROS")
+        settings = QSettings("omwdunkley", "reset" if self.options.reset else "flieROS"+str(self.options.radio) )
         self.resize(settings.value("size", QVariant(QSize(300, 500))).toSize())
         self.move(settings.value("pos", QVariant(QPoint(200, 200))).toPoint())
 
@@ -280,7 +292,7 @@ class DriverWindow(QtGui.QMainWindow ):
     def writeSettings(self):
         """ Write settings to load at next start up """
         rospy.logdebug("Saving session settings")
-        settings = QSettings("omwdunkley", "flieROS")
+        settings = QSettings("omwdunkley", "flieROS"+str(self.options.radio))
         settings.setValue("pos", QVariant(self.pos()))
         settings.setValue("size", QVariant(self.size()))
 
@@ -530,31 +542,40 @@ class ScannerThread(QThread):
     """ A thread dedicated to scanning the interfaces for crazyflie URIs. """
 
     sig_foundURI = pyqtSignal(object)
-    def __init__(self):
+    def __init__(self, radio=0):
         QThread.__init__(self)
+        self.radio = max(0,radio)
         self.moveToThread(self)
 
     @pyqtSlot()
     def scan(self):
-        self.sig_foundURI.emit(scan_interfaces())
+        interfaces = scan_interfaces()
+
+        for i in enumerate(interfaces):
+            interfaces[i[0]][0] = interfaces[i[0]][0].replace("radio://0", "radio://"+str(self.radio))
+        self.sig_foundURI.emit(interfaces)
 
 
 class InitThread(QThread):
     """ Simply runs init_node in a thread"""
-    def __init__(self):
+    def __init__(self, options):
         QThread.__init__(self)
+        self.options = options
     def run(self):
-        rospy.init_node('CrazyflieDriver', log_level=rospy.DEBUG, disable_signals=True)
+        rospy.init_node('CrazyflieDriver[%d]' % self.options.radio,
+                        log_level=rospy.DEBUG if self.options.debug else rospy.INFO,
+                        disable_signals=True,
+                        anonymous=False)
 
 
 class Dialog(QtGui.QDialog):
     """ Class to check for master and show a dialog """
-    def __init__(self, parent=None):
+    def __init__(self, options, parent=None):
         QtGui.QDialog.__init__(self, parent)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
         self.setModal(True)
-        self.wt = InitThread()
+        self.wt = InitThread(options)
         self.wt.finished.connect(self.accept)
         self.rejected.connect(lambda : os._exit(0)) # Not very pretty
         self.wt.start()

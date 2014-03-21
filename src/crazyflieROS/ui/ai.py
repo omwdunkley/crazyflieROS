@@ -205,7 +205,7 @@ class AttitudeIndicator(QtGui.QWidget):
             qp.drawPixmap(0, 0, w, h, self.pixmap)
 
         qp.translate(w / 2, h / 2)
-        qp.rotate(self.roll)
+        qp.rotate(-self.roll)
         qp.translate(0, (self.pitch * h) / 50)
         qp.translate(-w / 2, -h / 2)
         qp.setRenderHint(qp.Antialiasing)

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>545</width>
+    <width>544</width>
     <height>834</height>
    </rect>
   </property>
@@ -133,7 +133,16 @@
     <item row="2" column="0" colspan="3">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>5</number>
+       <number>6</number>
+      </property>
+      <property name="documentMode">
+       <bool>false</bool>
+      </property>
+      <property name="tabsClosable">
+       <bool>false</bool>
+      </property>
+      <property name="movable">
+       <bool>true</bool>
       </property>
       <widget class="QWidget" name="tab_param">
        <attribute name="title">
@@ -827,6 +836,16 @@
           </property>
          </widget>
         </item>
+        <item row="18" column="0" colspan="3">
+         <widget class="QPushButton" name="pushButton_genRosMsg">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Generate ROS msgs from ToC</string>
+          </property>
+         </widget>
+        </item>
         <item row="7" column="2">
          <widget class="QSpinBox" name="spinBox_logHZ">
           <property name="suffix">
@@ -883,16 +902,6 @@
             </widget>
            </item>
           </layout>
-         </widget>
-        </item>
-        <item row="17" column="0" colspan="3">
-         <widget class="QPushButton" name="pushButton_genRosMsg">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Generate ROS msgs from ToC</string>
-          </property>
          </widget>
         </item>
         <item row="8" column="1">
@@ -971,6 +980,13 @@
           </property>
          </widget>
         </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>Gui HZ</string>
+          </property>
+         </widget>
+        </item>
         <item row="4" column="2">
          <widget class="QSpinBox" name="spinBox_guiHZ">
           <property name="suffix">
@@ -1012,11 +1028,32 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="label_7">
-          <property name="text">
-           <string>Gui HZ</string>
+        <item row="17" column="0" colspan="3">
+         <widget class="QGroupBox" name="groupBox_baro">
+          <property name="title">
+           <string>Advanced Barometer</string>
           </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_11">
+           <item row="0" column="0">
+            <widget class="QComboBox" name="comboBox_baro">
+             <item>
+              <property name="text">
+               <string>None Detected</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QPushButton" name="pushButton_baro">
+             <property name="text">
+              <string>Refresh</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
@@ -1347,7 +1384,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>545</width>
+     <width>544</width>
      <height>25</height>
     </rect>
    </property>

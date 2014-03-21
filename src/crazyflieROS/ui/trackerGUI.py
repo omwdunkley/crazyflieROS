@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'trackerGUI.ui'
 #
-# Created: Mon Mar 10 23:20:03 2014
+# Created: Fri Mar 21 18:44:15 2014
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -128,7 +128,7 @@ class Ui_ScrollAreaTracker(object):
         self.doubleSpinBox_kinFG.setMinimum(1.0)
         self.doubleSpinBox_kinFG.setMaximum(100.0)
         self.doubleSpinBox_kinFG.setSingleStep(0.1)
-        self.doubleSpinBox_kinFG.setProperty("value", 4.5)
+        self.doubleSpinBox_kinFG.setProperty("value", 45.0)
         self.doubleSpinBox_kinFG.setObjectName(_fromUtf8("doubleSpinBox_kinFG"))
         self.gridLayout_7.addWidget(self.doubleSpinBox_kinFG, 5, 1, 1, 1)
         self.gridLayout.addWidget(self.groupBox_kinectBG, 2, 0, 1, 2)
