@@ -297,7 +297,7 @@ _TODO: Overview, way poin control, wand control, pid.launch_
 One can also use the kinect to track the 3d position of the flie. However, one must use the onboard attitude to estiamte the roll/pitch/yaw. As yaw drifts and is not defined, one must manually align it to the camera optical axis. The gui has an option to "set north" in the current direction the flie is facing.
 
 ```rosrun tf static_transform_publisher -1.5 0 1 0 0 0 /world /camera_link 10```
-```rosrun tf static_transform_publisher 0 0 0 0 0 0 /cf /cf_gt 10```
+```rosrun tf static_transform_publisher 0 0 0 0 0 0 /cf0 /cf_gt 10```
 ```roslaunch freenect_launch freenect.launch```
 ```roslaunch crazyflieROS pid.launch js:=0```
 ```rosrun rviz rviz -d kinect.vcg```
