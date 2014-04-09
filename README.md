@@ -292,15 +292,30 @@ _TODO: Overview, way poin control, wand control, pid.launch_
 
 #### Required TF transforms
 
-
 # Kinect Tracking and Control
-One can also use the kinect to track the 3d position of the flie. However, one must use the onboard attitude to estiamte the roll/pitch/yaw. As yaw drifts and is not defined, one must manually align it to the camera optical axis. The gui has an option to "set north" in the current direction the flie is facing.
+One can also use the kinect to track the 3d position of the flie. However, one must use the onboard attitude to estiamte the yaw. As yaw drifts and is not defined, one must manually align it to the camera optical axis. The gui has an option to "set north" in the current direction the flie is facing.
 
-```rosrun tf static_transform_publisher -1.5 0 1 0 0 0 /world /camera_link 10```
-```rosrun tf static_transform_publisher 0 0 0 0 0 0 /cf0 /cf_gt 10```
-```roslaunch freenect_launch freenect.launch```
-```roslaunch crazyflieROS pid.launch js:=0```
-```rosrun rviz rviz -d kinect.vcg```
+You will also need the following transformations
+ * ```rosrun tf static_transform_publisher -1.5 0 1 0 0 0 /world /camera_link 10```
+ * ```rosrun tf static_transform_publisher 0 0 0 0 0 0 /cf0 /cf_gt 10```
+
+
+You will need to start the kinect driver
+ * ```roslaunch freenect_launch freenect.launch```
+
+
+You will also need to launch the PID controller (also handles joystick inputs)
+ * ```roslaunch crazyflieROS pid.launch js:=0```
+
+You can use RVIZ to verify everything:
+ * ```rosrun rviz rviz -d kinect.vcg```
+
+
+If you are using the kinect colour camera, you might want to align it with the depth images:
+ * run rosrun crazyflieROS reconfigure_gui
+ * Select /camera/driver from the drop-down menu. Enable the depth_registration checkbox
+ * Note the topic changes from ```/camera/depth/points``` to ```/camera/depth_registered/points```
+ 
 
 Joy Settings:
  * control - on
@@ -311,7 +326,15 @@ Joy Settings:
  * max thrust 100
   
 GUI Settings
-*
+ * log | pm | at minimum roll, pitch and yaw checked. 
+ * log | pm checked
+ * log | pm | set hz to 100
+ * input | disable thrust unchecked
+ * input | disable hover mode checked
+ * input | x-mode unchecked
+ * settings | yaw offset checked
+ * settings | yaw offset | align the crazyflie with the kinect (either crazyflie x (front) aligned with kinect z (optical axis), or crazyflie -y (right) aligned with kinect z. The press "set north". This is needed as the kienct cannot determine the yaw of the crazyflie, so we use the onboard attitude estimation for this. But it first needs to be aligned with the other frames.
+ * 
 
 
 Todo:
