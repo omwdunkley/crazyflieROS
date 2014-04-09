@@ -1,0 +1,45 @@
+<launch>
+ <!-- Options -->
+    <arg name="cam"/>
+    <arg name="DEVICE" default="/dev/video$(arg cam)"/>
+    <arg name="NAME"   value="cf/cam" />
+    <arg name="VIEW"   default="true"/>
+    <arg name="RECT"   default="false"/>
+    <arg name="FRAME"  default="cam"/>
+    
+    <node name="uvc_camera_node" pkg="uvc_camera" type="uvc_camera_node" required="true" output="screen" >
+        <param name="device" value="$(arg DEVICE)" />
+        <param name="width" value="720" />
+        <param name="height" value="576" />
+        <param name="frame_id" value="$(arg FRAME)" />
+        <param name="fps" value="25"/>   
+        <!-- remap from="/usb_cam/" to="/cf/cam/" -->     
+    </node>
+
+
+    <!-- Rectify -->
+    <group if="$(arg RECT)">
+        <node pkg="image_proc" type="image_proc" name="cfcam_image_proc" ns="$(arg NAME)" />
+    </group>
+
+
+    <!-- Image View -->
+    <group if="$(arg VIEW)">
+        <node pkg="image_view" type="image_view" name="cfcam_view_raw" >
+            <remap from="image" to="/$(arg NAME)/image_raw" />
+        </node>
+        <group if="$(arg RECT)">
+            <node pkg="image_view" type="image_view" name="cfcam_view_rect" >
+               <remap from="image" to="/$(arg NAME)/image_rect_color" />
+            </node>
+        </group>
+    </group>
+
+
+    <!-- Publish Transform -->
+    <node name="cam_transform" pkg="tf" type="static_transform_publisher" args="0 0 0 1.57 3.14 1.57 /cf_q $(arg FRAME) 10"/>
+    
+    
+    
+    
+</launch>
