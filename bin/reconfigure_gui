@@ -84,7 +84,7 @@ class MainWindow(wx.Frame):
                 wx.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
                 wx.Yield()
 
-                self.reconf = dynamic_reconfigure.client.Client(node, timeout=5.0)
+                self.reconf = dynamic_reconfigure.client.Client(node, timeout=2.0)
             except:
                 print("Can't connect to node %s"%node, file=sys.stderr)
                 self.Close()
@@ -181,7 +181,7 @@ class DynamicReconfigureSelector(wx.Panel):
             wx.Yield()
 
             try:
-                reconf = dynamic_reconfigure.client.Client(node, timeout=5.0)
+                reconf = dynamic_reconfigure.client.Client(node, timeout=2.0)
             except rospy.exceptions.ROSException:
                 return
             finally:
@@ -222,6 +222,8 @@ class DynamicReconfigurePanel(wx.lib.scrolledpanel.ScrolledPanel):
 
         config = self.reconf.get_configuration()
         descr  = self.reconf.get_group_descriptions()
+
+
 
         DynamicReconfigurePanel.updater = DynamicReconfigurePanel.BatchUpdater(self.reconf)
 
