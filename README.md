@@ -7,6 +7,11 @@ The goal is to obtain a general overview of the flie, get a development environm
 
 I assume you are familiar with ROS and are running a recent version of Ubuntu. This was tested on 12.04 and ROS Fuerte to Hydro. You will need a joystick to fly the flie with - the code in this package was written to fly the flie with PS3 Sixaxis controller.
 
+Please note this document might be outdated. For discussions and questions on using the kinect part, please ask [here](http://forum.bitcraze.se/viewtopic.php?f=6&t=800).
+
+Also make sure you are using the right branch, for now I dev in and this guide refers to branch joyDriver, so use ```git clone https://github.com/omwdunkley/crazyflieROS.git -b joyManager #notice the branch``` to clone this repo.
+
+Also, some permissions might be messed up (thanks NTFS partition..) so you might need to chmod +x a few files (the *.cfg files probably).
 
 
 
@@ -115,7 +120,7 @@ I recommend you use git and mercurial to obtain the latest source code:
 * Mercurial (hg): ```sudo apt-get install mercurial meld```
 
 You will need 3 sets of source code
-* This code: ```git clone https://github.com/omwdunkley/crazyflieROS.git```
+* This code: ```git clone https://github.com/omwdunkley/crazyflieROS.git -b joyManager #notice the branch```
 * Official client code: ```hg clone https://bitbucket.org/bitcraze/crazyflie-pc-client```
 * Official firmware: ```hg clone https://bitbucket.org/bitcraze/crazyflie-firmware```
 
