@@ -99,7 +99,7 @@ class ROSNode(QObject):
         if isGroup(log, "gyro"):
             self.pub(getGroup(log), self.genMsg(log, tsROS, f=radians))
         elif isGroup(log, "motor", ):
-            self.pub(getGroup(log), self.genMsg(log, tsROS), f=thrustToPercentage)
+            self.pub(getGroup(log), self.genMsg(log, tsROS, f=thrustToPercentage))
         ## AUTOMATICALLY GENERATED HERE
         else:
             self.pub(getGroup(log), self.genMsg(log, tsROS))
