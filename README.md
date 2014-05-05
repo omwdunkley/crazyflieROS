@@ -315,8 +315,9 @@ You will also need to launch the PID controller (also handles joystick inputs)
  * ```roslaunch crazyflieROS pid.launch js:=0```
 
 You can use RVIZ to verify everything:
- * ```rosrun rviz rviz -d kinect.vcg```
-
+ * ```rosrun rviz rviz -d kinect.rviz```
+   * Sometimes rviz doesnt display the load modules properly. Just uncheck and recheck the box to spawn the view. 
+   * Fixed frame should be "world".
 
 If you are using the kinect colour camera, you might want to align it with the depth images:
  * run rosrun crazyflieROS reconfigure_gui
