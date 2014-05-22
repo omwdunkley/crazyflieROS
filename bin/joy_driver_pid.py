@@ -22,6 +22,8 @@ from math import sqrt, sin, cos, degrees, radians, atan2, atan, copysign, asin, 
 import numpy as np
 import time
 
+# print 'Python Path: %s' % os.environ['PYTHONPATH'].split(os.pathsep)
+
 
 def fATAN(dist, r):  return degrees(atan(dist))*sqrt(r)
 def fASIN (dist, r): return degrees(asin(min(1.,max(-1, dist))))*r
@@ -439,7 +441,7 @@ class JoyController:
         r = 0
         r2 = 0
         # Get stick positions [-1 1]
-        if self.curr_cmd.buttons[Button.L1]:         
+        if self.curr_cmd.buttons[Button.L1]:  # Deadman pressed (=allow flight)
             x = self.joy_scale[0] * self.curr_cmd.axes[Axes.SLL] # Roll
             y = self.joy_scale[1] * self.curr_cmd.axes[Axes.SLU] # Pitch
             r = self.joy_scale[2] * self.curr_cmd.axes[Axes.SRL] # Yaw
