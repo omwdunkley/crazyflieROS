@@ -7,6 +7,11 @@ The goal is to obtain a general overview of the flie, get a development environm
 
 I assume you are familiar with ROS and are running a recent version of Ubuntu. This was tested on 12.04 and ROS Fuerte to Hydro. You will need a joystick to fly the flie with - the code in this package was written to fly the flie with PS3 Sixaxis controller.
 
+Please note this document might be outdated. For discussions and questions on using the kinect part, please ask [here](http://forum.bitcraze.se/viewtopic.php?f=6&t=800).
+
+Also make sure you are using the right branch, for now I dev in and this guide refers to branch joyDriver, so use ```git clone https://github.com/omwdunkley/crazyflieROS.git -b joyManager #notice the branch``` to clone this repo.
+
+Also, some permissions might be messed up (thanks NTFS partition..) so you might need to chmod +x a few files (the *.cfg files probably).
 
 
 
@@ -115,7 +120,7 @@ I recommend you use git and mercurial to obtain the latest source code:
 * Mercurial (hg): ```sudo apt-get install mercurial meld```
 
 You will need 3 sets of source code
-* This code: ```git clone https://github.com/omwdunkley/crazyflieROS.git```
+* This code: ```git clone https://github.com/omwdunkley/crazyflieROS.git -b joyManager #notice the branch```
 * Official client code: ```hg clone https://bitbucket.org/bitcraze/crazyflie-pc-client```
 * Official firmware: ```hg clone https://bitbucket.org/bitcraze/crazyflie-firmware```
 
@@ -292,6 +297,57 @@ _TODO: Overview, way poin control, wand control, pid.launch_
 
 #### Required TF transforms
 
+# Kinect Tracking and Control
+One can also use the kinect to track the 3d position of the flie. However, one must use the onboard attitude to estiamte the yaw. As yaw drifts and is not defined, one must manually align it to the camera optical axis. The gui has an option to "set north" in the current direction the flie is facing.
+
+Install the freenect ROS stack using the instructions from [here](http://wiki.ros.org/freenect_stack) - this will install all the drivers, etc you need to use the kinect.
+
+You will also need the following transformations
+ * ```rosrun tf static_transform_publisher -1.5 0 1 0 0 0 /world /camera_link 10```
+ * ```rosrun tf static_transform_publisher 0 0 0 0 0 0 /cf0 /cf_gt 10```
+
+
+You will need to start the kinect driver
+ * ```roslaunch freenect_launch freenect.launch```
+
+
+You will also need to launch the PID controller (also handles joystick inputs)
+ * ```roslaunch crazyflieROS pid.launch js:=0```
+
+You can use RVIZ to verify everything:
+ * ```rosrun rviz rviz -d kinect.rviz```
+   * Sometimes rviz doesnt display the load modules properly. Just uncheck and recheck the box to spawn the view. 
+   * Fixed frame should be "world".
+
+If you are using the kinect colour camera, you might want to align it with the depth images:
+ * run rosrun crazyflieROS reconfigure_gui
+ * Select /camera/driver from the drop-down menu. Enable the depth_registration checkbox
+ * Note the topic changes from ```/camera/depth/points``` to ```/camera/depth_registered/points```
+ 
+
+Joy Settings:
+ * control - on
+ * set goal, then
+  * live update - off
+ * xy,yaw, thrust checked
+ * pid passive
+ * max thrust 100
+  
+GUI Settings
+ * log | pm | at minimum roll, pitch and yaw checked. 
+ * log | pm checked
+ * log | pm | set hz to 100
+ * input | disable thrust unchecked
+ * input | disable hover mode checked
+ * input | x-mode unchecked
+ * settings | yaw offset checked
+ * settings | yaw offset | align the crazyflie with the kinect (either crazyflie x (front) aligned with kinect z (optical axis), or crazyflie -y (right) aligned with kinect z. The press "set north". This is needed as the kienct cannot determine the yaw of the crazyflie, so we use the onboard attitude estimation for this. But it first needs to be aligned with the other frames.
+ * 
+
+
+Todo:
+ * Flie Yaw Offset
+
 
 
 
@@ -342,8 +398,51 @@ Remember
 
 # Todo
 
-Items
- * add rviz configuration with grids and TF
- * thrust bug when first connecting
+TODO
+ * JoyStick needs porting
+   * Class
+   * UI
+   * Trim
+   * Visualisation
+   * Configuration options (slew, response curves, etc)
+   * Add reading joy from PyGame
+ * Tracker needs porting
+   * Qualisys TF stuff
+   * ~~Kinect~~
+   * ~~Show depth image with overlay~~ (now on a ros topic)
+ * PID needs porting
+   * subclass QTableWidget
+   * save/load configs
+   * generate response curves
+   * realtime graphing
+   * error column in table - add colour info
+   * checkboxes in table, 
+   * read/write between sessions, etc
+ * General Stuff
+   * image topic viewer (for cam, for kinect)
+   * label, spinbox, horizontal viewer combo
+   * ~~finish all the signals from logManager for the rest of the ui~~
+   * add the offset of the gyro yaw ASAP, ie right at the source where the logs comes in
+     * ROS needs it
+     * The UI needs it
+   * ~~Deal with yaw offset in Settings tab~~
+   * Deal with reading/writing the Settings tab values
+   * Add ROS startup check, ie a dialog which says "WAiting ... Cancel"
+   * Add Icon, change window name
+   * Some things should be undockable!
+   * ctrl+c from the terminal should kill it
+   * parse command line arguments
+     * argument to reset the default QSettings
+   * If multiple drones discovered, dont autoconnect the first time
+ * AI
+   * needs baro, accel, motors, crash, etc connected to it
+   * Add a slider and spin box in the config to set the update hz and turn it on/off
+   * Show overlay from ROS images
+   * right click functionality
+   * Inspiration from c++ code
+   * double click full screen
+   
+   
+
 
  
