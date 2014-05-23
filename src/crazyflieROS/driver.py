@@ -21,7 +21,7 @@ if __name__ == '__main__':
                         dest="radio",
                         type=int,
                         default=0,
-                        help="Radio to use if multiple dongles are plugged into the computer. -1 = only allow one radio (named ROS node)")
+                        help="Radio to use if multiple dongles are plugged into the computer. -1 = only allow one radio (named ROS node). 0 is the first radio.")
 
     parser.add_argument("-d", "--debug",
                         action="store_true",

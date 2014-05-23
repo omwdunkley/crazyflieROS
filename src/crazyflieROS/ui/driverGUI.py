@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'driverGUI.ui'
 #
-# Created: Fri Mar 21 18:44:15 2014
+# Created: Fri May 23 02:45:14 2014
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -581,6 +581,11 @@ class Ui_MainWindow(object):
         self.gridLayout_7.addWidget(self.horizontalSlider_4, 4, 2, 1, 2)
         self.tabWidget.addTab(self.tab_PID, _fromUtf8(""))
         self.gridLayout_2.addWidget(self.tabWidget, 2, 0, 1, 3)
+        self.progressbar_cpu = QtGui.QProgressBar(self.centralwidget)
+        self.progressbar_cpu.setProperty("value", 0)
+        self.progressbar_cpu.setInvertedAppearance(False)
+        self.progressbar_cpu.setObjectName(_fromUtf8("progressbar_cpu"))
+        self.gridLayout_2.addWidget(self.progressbar_cpu, 4, 0, 1, 3)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 544, 25))
@@ -591,7 +596,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(6)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QObject.connect(self.horizontalSlider_pktHZ, QtCore.SIGNAL(_fromUtf8("valueChanged(int)")), self.spinBox_pktHZ.setValue)
         QtCore.QObject.connect(self.spinBox_pktHZ, QtCore.SIGNAL(_fromUtf8("valueChanged(int)")), self.horizontalSlider_pktHZ.setValue)
         QtCore.QObject.connect(self.checkBox_pktHZ, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.horizontalSlider_pktHZ.setEnabled)
@@ -621,6 +626,11 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.checkBox_AI, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.horizontalSlider_AI.setEnabled)
         QtCore.QObject.connect(self.checkBox_AI, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.spinBox_AIHZ.setEnabled)
         QtCore.QObject.connect(self.checkBox_yaw, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.pushButton_north.setEnabled)
+        QtCore.QObject.connect(self.groupBox_input, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.doubleSpinBox_r_t.setVisible)
+        QtCore.QObject.connect(self.groupBox_input, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.doubleSpinBox_asl.setVisible)
+        QtCore.QObject.connect(self.groupBox_input, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.doubleSpinBox_p_t.setVisible)
+        QtCore.QObject.connect(self.groupBox_input, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.doubleSpinBox_y_t.setVisible)
+        QtCore.QObject.connect(self.groupBox_input, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.doubleSpinBox_t_t.setVisible)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -741,4 +751,5 @@ class Ui_MainWindow(object):
         self.label_13.setText(QtGui.QApplication.translate("MainWindow", "Base Thrust", None, QtGui.QApplication.UnicodeUTF8))
         self.doubleSpinBox_4.setSuffix(QtGui.QApplication.translate("MainWindow", "%", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_PID), QtGui.QApplication.translate("MainWindow", "PID", None, QtGui.QApplication.UnicodeUTF8))
+        self.progressbar_cpu.setFormat(QtGui.QApplication.translate("MainWindow", "CPU Usage %p%", None, QtGui.QApplication.UnicodeUTF8))
 

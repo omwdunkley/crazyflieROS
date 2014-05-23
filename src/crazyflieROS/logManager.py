@@ -396,6 +396,7 @@ class LogManager(QTreeWidget):
         save configs between sessions, set and monitor the update frequencies
     """
     sig_batteryUpdated = pyqtSignal(int)
+    sig_cpuUpdated = pyqtSignal(float) #cpu usage in percent 0-100
     sig_logError = pyqtSignal(object, str) # block, msg
     sig_rosData = pyqtSignal(object, int, object) # data, time, rostime
     sig_rpy = pyqtSignal(float, float, float)
@@ -547,8 +548,13 @@ class LogManager(QTreeWidget):
             if hasAllKeys(data, ["vbat"], "pm"):
                 self.sig_batteryUpdated.emit(int(1000*data["pm.vbat"]))
 
+        # CPU Usage
+        elif isGroup(data, "utilization"):
+            if hasAllKeys(data, ["cpuUsage"], "utilization"):
+                self.sig_cpuUpdated.emit(data["utilization.cpuUsage"])
 
-        if isGroup(data, "stabilizer"):
+        # RPY
+        elif isGroup(data, "stabilizer"):
             if hasAllKeys(data, ["roll","pitch","yaw"], "stabilizer"):
                 self.sig_rpy.emit(data["stabilizer.roll"],data["stabilizer.pitch"],data["stabilizer.yaw"])
             if hasAllKeys(data, ["thrust"], "stabilizer"):

@@ -1,19 +1,41 @@
 CRAZYFLIE ROS DRIVER WITH GUI
 ============================
+**Details [here](#details)**
 
-# Overview
-This package / document was created to help some friends get working with the crazyflie, ROS and the mocap system here at TUM. Still very much a work in progress.
+__Please note this document might be outdated. For discussions and questions on using the kinect part, please ask [here](http://forum.bitcraze.se/viewtopic.php?f=6&t=800).__
+
+__Update:__ Branch joyManager was merged into master, no more mix-ups :)
+
+# Introduction
+This package / document was created to help some friends get working with the crazyflie, ROS and the mocap system here at TUM. Still very much a work in progress. 
 The goal is to obtain a general overview of the flie, get a development environment set up for changing the firmware and implementing client side code.
 
 I assume you are familiar with ROS and are running a recent version of Ubuntu. This was tested on 12.04 and ROS Fuerte to Hydro. You will need a joystick to fly the flie with - the code in this package was written to fly the flie with PS3 Sixaxis controller.
 
-Please note this document might be outdated. For discussions and questions on using the kinect part, please ask [here](http://forum.bitcraze.se/viewtopic.php?f=6&t=800).
-
-Also make sure you are using the right branch, for now I dev in and this guide refers to branch joyDriver, so use ```git clone https://github.com/omwdunkley/crazyflieROS.git -b joyManager #notice the branch``` to clone this repo.
-
-Also, some permissions might be messed up (thanks NTFS partition..) so you might need to chmod +x a few files (the *.cfg files probably).
+Also, some permissions might be messed up (thanks Mr NTFS partition..) so you might need to chmod +x a few files (the *.cfg files probably).
 
 
+
+
+### Important Links
+
+A quick list of useful links
+* [Bitcraze Crazyflie Blog](http://www.bitcraze.se/) They just got GPS working....
+* [Crazyflie WIKI](http://wiki.bitcraze.se/projects:crazyflie:index) Good index
+* [Client Python API](http://wiki.bitcraze.se/projects:crazyflie:pc_utils:pylib) Most important resource (aside from reading code) if developing client side code
+* [Firmware Stuff](http://wiki.bitcraze.se/projects:crazyflie:devenv:index) Important resource for compiling firmware
+* [Intro](http://wiki.bitcraze.se/projects:crazyflie:userguide:index) Basic info, which side is the front, what leds mean
+* [Assembly](http://wiki.bitcraze.se/projects:crazyflie:mechanics:assembly) Lots of pictures
+* [Installing](http://wiki.bitcraze.se/projects:crazyflie:pc_utils:install)
+* [Balancing, tipc, etc](http://wiki.bitcraze.se/projects:crazyflie:userguide:tips_and_tricks)
+* [Troubleshooting](http://wiki.bitcraze.se/projects:crazyflie:userguide:troubleshooting)
+* [Logging/param tutorial video](http://www.youtube.com/watch?v=chWrNh73YBw) Intro  video on the logging/param frame work. Not Seen this yet..
+* [Crazyflie pc client repo](https://github.com/bitcraze/crazyflie-clients-python) *(Update to github)*
+* [Crazyflie firmware repo](https://github.com/bitcraze/crazyflie-firmware) *(Update to github)*
+* [CrazyRADIO repo](https://github.com/bitcraze/crazyradio-firmware) not so important, can update the FW once in a while *(Update to github)*
+* [Forum](http://forum.bitcraze.se/) Especially Crazyflie Developer Discussions section is nice :) 
+* [Some pics of mine](https://picasaweb.google.com/106913106617973208533/Crazyflie?authuser=0&authkey=Gv1sRgCLuekNLn_siXzQE&feat=directlink)
+ 
 
 # Crazyflie Concepts
 
@@ -23,7 +45,7 @@ One has to distinguish between:
   - compiled on the computer and then flashed using the boot loader
 * Client side code
   - code that runs on the computer and communicates with the flie
-  - python is officially used, other wrapped exist
+  - python is officially used, other wrappers exist
 
 
 
@@ -78,29 +100,9 @@ One has to distinguish between:
 
 
 
-### Important Links
-
-A quick list of useful links
-* [Bitcraze Crazyflie Blog](http://www.bitcraze.se/) They just got GPS working....
-* [Crazyflie WIKI](http://wiki.bitcraze.se/projects:crazyflie:index) Good index
-* [Client Python API](http://wiki.bitcraze.se/projects:crazyflie:pc_utils:pylib) Most important resource (aside from reading code) if developing client side code
-* [Firmware Stuff](http://wiki.bitcraze.se/projects:crazyflie:devenv:index) Important resource for compiling firmware
-* [Intro](http://wiki.bitcraze.se/projects:crazyflie:userguide:index) Basic info, which side is the front, what leds mean
-* [Assembly](http://wiki.bitcraze.se/projects:crazyflie:mechanics:assembly) Lots of pictures
-* [Installing](http://wiki.bitcraze.se/projects:crazyflie:pc_utils:install)
-* [Balancing, tipc, etc](http://wiki.bitcraze.se/projects:crazyflie:userguide:tips_and_tricks)
-* [Troubleshooting](http://wiki.bitcraze.se/projects:crazyflie:userguide:troubleshooting)
-* [Logging/param tutorial video](http://www.youtube.com/watch?v=chWrNh73YBw) Intro  video on the logging/param frame work. Not Seen this yet..
-* [Crazyflie copter repo](https://bitbucket.org/bitcraze/crazyflie-pc-client)
-* [Crazyflie firmware repo](https://bitbucket.org/bitcraze/crazyflie-firmware)
-* [CrazyRADIO repo](https://bitbucket.org/bitcraze/crazyradio-firmware) not so important, can update the FW once in a while
-* [Forum](http://forum.bitcraze.se/) Especially Crazyflie Developer Discussions section is nice :) 
-* [Some pics of mine](https://picasaweb.google.com/106913106617973208533/Crazyflie?authuser=0&authkey=Gv1sRgCLuekNLn_siXzQE&feat=directlink)
- 
-
 
 # First steps
-Before we start to develop for the flie, it makes to test it with the officially supported stock code. First we download all the requirements, then test the flie with stock code, then run our custom ROS stuff.
+Lets download all the code and prereqs we need. I probably missed a couple, so please let me know (either via githib or [the crazyflie forums](http://forum.bitcraze.se/viewtopic.php?f=6&t=800))
 
 ### Requirements and source code
 ##### Required packages
@@ -115,43 +117,41 @@ sudo apt-get install gcc-arm-none-eabi
 ```
 
 ##### Source Code
-I recommend you use git and mercurial to obtain the latest source code:
+I recommend you use git to obtain the latest source code:
 * Git: ```sudo apt-get install git-core```
-* Mercurial (hg): ```sudo apt-get install mercurial meld```
 
-You will need 3 sets of source code
-* This code: ```git clone https://github.com/omwdunkley/crazyflieROS.git -b joyManager #notice the branch```
-* Official client code: ```hg clone https://bitbucket.org/bitcraze/crazyflie-pc-client```
-* Official firmware: ```hg clone https://bitbucket.org/bitcraze/crazyflie-firmware```
+You will need 3 sets of source code. Put them in your working ros directory.
+* This code: ```git clone https://github.com/omwdunkley/crazyflieROS.git```
+* Official client code: ```git clone https://github.com/bitcraze/crazyflie-clients-python```
+* Custom firmware: ```git clone https://github.com/omwdunkley/crazyflie-firmware```
 
 
 ##### Permissions
 To use the crazyradio you will need to set some udev rules. For conveniance, just run ```sudo sh udev.sh``` from the crazyflieROS directory.
 
-Some of the files in this repo should be executable, but are not (thanks to my crappy NTFS permission). Especially some of the the files in crazyflieROS/cfg, crazyflieROS/bin and crazyflieROS/src/crazyflieROS/driver.py will need ```chmod +x path/file```
+Some of the files in this repo should be executable, but are not (thanks to my crappy NTFS permission). Especially some of the the files in crazyflieROS/cfg, crazyflieROS/bin and crazyflieROS/src/crazyflieROS/driver.py will need ```chmod +x path/file``` *(Update: most of this should be fixed now, let me know if it is not)*
 
 
 ##### Optional
-To use the optional beeping functionality of my crazyflie driver you will need to enable the terminal bell: ```sudo modprobe pcspkr```
+To use the optional beeping functionality of my crazyflie driver you will need to enable the terminal bell: 
+```sudo modprobe pcspkr```
 
 I guess you can use any IDE, but I will use the following in this guide:
  * _python_ for client side code: [PyCharm](http://www.jetbrains.com/pycharm/download/download_thanks.jsp)
  * _c_ for the firmware [Eclipse for C++](https://www.eclipse.org/downloads/packages/eclipse-ide-cc-developers/keplersr1)
 
 
-### Running stock code Crazyflie client
-The crazyflie client is a GUI fully in python that exposes all aspects of the flie. You can use it to flash the flie with new firmware, remote control it, observe sensor data, set parameters. 
+### Running stock Crazyflie client
+The crazyflie client is a GUI fully in python that exposes all aspects of the flie. You can use it to flash the flie with new firmware, remote control it, observe sensor data, set parameters. Run ```bin/cfclient``` from the crazyflie-clients-python directory.
 
-##### Flashing the flie with (potentially custom) firmware
-First we will use it to flash the flie with latest stock firmware. For now, instead of compiling it, we will download the bin directly
-```wget https://bitbucket.org/bitcraze/crazyflie-firmware/downloads/Crazyflie_2014.01.0.bin```
+##### Flashing the flie with (potentially custom) firmware using the stock client.
+Lets flash the flie with latest stock firmware. For now, instead of compiling it, we will download the latest bin directly from [here](https://github.com/bitcraze/crazyflie-firmware/releases). Extract it, we need the .bin file.
 
-Now plug in the radio dongle, unplug the flie (at this point it doesnt need a battery or motors, etc), and run
-```python crazyflie-client/bin/cfclient```
+Unplug the flie if it is plugged in. Insert the dongle into a usb2 port (usb3 might work with the most recent radio firmware). Note at this point the flie does not need a battery or motors, just the PCB will suffice.
+
+Run ```bin/cfclient``` from the crazyflie-clients-python directory.
 Then follow the Bootloader [instructions](http://wiki.bitcraze.se/projects:crazyflie:pc_utils:qt_ui) and use the bin file you just downloaded.
 Using the instructions and links on that page you should now be able to connect and fly the flie.
-
-
 
 # Developing for the flie
 
@@ -164,10 +164,10 @@ Start up eclipse and
 * Select GNU Autotools Toolchain
 * Click okay
 
-This should open a new project with the crazyflie firmware. Press _ctrl+b_ to build it
+This should open a new project with the crazyflie firmware. Press _ctrl+b_ to build it. This should result in a short summary of ram/rom usage and if all goes well produce a cflie.bin file you can flash the flie with using the procedure above.
 
 ### Client side code
-Start up pycharm, _File | Open_, chose the crazyflie-client directory. Repeat for the crazyflieROS directory (and open in new window)
+Start up pycharm, _File | Open_, chose the crazyflieROS directory.
 
 _TODO_
 * _set up run configuration in pycharm_
@@ -187,6 +187,7 @@ Details can be found [Here](http://wiki.bitcraze.se/projects:crazyflie:pc_utils:
 ##### Parameters
 Use this when you wish to set/get a variable on the crazyflie with low frequency. Eg turning an
 led on/off, setting PID values, etc. Getting and setting is initiated from the computer.
+**Update:** [here](https://github.com/bitcraze/crazyflie-clients-python/blob/master/examples/basicparam.py) is an example.
 
 _TODO: Examples of how to add logging to the firmware and read it from the client side code_
 
@@ -196,12 +197,13 @@ One requests them, and the crazyflie sends them at a given frequency.
 Useful for continuously reading sensor data
 Maxes out at 100hz
 What can be logged is specified in the firmware. Logs are then requested from the client and the flie starts pushing the data back 
+**Update:** [here](https://github.com/bitcraze/crazyflie-clients-python/blob/master/examples/basiclog.py) is an example.
 
 _TODO: Examples of how to add parameters to the firmware and set/read them from the client side code_
 
 ##### Commander
 Primitive but fast way to throw values at the crazyflie. Only used for sending it command data, eg roll, pitch yaw
-Recommened to use at 100hz, more
+Recommened to use at 100hz. Send a command at least once every 2 seconds to keep the flie alive.
 
 _TODO: Show the function that reads the variables in the firmware and the client side code that sends them_
 
@@ -226,18 +228,111 @@ where you will need to replace X with your joystick nr. Now you can visualise th
 * Test the joy_node: ```rostopic echo /joy```
 * Test the crazyflie joy node: ```rostopic echo /cfjoy```
 
-### CrazyflieROS GUI Application
-#### Running
-```rosrun crazyflieROS driver.py```
-#### Connecting
-#### Checking inputs
-#### Settings
-#### Log
-#### Param
+
+
+
+# <a name="details"></a> CrazyflieROS GUI Application
+This is a ros node wrapped in QT gui. For now some of the functionality is still in separate python nodes (especially joy_manager_pid.py), but all should eventually fuse into this one.
+### Feautres
+* Full blown GUI
+    * settings (table column positions, dimensions, settings, etc) are saved between sessions per radio (eg if you use multiple radios, each will have its own settings saved)
+* Scans for all flies, connects to a specific one
+    * Options:
+        * Connect on startup
+        * Auto-Reconnect on disconnect
+* Nodes can run in parallel, each with their own radio. This allows them to share info (eg relative barometric differences)
+* Parameters
+    * Can be viewed in realtime
+    * Can be changed in realtime. The GUI is very particular about only showing confirmed values from the flie
+    * Grouped by read/read-write
+* Logging
+    * Shows which values are being logged in a collapsible tree structure 
+    * Shows requested logging frequency for each group
+    * shows actual logging freq for each group
+    * can dynamically select groups/group subsets for logging
+    * can dynamically set the requested logging rate
+    * shows the logging type
+* ROS
+    * Ros support for fuerte-hydro
+    * Automatically generates .msg files, independent of the firmware used. 
+        * It inspects which log variables are available and generates the required messages. 
+        * This way, if you add a log group in the firmware, you can generate the needed message files with a click of a button, allowing to stream all incoming log data over the ROS network. 
+        * For example, a logging configuration called "accel" with a float 'accX' and 'accY' with compile into a ros message 'accel.msg' with accX and accY defined as floats.)
+    * Stream all logging data over the ros network using the generated messages.
+        * Logging data will be streamed on a topic with the format ```/cf<radio nr>/<log group name>```
+    * TF transforms of the flies estimated attitude are sent out if the roll, pitch and yaw logging data is available
+    * crazyflie debug output is sent to the ros loggers
+* Sound feedback 
+    * Optionally, the GUI makes distinct sounds for connecting, and disconnecting
+* Info
+    * Another tab shows firmware info, crazyradio info, which sensors were detected and the self test status.
+* Realtime monitoring
+    * Incoming Bytes per second
+    * Out going Bytes per second 
+    * CPU usage
+    * Link Quality (slightly more pessimistic than the original client)
+    * Battery (if being logged)
+    * A tab shows the crazyflies debug prints 
+* Attitude Indicator
+    * Realtime drawing of the flies roll, pitch, yaw, barometer, accelerometer _(fuse in more stuff, as displayed in my old c++ hud)_]
+    * Batches all drawing together at a user specified frequency (eg 30hz). This should avoid some crazy CPU usage people have seen in the original hud if displayed at more than 30hz.
+    * Displays if thrust failsafe is on
+    * Shows yaw a compass heading
+* Manual yaw offset
+    * Can "zero" the yaw (set current yaw to north)
+    * Or specify an offset to north
+* Many Settings
+    * chose how fast the GUI updates different components
+        * the Attitude indicator
+        * logging frequency estimtaion
+        * in/out throughput
+* Kinect Tracking and 3 dof pose estimation
+    * Track the flie in 3d. Together with the flies attitude estimate, full PID position & yaw control possible
+    * Segments the flie from depth images
+    * All options exposed to the GUI
+    * With rviz, one can overlay the depth/rgb images with the flie pose estimation
+* PID Controller _(todo: merge in from joy_driver_pid.py)_
+* Monitoring Joystick input _(todo: merge in from joy_driver_pid.py)_
+
+
+
+### Screenshots
+Here are some screenshots. Note some are outdated as they do not show CPU usage.
+
+
+Logging
+![Logging](https://lh6.googleusercontent.com/-KlnZGNogx0w/U36TymWN0VI/AAAAAAAAgUg/8B_ZdjNL-mU/s800/log.png)
+
+Params
+![Params](https://lh6.googleusercontent.com/-cDCNwtCNDx8/U36TzDlD9SI/AAAAAAAAgUc/byiM5ZusS_0/s800/param.png)
+
+Attitude Indicator
+![Attitude Indicator](https://lh5.googleusercontent.com/-SbHDfzH23rI/U36Txl24kpI/AAAAAAAAgUA/gEk1Bd8qcd0/s800/ai.png)
+
+Kinect
+![Kinect](https://lh5.googleusercontent.com/-oZG887fCQDc/U36TxyGb-sI/AAAAAAAAgUI/o7sAa-mQvDI/s800/kinect.png)
+
+Input
+![input](https://lh5.googleusercontent.com/-qUxco-yN9JM/U36Tx5Fbl6I/AAAAAAAAgUE/5nCNKMOMiWY/s800/input.png)
+
+Settings
+![Settings](https://lh4.googleusercontent.com/-WPE0KY-Nde4/U36Tze_Y16I/AAAAAAAAgUU/TA_vhAyUCC4/s800/settings.png)
+
+
+
+
+
+
+### Starting the node
+Run is just like any ros node: ```rosrun crazyflieROS driver.py```
+
+Show optional input arguments: ```rosrun crazyflieROS driver.py --help```
+
+
 
 
 # Motion Capture System
-[Video example](http://youtu.be/WPi__Q6CNdQ?t=2m4s)
+##[Video example](http://youtu.be/WPi__Q6CNdQ?t=2m4s)
 
 _TODO: Overview, way poin control, wand control, pid.launch_
 ### Setting it up Qualisys
@@ -344,18 +439,17 @@ GUI Settings
  * settings | yaw offset | align the crazyflie with the kinect (either crazyflie x (front) aligned with kinect z (optical axis), or crazyflie -y (right) aligned with kinect z. The press "set north". This is needed as the kienct cannot determine the yaw of the crazyflie, so we use the onboard attitude estimation for this. But it first needs to be aligned with the other frames.
  * 
 
-
-Todo:
- * Flie Yaw Offset
-
-
+##### Add some paper to the flie to make it have a larger cross section and improve tracking (highly recommended):
+![paper](https://lh6.googleusercontent.com/-cJFQnaV9QZg/U3t2aEFmKFI/AAAAAAAAgTE/X-9PeT4RFkA/s800/IMG_20140520_173419.jpg)
 
 
 # Adding a camera
-  * [First person video](http://youtu.be/AWSUMGJKt0U)
-  * [Forum discussion](http://forum.bitcraze.se/viewtopic.php?f=6&t=491)
+##[First person video](http://youtu.be/AWSUMGJKt0U)
+#####[Forum discussion](http://forum.bitcraze.se/viewtopic.php?f=6&t=491)
 
 ![Camera](https://lh6.googleusercontent.com/-hBCBGpAHvCE/UiWysHlkgzI/AAAAAAAAclU/cc-3S7ftYmI/s640/20130903_112305.jpg)
+
+![vo](https://lh5.googleusercontent.com/-cSChyQK0pXY/U3oYp7Cz4KI/AAAAAAAAgKY/pGthwsnQ48Q/s800/depth_screenshot_28.03.2014.png)
 
 ### Hardware
 ##### Cam directly
@@ -366,19 +460,8 @@ Todo:
 
 #### Noise
 ![Before](https://lh3.googleusercontent.com/-_w6rI843KNI/UimIDFfRKjI/AAAAAAAAcEU/5aJqA4JwdHU/s640/frame0014.jpg)
+
 ![After](https://lh4.googleusercontent.com/-3_cujmAp8gE/UgNdGynVd-I/AAAAAAAAbcM/kmm1VCktbI8/s640/hud.png)
-![Camera]()
-
-
-
-
-
-
-
-
-# Screenshots
-
-![GUI Logging Tab](https://lh5.googleusercontent.com/-e9lVVdnRzhw/UwP5R2rK7TI/AAAAAAAAe58/eiTL13BXM9s/s800/gui.png)
 
 
 
@@ -391,14 +474,13 @@ Remember
 
 * If you change the GUI, you need to recompile it. See ```crazyflieROS/src/crazyflieROS/ui/compileGUI.sh``` 
 * Firmware changes need compiling and flashing
-* If you change the TOC, you might need to regenerate the ros messages. See the Config tab
+* If you change the TOC, you might need to regenerate and recompile the ros messages. See the Config tab
 
 
 
 
 # Todo
 
-TODO
  * JoyStick needs porting
    * Class
    * UI

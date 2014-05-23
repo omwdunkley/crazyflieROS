@@ -180,6 +180,7 @@ class DriverWindow(QtGui.QMainWindow ):
         self.paramManager.sig_firmware.connect(lambda fw, mod: self.ui.label_fw.setText(fw))
         self.paramManager.sig_firmware.connect(lambda fw, mod: self.ui.label_fwMod.setText(mod))
         self.logManager.sig_batteryUpdated.connect( lambda v : self.setToUpdate("vbat",self.ui.progressbar_bat.setValue, v))
+        self.logManager.sig_cpuUpdated.connect( lambda v : self.setToUpdate("cpu",self.ui.progressbar_cpu.setValue, v))
         self.flie.inKBPS.sig_KBPS.connect(lambda hz: self.updatePacketRate(self.ui.progressBar_pktIn,hz))
         self.flie.outKBPS.sig_KBPS.connect(lambda hz: self.updatePacketRate(self.ui.progressBar_pktOut,hz))
 
