@@ -1,6 +1,6 @@
 __author__ = 'ollie'
 __author__ = 'ollie'
-__all__= ['FreqMonitor','KBSecMonitor','hasAllKeys', 'isGroup', 'getGroup', 'getNames']
+__all__= ['FreqMonitor','KBSecMonitor','hasAllKeys', 'isGroup', 'getGroup', 'getNames','thrustToPercentage','MIN_THRUST','MAX_THRUST_CMD','MAX_THRUST_FLIE']
 #import logging
 from PyQt4.QtCore import QObject, QThread, QTimer, pyqtSignal, pyqtSlot
 
@@ -9,6 +9,11 @@ import rospy
 
 #logger = logging.getLogger(__name__)
 
+MIN_THRUST = 10000
+MAX_THRUST_CMD = 60000.0 # as command to the flie
+MAX_THRUST_FLIE  = 65535.0 # as value from the flie
+def thrustToPercentage(thrust,flie=True):
+    return max(0,(float(thrust-MIN_THRUST)/((MAX_THRUST_FLIE if flie else MAX_THRUST_CMD)-MIN_THRUST))*100.0)
 
 class FreqMonitor():
     """

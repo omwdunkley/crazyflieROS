@@ -21,14 +21,10 @@ import tf
 from math import radians
 #import logging
 
-from commonTools import hasAllKeys, isGroup, getGroup, getNames
+from commonTools import hasAllKeys, isGroup, getGroup, getNames, thrustToPercentage
 
 
-MIN_THRUST = 10000
-MAX_THRUST_CMD = 60000.0 # as command to the flie
-MAX_THRUST_FLIE  = 65535.0 # as value from the flie
-def thrustToPercentage(thrust,flie=True):
-    return (float(thrust-MIN_THRUST)/((MAX_THRUST_FLIE if flie else MAX_THRUST_CMD)-MIN_THRUST))*100.0
+
 
 
 class ROSNode(QObject):
@@ -43,7 +39,8 @@ class ROSNode(QObject):
     def __init__(self, options, parent=None):
         super(ROSNode, self).__init__(parent)
 
-        self.compiledMsgs = [m for m in dir(msgCF) if m[0]!="_"] # Mmessages that are previously auto-compiled and we can send
+        self.compiledMsgs = [m for m in dir(msgCF) if m[0]!="_" and m[-2:]=="CF"] # Messages that are previously auto-compiled and we can send
+        print self.compiledMsgs
         self.options = options
         # Publishers
         self.publishers   = {} #Generated publishers will go here
@@ -69,7 +66,7 @@ class ROSNode(QObject):
 
     def pub(self, group, msg):
         """ Generates publishers if needed """
-        if group in self.compiledMsgs:
+        if group+'CF' in self.compiledMsgs:
             if group in self.publishers:
                 self.publishers[group].publish(msg)
             else:

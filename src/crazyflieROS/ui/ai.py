@@ -171,9 +171,14 @@ class AttitudeIndicator(QtGui.QWidget):
 
     @pyqtSlot(float, float, float)
     def setFFAccMeanVar(self, a, m ,v):
-        self.ff_acc = a
+        self.setAccZ(a)
         self.ff_m = m
         self.ff_v = v
+        self.needUpdate = True
+
+    @pyqtSlot(float)
+    def setAccZ(self, a):
+        self.ff_acc = a
         self.needUpdate = True
 
     def setRecovery(self, on, msg=""):
@@ -332,7 +337,7 @@ class AttitudeIndicator(QtGui.QWidget):
          # FreeFall Detection
         qp.resetTransform()
         qp.translate(0,h/2)
-        qp.drawText(fh*6, fh/2, str(round(self.ff_acc+1,2))+'G')  # acc
+        qp.drawText(fh*6, fh/2, str(round(self.ff_acc+1,2))+'VG')  # vertical acc
 
         pos_y = h/6*self.ff_acc
 

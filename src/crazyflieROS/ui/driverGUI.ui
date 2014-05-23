@@ -1482,7 +1482,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>213</x>
-     <y>802</y>
+     <y>771</y>
     </hint>
    </hints>
   </connection>
@@ -1498,7 +1498,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>534</x>
-     <y>802</y>
+     <y>771</y>
     </hint>
    </hints>
   </connection>
@@ -1947,6 +1947,38 @@
     <hint type="destinationlabel">
      <x>387</x>
      <y>356</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>groupBox_input</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>label_11</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>149</x>
+     <y>236</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>253</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>groupBox_input</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>label_9</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>221</x>
+     <y>238</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>429</x>
+     <y>257</y>
     </hint>
    </hints>
   </connection>

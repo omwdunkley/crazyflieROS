@@ -16,7 +16,7 @@ from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot,  QVariant, QTimer, QSettings,
 from PyQt4.QtGui import  QTreeWidget, QTreeWidgetItem, QAbstractItemView,QHeaderView,QCheckBox
 from cflib.crazyflie.log import Log, LogConfig, LogVariable
 
-from commonTools import FreqMonitor, hasAllKeys, isGroup
+from commonTools import FreqMonitor, hasAllKeys, isGroup, thrustToPercentage
 import math
 
 
@@ -400,13 +400,16 @@ class LogManager(QTreeWidget):
     sig_logError = pyqtSignal(object, str) # block, msg
     sig_rosData = pyqtSignal(object, int, object) # data, time, rostime
     sig_rpy = pyqtSignal(float, float, float)
-
-    #TODO need to impelment and connect the below
+    sig_hoverTarget = pyqtSignal(float) #0 if not hovering, else ASL target
+    sig_baroASL = pyqtSignal(float)
+    sig_temp = pyqtSignal(float)
+    sig_pressure = pyqtSignal(float)
+    sig_accZ = pyqtSignal(float) #z acceleration
+    sig_g = pyqtSignal(float) #g force
+    sig_acc = pyqtSignal(float,float,float)
     sig_thrust = pyqtSignal(int)
-    sig_baro = pyqtSignal(float, float, float) # ASL; pressure; temp
     sig_motors = pyqtSignal(int,int,int,int) # M1 through M4
 
-    #sig_batteryCB = pyqtSignal(object, int)
 
     def __init__(self, cf, parent=None):
         super(LogManager, self).__init__(parent)
@@ -559,6 +562,35 @@ class LogManager(QTreeWidget):
                 self.sig_rpy.emit(data["stabilizer.roll"],data["stabilizer.pitch"],data["stabilizer.yaw"])
             if hasAllKeys(data, ["thrust"], "stabilizer"):
                 self.sig_thrust.emit(data["thrust"])
+
+        # Hover Target
+        elif isGroup(data, "altHold"):
+            if hasAllKeys(data, ["target"], "altHold"):
+                self.sig_hoverTarget.emit(data["altHold.target"])
+        # Accelerometer
+        elif isGroup(data, "acc"):
+            if hasAllKeys(data, ["x","y","z"], "acc"):
+                self.sig_acc.emit(data["acc.x"],data["acc.y"],data["acc.z"])
+                self.sig_g.emit(math.sqrt(data["acc.x"]*data["acc.x"]+data["acc.y"]*data["acc.y"]+data["acc.z"]*data["acc.z"]))
+            elif hasAllKeys(data, ["mag2"], "acc"):
+                self.sig_g.emit(math.sqrt(data["mag2.x"]))
+            if hasAllKeys(data, ["zw"], "acc"):
+                self.sig_accZ.emit(data["acc.zw"])
+                        # Hover Target
+
+        # Motor
+        elif isGroup(data, "motor"):
+            if hasAllKeys(data, ["m1","m2","m3","m4"], "motor"):
+                self.sig_motors.emit(thrustToPercentage(data["motor.m1"]), thrustToPercentage(data["motor.m2"]), thrustToPercentage(data["motor.m3"]), thrustToPercentage(data["motor.m4"]))
+
+        # Barometer
+        elif isGroup(data, "baro"):
+            if hasAllKeys(data, ["asl"], "baro"):
+                self.sig_baroASL.emit(data["baro.asl"])
+            if hasAllKeys(data, ["temp"], "baro"):
+                self.sig_temp.emit(data["baro.temp"])
+            if hasAllKeys(data, ["pressure"], "baro"):
+                self.sig_pressure.emit(data["baro.pressure"])
 
         # ROS
         if self.pubRos:

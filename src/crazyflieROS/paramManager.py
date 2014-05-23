@@ -106,6 +106,7 @@ class ParamManager(QTreeWidget):
     sig_firmware = pyqtSignal(str, str)
     sig_baroFound = pyqtSignal(bool)
     sig_magFound = pyqtSignal(bool)
+    sig_hover= pyqtSignal(bool) # true if hover mode active
     sig_test = pyqtSignal(str, bool) #sensor, bool
 
     # Emit signals with additional details from the RO firmware
@@ -153,11 +154,16 @@ class ParamManager(QTreeWidget):
         self.cf.param.add_update_callback(group="imu_sensors", cb=self.imuSensorsCB)
         self.cf.param.add_update_callback(group="imu_tests",   cb=self.imuSensorTestsCB)
         self.cf.param.add_update_callback(group="firmware",    cb=self.firmwareCB)
+        self.cf.param.add_update_callback(group="flightmode",  cb=self.hoverCB)
 
         # Read TOC Values
         self.forceUpdate()
 
 
+
+    def hoverCB(self, name, val):
+        if 'althold' in name:
+            self.sig_hover.emit(eval(val)!=0)
 
     def firmwareCB(self, name, val):
         if "revision0" in name:

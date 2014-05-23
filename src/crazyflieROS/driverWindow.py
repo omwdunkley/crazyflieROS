@@ -104,6 +104,9 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.tab_hud.layout().addWidget(self.ai)
         self.ui.checkBox_AI.stateChanged.connect(self.ai.setUpdatesEnabled)
         self.ui.spinBox_AIHZ.valueChanged.connect(self.ai.setUpdateSpeed)
+        self.logManager.sig_hoverTarget.connect(self.ai.setHover)
+        self.logManager.sig_baroASL.connect(self.ai.setBaro)
+        self.logManager.sig_accZ.connect(self.ai.setAccZ)
 
         # Yaw offset
         self.ui.doubleSpinBox_yaw.valueChanged.connect(lambda yaw: self.ui.horizontalSlider_yaw.setValue(yaw*10))
@@ -347,6 +350,7 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.progressBar_pktOut.setValue(0)
         self.ui.progressbar_bat.setValue(3000)
         self.ui.progressbar_link.setValue(0)
+        self.ui.progressbar_cpu.setValue(0)
 
         if not initial:
             self.ai.reset()
