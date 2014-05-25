@@ -2,6 +2,8 @@ CRAZYFLIE ROS DRIVER WITH GUI
 ============================
 **CrazyflieROS Node Details [below](#details).**
 
+This assumes my latest [custom firmware](https://github.com/bitcraze/crazyflie-firmware) flashed.
+
 __Please note this document might be outdated. For discussions and questions on using the kinect part, please ask [here](http://forum.bitcraze.se/viewtopic.php?f=6&t=800).__
 
 __Update:__ Branch joyManager was merged into master, no more mix-ups :)
@@ -383,8 +385,8 @@ _TODO: Overview, way poin control, wand control, pid.launch_
  * Start the PID controller
    * ```roslaunch crazyflieROS pid.launch js:=X``` Where x is the joystick you need. 
      * Use ```ls /dev/input/js*``` and ```jstest /dev/input/x/``` to determine which joystick you need
-   * This launched 3 nodes, and configures them to respawn if closed. Also sets deadzone/caolesce intervals, etc
-     * joy_node, which reads the filesystem for joystick input and outputs a joy msg
+   * This launched 3 nodes, and configures them to respawn if closed. Also sets deadzone/coalesce intervals, etc
+     * joy_node, which reads the file system for joystick input and outputs a joy msg
      * joy_pid_controller, read tfs and joy msg to either remote contorl flie or pid control flie
      * dynamic_reconfigure, a gui to change the parameters of the joy node
 
@@ -395,54 +397,129 @@ _TODO: Overview, way poin control, wand control, pid.launch_
 #### Required TF transforms
 
 # Kinect Tracking and Control
-One can also use the kinect to track the 3d position of the flie. However, one must use the onboard attitude to estiamte the yaw. As yaw drifts and is not defined, one must manually align it to the camera optical axis. The gui has an option to "set north" in the current direction the flie is facing.
+One can also use the kinect to track the 3d position of the flie. However, one must use the on board attitude to estiamte the yaw. As yaw drifts one must manually align it to the camera optical axis. The gui has an option to "set north" in the current direction the flie is facing. More on this later.
+
+##### Prerequisites
+Make sure you have the latest [custom client code](https://github.com/omwdunkley/crazyflieROS).
+
+Make sure you have the latest [custom firmware](https://github.com/bitcraze/crazyflie-firmware) flashed.
 
 Install the freenect ROS stack using the instructions from [here](http://wiki.ros.org/freenect_stack) - this will install all the drivers, etc you need to use the kinect.
 
-You will also need the following transformations
+__Highly Recommended:__
+Add some paper to the flie to make it have a larger cross section and improve tracking
+![paper](https://lh6.googleusercontent.com/-cJFQnaV9QZg/U3t2aEFmKFI/AAAAAAAAgTE/X-9PeT4RFkA/s800/IMG_20140520_173419.jpg)
+
+#####Get the PS3 controller running
+Start the sixaxis driver:
+```sixad --start```, and follow the instructions
+
+Then start the joystick controller with PID functionality:
+ * ```roslaunch crazyflieROS pid.launch js:=0 # where 0 is your joystick nr```
+ * Using dynamic reconfigure, set the following settings:
+     * control - on
+     * set goal, then
+     * live update - off
+     * xy,yaw, thrust checked
+     * pid passive
+     * max thrust 100
+Here is a screenshot (note your pitch may vary)
+![ScreenshotJoy](https://lh3.googleusercontent.com/-ZMVHm0C-UYY/U4JmXE-cZPI/AAAAAAAAgVQ/DATxNz_jEog/s800/dynJoy.png)
+
+
+
+#####Launch the crazyflie driver:
+ * ```rosrun crazyflieROS driver.py```
+ * Then do the following from the GUI
+     * Input Tab
+         * Check Disable Thrust [x]
+         * X-Mode unchecked [ ]
+         * Check Monitor Outputs [x]
+             * Press L1 half way, and move the two analogue sticks around. All the values should change. If you want them to change faster, go to the settings tab and turn up the GUI hz slider. 
+             * Press L2 all the way, it should say hover. 
+             * Later when you fly, you need to press L1 half way to fly manually, and all the way for the automatic control to take over
+         * When finished checking the input is smooth and working in the right direction, uncheck Disable Thrust [ ]
+     * Press Connect / Scan to connect to the flie
+     * From the log tab, check these at minimum:
+         * Check _pm_ and _vbat_; set to 4-10 hz
+         * Check _stabilizer_, _pitch_, _roll_, _yaw_; set to 100 hz
+         * Check _utilization_, _cpuUsage_; set to 4-10 hz
+         * Screenshot:
+         * ![screenshotLog]()
+     * Go the HUD tab
+         * move around the flie; you should see pitching, roll, and yaw (compass on the horizon) motions 
+     * From the settings tab
+         * Make sure publish to ROS and Log Data are checked [x]
+         * Check yaw offset [x]
+             *  Position the kinect where you will use it, and rotate the flie so the front of the flie is pointing to the left of the kinect
+             * Press set north (see image below on how to align)
+             * If you move the kinect or crash the flie, you will need to do this again
+             * This is needed as the kinect cannot determine the yaw of the crazyflie, so we use the on board attitude estimation for this, but it first needs to be aligned.
+             * ![Align]()
+
+At this point it makes sense to fly the flie around and make sure it is balanced. To adjust the trim, you can use the d-pad. To set it to the current joystick position, press and release R1. To reset, press square. If all is working, continue.
+
+
+#####You will also need the following transformations
  * ```rosrun tf static_transform_publisher -1.5 0 1 0 0 0 /world /camera_link 10```
+     * This relates the kinect to the world frame. If you use the above, make sure the kinect is level. If you position the kinect at an angle, you will need to change the transform above.
  * ```rosrun tf static_transform_publisher 0 0 0 0 0 0 /cf0 /cf_gt 10```
 
 
-You will need to start the kinect driver
+
+
+#####You will need to start the kinect driver
  * ```roslaunch freenect_launch freenect.launch```
+ * You will need to align align the depth images to the colour ones:
+     * in dynamic reconfigure
+         * Select /camera/driver from the drop-down menu. Enable the depth_registration checkbox
+         * Note the topic changes from ```/camera/depth/points``` to ```/camera/depth_registered/points``
+![ScreenshotKinect](https://lh5.googleusercontent.com/-2LJlqsmVg1c/U4JmXLkCFcI/AAAAAAAAgVU/fRhC1wSPCwU/s800/dynKinect.png)
 
 
-You will also need to launch the PID controller (also handles joystick inputs)
- * ```roslaunch crazyflieROS pid.launch js:=0```
-
-You can use RVIZ to verify everything:
- * ```rosrun rviz rviz -d kinect.rviz```
+#####You can use RVIZ to verify everything:
+ * ```roscd crazyflieROS && rosrun rviz rviz -d kinect.rviz```
    * Sometimes rviz doesnt display the load modules properly. Just uncheck and recheck the box to spawn the view. 
    * Fixed frame should be "world".
+   * This is what the TF tree as shown in RVIZ should look like (some frames might only appear later):
+    ![rviz](https://lh4.googleusercontent.com/-4l1tHIk5h7Q/U4JjjO9hInI/AAAAAAAAgU4/F3YbtOPbSXg/s800/rviz.png)
+   * In the displays toolbox, under camera, under visibilty, you can chose what you overlay on the camera image.
+   * In the displays toolbox, under TF, you can set Timeout to 1 to avoid showing old frames and uncheck arrows, to reduce clutter.
 
-If you are using the kinect colour camera, you might want to align it with the depth images:
- * run rosrun crazyflieROS reconfigure_gui
- * Select /camera/driver from the drop-down menu. Enable the depth_registration checkbox
- * Note the topic changes from ```/camera/depth/points``` to ```/camera/depth_registered/points```
- 
 
-Joy Settings:
- * control - on
- * set goal, then
-  * live update - off
- * xy,yaw, thrust checked
- * pid passive
- * max thrust 100
-  
-GUI Settings
- * log | pm | at minimum roll, pitch and yaw checked. 
- * log | pm checked
- * log | pm | set hz to 100
- * input | disable thrust unchecked
- * input | disable hover mode checked
- * input | x-mode unchecked
- * settings | yaw offset checked
- * settings | yaw offset | align the crazyflie with the kinect (either crazyflie x (front) aligned with kinect z (optical axis), or crazyflie -y (right) aligned with kinect z. The press "set north". This is needed as the kienct cannot determine the yaw of the crazyflie, so we use the onboard attitude estimation for this. But it first needs to be aligned with the other frames.
- * 
 
-##### Add some paper to the flie to make it have a larger cross section and improve tracking (highly recommended):
-![paper](https://lh6.googleusercontent.com/-cJFQnaV9QZg/U3t2aEFmKFI/AAAAAAAAgTE/X-9PeT4RFkA/s800/IMG_20140520_173419.jpg)
+#####Now start the tracking.
+ * Make sure your scene is static
+ * Go to the Tracking Tab
+     * Click start tracking. This might take a few seconds - it waits for the kinect data to start publishing
+     * click reset background
+     * You might need to change some of these settings depending on your scene. I recommend setting
+         * Observation time: around 5 seconds - this is the time it uses to estimate the scene. 
+         * Method: minimum
+         * Maximum Depth - 3-5 meters. Anything more than 5 meters is usually pointless as the kinect resolution might not pick up the flie
+         * foreground distance: 40-60cm. This means that anything that close to the scene will be ignored. For example, if you fly close too close to the wall, the algorithm will think the flie is the wall. This is mainly to remove noise.
+         * Crazyflie detection: 6 cm. This depends on how "big" your flie is (ie with the paper on it)
+         * Size Tolerance: 4 cm, this means we consider an object to be the flie if we estimates the size to be 6+-4cm. The size is estimated from the segmented depth image.
+         * Opening kernel: 2*2+1, this is to smooth out the depth image.
+         * Prio: Distance from background. Some of these options are buggy. This is how we chose which object is the flie if multiple objects are being tracked. Obviously a particle filter or whatever would be better here.
+         * Depth estimate: Center pixel depth. How we chose the depth of the object we track.
+         * The crazyflie control options are duds for now.
+ * Test the tracker
+     * Fly around in the field of view of the kinect. Look at rviz to make sure it is tracking well with few false positives.
+     * Make sure the red TF axis (X) transform is pointing the direction the flie is facing.
+ * Set the goal
+     * Using dynamic reconfigure, select [/CrazyFlieJoystickDriver] from the dropdown
+     * Check LiveUpdate
+         * you can now set the goal using the x,y,z,rz sliders.
+         * The goal should be update in realtime (if your ps3joy is publishing)
+         * View them in rviz
+         * MAKE SURE THE GOAL IS IN THE FIELD OF VIEW. Set it to about 2 meters in front of the camera. 
+         * These coordinates are in the world frame. Verify everything with rviz
+         * Uncheck live update to prevent accidentally changing the goal
+ * With the tracker working and goal set:
+     * Manually fly to the goal, stabilise, then hold and press L1 all the way down. The flie should hold this position.
+     * The PID values might be too conservative, play with them.
+     * A lot more could be done here, such as clicking in rviz to set the goal
 
 
 # Adding a camera
