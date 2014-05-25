@@ -445,7 +445,7 @@ Here is a screenshot (note your pitch may vary)
          * Check _stabilizer_, _pitch_, _roll_, _yaw_; set to 100 hz
          * Check _utilization_, _cpuUsage_; set to 4-10 hz
          * Screenshot:
-         * ![screenshotLog]()
+         * ![screenshotLog](https://lh6.googleusercontent.com/-RJaTq0nDZvo/U4J94ni9VlI/AAAAAAAAgVw/EZc9f1tZ9Wk/s800/logTab.png)
      * Go the HUD tab
          * move around the flie; you should see pitching, roll, and yaw (compass on the horizon) motions 
      * From the settings tab
@@ -455,7 +455,7 @@ Here is a screenshot (note your pitch may vary)
              * Press set north (see image below on how to align)
              * If you move the kinect or crash the flie, you will need to do this again
              * This is needed as the kinect cannot determine the yaw of the crazyflie, so we use the on board attitude estimation for this, but it first needs to be aligned.
-             * ![Align]()
+             * ![Align](https://lh4.googleusercontent.com/-sRNz0EfE4zE/U4J-8T-wbWI/AAAAAAAAgWU/I6tKwTOLsts/s800/IMG_20140526_001717.jpg)
 
 At this point it makes sense to fly the flie around and make sure it is balanced. To adjust the trim, you can use the d-pad. To set it to the current joystick position, press and release R1. To reset, press square. If all is working, continue.
 
