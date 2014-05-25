@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-from _hashlib import new
-from duplicity.file_naming import new_sig_re
 import roslib;
 roslib.load_manifest("crazyflieROS")
 import rospy
@@ -179,7 +177,8 @@ def enum(*sequential, **named):
     return type('Enum', (), enums)
 
 Button = enum(L1=10,R1=11,Select=0,Start=3,L2=8,R2=9,Up=4,Right=5,Down=6,Left=7,Square=15,Cross=14,Triangle=12,Circle=13)
-Axes = enum(SLL=0,SLU=1,SRL=2,SRU=3,Up=4,Right=5,Down=6,Left=7,L2=8,R2=9,L1=10,R1=11,Triangle=12,Circle=13,Cross=14,Square=15,AccL=16,AccF=17,AccU=18,GyroY=19)
+#Axes = enum(SLL=0,SLU=1,SRL=2,SRU=3,Up=4,Right=5,Down=6,Left=7,L2=8,R2=9,L1=10,R1=11,Triangle=12,Circle=13,Cross=14,Square=15,AccL=16,AccF=17,AccU=18,GyroY=19)#default bluez + sixaxis
+Axes = enum(SLL=0,SLU=1,SRL=2,SRU=3,Up=8,Right=9,Down=10,Left=11,L2=12,R2=13,L1=14,R1=15,Triangle=12,Circle=13,Cross=14,Square=15,AccL=4,AccF=5,AccU=6)#https://help.ubuntu.com/community/Sixaxis#Quick_Setup_Guide_for_12.10%3C/p%3E
 Source = enum(Qualisys=0,Cam=1,Synthetic=2)
 #Button = enum(L1=10,R1=11,Select=0,Start=3,L2=8,R2=9,Up=4,Right=5,Down=6,Left=7,Square=15,Cross=14,Triangle=12,Circle=13)
 #Axes = enum(SLL=0,SLU=1,SRL=2,SRU=3,Up=4,Right=5,Down=6,Left=7,L2=4+8,R2=4+9,L1=4+10,R1=4+11,Triangle=4+12,Circle=4+13,Cross=4+14,Square=4+15,AccL=16,AccF=17,AccU=18,GyroY=19)
@@ -424,6 +423,13 @@ class JoyController:
             return
 
 
+        # bp = [i for i in range(len(joymsg.buttons)) if joymsg.buttons[i]]
+        # ap = [(i,round(joymsg.axes[i],2)) for i in range(len(joymsg.axes)) if abs(joymsg.axes[i])>0.51 ]
+        # if len(bp)>0:
+        #     print "Buttons:", bp
+        # if len(ap)>0:
+        #     print "Axes   :", ap
+
         if self.USB:
             # USB buttons go from 1 to -1, Bluetooth go from 0 to -1, so normalise
             joymsg.axes =np.array(joymsg.axes, dtype=np.float32)
@@ -481,13 +487,13 @@ class JoyController:
         if joymsg.header.seq%10 == 0:
 
             if self.curr_cmd.buttons[Button.Left]:
-                new_settings["trim_roll"] = max(self.trim_roll + self.curr_cmd.axes[Axes.Left], -10)
+                new_settings["trim_roll"] = max(self.trim_roll + self.curr_cmd.axes[Axes.Left], -20)
             if self.curr_cmd.buttons[Button.Right]:
-                new_settings["trim_roll"] =  min(self.trim_roll - self.curr_cmd.axes[Axes.Right], 10)
+                new_settings["trim_roll"] =  min(self.trim_roll - self.curr_cmd.axes[Axes.Right], 20)
             if self.curr_cmd.buttons[Button.Down]:
-                new_settings["trim_pitch"] = max(self.trim_pitch + self.curr_cmd.axes[Axes.Down], -10)
+                new_settings["trim_pitch"] = max(self.trim_pitch + self.curr_cmd.axes[Axes.Down], -20)
             if self.curr_cmd.buttons[Button.Up]:
-                new_settings["trim_pitch"] = min(self.trim_pitch - self.curr_cmd.axes[Axes.Up], 10)
+                new_settings["trim_pitch"] = min(self.trim_pitch - self.curr_cmd.axes[Axes.Up], 20)
 
 
 
@@ -652,8 +658,8 @@ class JoyController:
 
         # Set trim to current input
         if self.released(Button.R1):
-            new_settings["trim_roll"] = min(10, max(msg.roll, -10))
-            new_settings["trim_pitch"] = min(10, max(msg.pitch, -10))
+            new_settings["trim_roll"] = min(20, max(msg.roll, -20))
+            new_settings["trim_pitch"] = min(20, max(msg.pitch, -20))
             rospy.loginfo("Trim updated Roll/Pitch: %r/%r", round(new_settings["trim_roll"],2), round(new_settings["trim_pitch"],2))
 
         # Reset Trim

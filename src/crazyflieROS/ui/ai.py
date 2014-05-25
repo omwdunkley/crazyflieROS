@@ -35,11 +35,12 @@ __all__ = ['AttitudeIndicator']
 import sys
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import pyqtSlot, pyqtSignal, Qt
+from cameraInput import VideoPyGame
 
 class AttitudeIndicator(QtGui.QWidget):
     """Widget for showing attitude"""
 
-    sigMakeSpace = pyqtSignal()
+    sigDoubleClick = pyqtSignal()
 
 
     def __init__(self, parent, hz=30):
@@ -76,9 +77,46 @@ class AttitudeIndicator(QtGui.QWidget):
 
         self.msgRemove = 0
 
+        # Camera Related Stuff
+        self.cam = VideoPyGame(self)
+        self.cam.sigPixmap.connect(self.setPixmap)
+        self.cam.sigPlaying.connect(self.setVideo)
+
 
     def mouseDoubleClickEvent (self, e):
-        self.sigMakeSpace.emit()
+        pass
+
+    def contextMenuEvent(self, event):
+        menu = QtGui.QMenu(self)
+
+        # Generate menu for ros topics with images
+        submenuRos = QtGui.QMenu(menu)
+        submenuRos.setTitle("ROS")
+        a = submenuRos.addAction("Not Implemented")
+        menu.addMenu(submenuRos)
+
+        # Scan /dev/video/X
+        submenuVid = QtGui.QMenu(menu)
+        submenuVid.setTitle("Camera")
+
+        for i,device in enumerate(self.cam.getDevices()):
+            a = submenuVid.addAction(device)
+            a.triggered.connect(lambda: self.startCam(device))
+        menu.addMenu(submenuVid)
+
+
+        action = menu.addAction("No Video")
+        action.triggered.connect(lambda: self.cam.stop())
+        menu.exec_(event.globalPos())
+
+    def startCam(self, device):
+        self.cam.start(device=device)
+
+    def startRosImg(self):
+        self.cam.stop()
+
+
+
 
     def setUpdateSpeed(self, hz=30):
         self.hz = hz

@@ -558,10 +558,12 @@ class LogManager(QTreeWidget):
 
         # RPY
         elif isGroup(data, "stabilizer"):
+
             if hasAllKeys(data, ["roll","pitch","yaw"], "stabilizer"):
                 self.sig_rpy.emit(data["stabilizer.roll"],data["stabilizer.pitch"],data["stabilizer.yaw"])
             if hasAllKeys(data, ["thrust"], "stabilizer"):
-                self.sig_thrust.emit(data["thrust"])
+                self.sig_thrust.emit(data["stabilizer.thrust"])
+
 
         # Hover Target
         elif isGroup(data, "altHold"):

@@ -1,10 +1,12 @@
 CRAZYFLIE ROS DRIVER WITH GUI
 ============================
-**Details [here](#details)**
+**CrazyflieROS Node Details [below](#details).**
 
 __Please note this document might be outdated. For discussions and questions on using the kinect part, please ask [here](http://forum.bitcraze.se/viewtopic.php?f=6&t=800).__
 
 __Update:__ Branch joyManager was merged into master, no more mix-ups :)
+
+__Update:__ Sixaxis/sixpair instructions updated to (workaround for a bug introduced by the later kernels)
 
 # Introduction
 This package / document was created to help some friends get working with the crazyflie, ROS and the mocap system here at TUM. Still very much a work in progress. 
@@ -211,14 +213,14 @@ _TODO: Show the function that reads the variables in the firmware and the client
 
 ## Using ROS
 ### Setting up bluetooth PS3 Controller using [PS3 Joy](http://wiki.ros.org/ps3joy)
-To connect the PS3 controller with bluetooth, first plug it in with USB, then
+__Update: One the kernel updates broke the default PS3 driver (sixpair). Please see [these instruction](https://help.ubuntu.com/community/Sixaxis#Quick_Setup_Guide_for_12.10) to fix it (tested with 12.04).
+
+Once one has done the above, run
 ```
-sudo bash 
-rosrun ps3joy sixpair
-rosrun ps3joy ps3joy.py
+sixad --start 
 ```
-disconnect your joystick and press the connect button. This exposes your joystick under ```/dev/input/js*```.
-To test it, you can use jstest-gtk: ```jstest-gtk```
+This exposes your joystick under ```ls /dev/input/js*```.
+To test it, you can use jstest-gtk: ```jstest-gtk``` or ```jstest /dev/input/js*```
 
 Next you will need to start a ros node to read the joystick data and send it over the ros network. Here Ive made a launch file that launches 3 nodes: one that exposes the controller to ROS; one that reads it and exposes crazyflie controls, and a gui to set some settings. Launch with
 ```
