@@ -396,6 +396,7 @@ class LogManager(QTreeWidget):
         save configs between sessions, set and monitor the update frequencies
     """
     sig_batteryUpdated = pyqtSignal(int)
+    sig_batteryState = pyqtSignal(int)
     sig_cpuUpdated = pyqtSignal(float) #cpu usage in percent 0-100
     sig_logError = pyqtSignal(object, str) # block, msg
     sig_rosData = pyqtSignal(object, int, object) # data, time, rostime
@@ -409,16 +410,12 @@ class LogManager(QTreeWidget):
     sig_acc = pyqtSignal(float,float,float)
     sig_thrust = pyqtSignal(int)
     sig_motors = pyqtSignal(int,int,int,int) # M1 through M4
+    #sig_sysCanFly = pyqtSignal(bool) #value never changes, fix in firmware
 
 
     def __init__(self, cf, parent=None):
         super(LogManager, self).__init__(parent)
         self.cf = cf
-        #self.sigHandler = SigHandler()
-        #self.sigHandler.addSig("BatteryGUI", self.sig_batteryCB, "pm", ["vbat"], )
-        #self.sig_batteryCB.connect(self.batteryCB)
-
-
 
         self.toc = None
         self.timerHZUpdate = QTimer()
@@ -550,6 +547,8 @@ class LogManager(QTreeWidget):
         if isGroup(data, "pm"):
             if hasAllKeys(data, ["vbat"], "pm"):
                 self.sig_batteryUpdated.emit(int(1000*data["pm.vbat"]))
+            if hasAllKeys(data, ["state"], "pm"):
+                self.sig_batteryState.emit(data["pm.state"])
 
         # CPU Usage
         elif isGroup(data, "utilization"):
@@ -593,6 +592,12 @@ class LogManager(QTreeWidget):
                 self.sig_temp.emit(data["baro.temp"])
             if hasAllKeys(data, ["pressure"], "baro"):
                 self.sig_pressure.emit(data["baro.pressure"])
+
+        ## Sys can fly TODO: doesnt seem to work
+        #elif isGroup(data, "sys"):
+        #    if hasAllKeys(data, ["canfly"], "sys"):
+        #        self.sig_sysCanFly.emit(data["sys.canfly"]>0)
+
 
         # ROS
         if self.pubRos:

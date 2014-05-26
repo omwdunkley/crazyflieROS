@@ -107,6 +107,13 @@ class DriverWindow(QtGui.QMainWindow ):
         self.logManager.sig_hoverTarget.connect(self.ai.setHover)
         self.logManager.sig_baroASL.connect(self.ai.setBaro)
         self.logManager.sig_accZ.connect(self.ai.setAccZ)
+        self.logManager.sig_motors.connect(self.ai.setMotors)
+        self.logManager.sig_batteryUpdated.connect(self.ai.setBattery)
+        self.logManager.sig_batteryState.connect(self.ai.setPower)
+        self.logManager.sig_temp.connect(self.ai.setTemp)
+        self.logManager.sig_cpuUpdated.connect(self.ai.setCPU)
+        self.paramManager.sig_gyroCalib.connect(self.ai.setCalib)
+
 
         # Yaw offset
         self.ui.doubleSpinBox_yaw.valueChanged.connect(lambda yaw: self.ui.horizontalSlider_yaw.setValue(yaw*10))
@@ -162,7 +169,7 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.checkBox_kill.toggled.connect(self.setKill)
         self.ui.checkBox_kill.toggled.connect(self.ai.setKillSwitch)
         self.ui.checkBox_kill.toggled.emit(self.ui.checkBox_kill.checkState()) # force update
-        self.ui.checkBox_hover.toggled.connect(self.flie.setHoverAllowed)
+        self.ui.checkBox_hover.toggled.connect(self.flie.setHoverDisabled)
         self.ui.checkBox_hover.toggled.emit(self.ui.checkBox_hover.checkState()) # force update
 
 

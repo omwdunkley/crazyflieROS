@@ -3,7 +3,7 @@ __all__ = ['ParamManager']
 
 
 from PyQt4 import QtGui, uic
-from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot,  QVariant
+from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot,  QVariant, QTimer
 from PyQt4.QtGui import  QTreeWidget, QTreeWidgetItem, QAbstractItemView
 import rospy
 
@@ -25,6 +25,11 @@ class ParamAccessItem(QTreeWidgetItem):
         """ Gets all children - used to iterate through all items in the tree """
         return [self.child(x) for x in range(self.childCount())]
 
+    def requestUpdate(self):
+        """ Requests updates for all the children """
+        for child in self.getChildren():
+            child.requestUpdate()
+
 
 class ParamGroupItem(QTreeWidgetItem):
     """ Row in the tree that is a group and contains params as children that can be edited if editable = true """
@@ -38,6 +43,12 @@ class ParamGroupItem(QTreeWidgetItem):
     def getChildren(self):
         """ Gets all children - used to iterate through all items in the tree """
         return [self.child(x) for x in range(self.childCount())]
+
+    def requestUpdate(self):
+        """ Requests updates for all the children """
+        for child in self.getChildren():
+            child.requestUpdate()
+
 
 
 
@@ -70,7 +81,9 @@ class ParamItem(QTreeWidgetItem):
 
     def requestUpdate(self):
         """ Updates the specific value from the flie """
+        QtGui.QTreeWidgetItem.setData(self, 2, Qt.DisplayRole, "Updating...")
         self.cf.param.request_param_update("%s.%s" % (self.param.group, self.param.name))
+
 
     def requestValueChange(self, value):
         """ Send new value to flie. Flie callback updates GUI """
@@ -108,7 +121,8 @@ class ParamManager(QTreeWidget):
     sig_magFound = pyqtSignal(bool)
     sig_hover= pyqtSignal(bool) # true if hover mode active
     sig_test = pyqtSignal(str, bool) #sensor, bool
-
+    sig_gyroCalib = pyqtSignal(bool)
+    sig_accCalib = pyqtSignal(bool)
     # Emit signals with additional details from the RO firmware
     # Firmware / clean
     # Sensors found HMC5883L/MS5611
@@ -124,6 +138,12 @@ class ParamManager(QTreeWidget):
         self.setHeaderLabels(['Name', 'Type', 'Value'])
         self.setAlternatingRowColors(True)
 
+        self.timerCalib = QTimer()
+        self.timerCalib.setSingleShot(True)
+        self.timerCalib.setInterval(500)
+        self.timerCalib.timeout.connect(lambda: self.cf.param.request_param_update("%s.%s" % ('imu_calib','gyroCalib')))
+
+
         self.cf.connected.add_callback(self.populate)
         self.cf.disconnected.add_callback(self.uppopulate)
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -132,6 +152,9 @@ class ParamManager(QTreeWidget):
     def userStartEdit(self, item, col):
         if col == 2:
             self.editItem(item, col)
+        elif col==0:
+            item.requestUpdate()
+
 
 
     def populate(self, uri):
@@ -153,11 +176,16 @@ class ParamManager(QTreeWidget):
         # Listen to specific updates
         self.cf.param.add_update_callback(group="imu_sensors", cb=self.imuSensorsCB)
         self.cf.param.add_update_callback(group="imu_tests",   cb=self.imuSensorTestsCB)
+        self.cf.param.add_update_callback(group="imu_calib",   cb=self.imuSensorCalib)
         self.cf.param.add_update_callback(group="firmware",    cb=self.firmwareCB)
         self.cf.param.add_update_callback(group="flightmode",  cb=self.hoverCB)
 
+
         # Read TOC Values
         self.forceUpdate()
+
+
+
 
 
 
@@ -191,6 +219,17 @@ class ParamManager(QTreeWidget):
         """Callback for sensor test parameters"""
         self.sig_test.emit(name[name.index('.') + 1:],eval(val))
 
+    def imuSensorCalib(self, name, val):
+        """Callback for sensor calibration status"""
+        if "gyro" in name:
+            v = eval(val)
+            self.sig_gyroCalib.emit(v)
+            # try again
+            if v==0:
+                self.timerCalib.start()
+        elif "acc" in name:
+            self.sig_accCalib.emit(eval(val))
+
 
     def uppopulate(self, uri):
         self.cf.param.remove_update_callbacks()
@@ -216,6 +255,8 @@ class ParamManager(QTreeWidget):
             ws.append(str(self.columnWidth(i)))
         return ws
 
+
+    # EXPOSE TO ROS: TODO
     def getParams(self,RO=False):
         """ Get a list of group of list of params
         """

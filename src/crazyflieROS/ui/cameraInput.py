@@ -70,8 +70,9 @@ class VideoPyGame(QtCore.QObject):
         self.camTimer.stop()
 
         # Turn off camera
-        self.cam.stop()
-        self.sigPlaying.emit(False)
+        if self.cam is not None:
+            self.cam.stop()
+            self.sigPlaying.emit(False)
 
     def setMaxFPS(self, fps=50):
         """ Sets the camera polling rate. How fast images are emitted ultimately depends on the camera."""

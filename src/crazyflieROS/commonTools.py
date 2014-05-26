@@ -1,6 +1,6 @@
 __author__ = 'ollie'
 __author__ = 'ollie'
-__all__= ['FreqMonitor','KBSecMonitor','hasAllKeys', 'isGroup', 'getGroup', 'getNames','thrustToPercentage','MIN_THRUST','MAX_THRUST_CMD','MAX_THRUST_FLIE']
+__all__= ['FreqMonitor','KBSecMonitor','hasAllKeys', 'isGroup', 'getGroup', 'getNames','thrustToPercentage','MIN_THRUST','MAX_THRUST_CMD','MAX_THRUST_FLIE','BAT_STATE','powerToPercentage','MIN_POWER','MAX_POWER']
 #import logging
 from PyQt4.QtCore import QObject, QThread, QTimer, pyqtSignal, pyqtSlot
 
@@ -9,11 +9,28 @@ import rospy
 
 #logger = logging.getLogger(__name__)
 
+def enum(*sequential, **named):
+    enums = dict(zip(sequential, range(len(sequential))), **named)
+    reverse = dict((value, key) for key, value in enums.iteritems())
+    enums['to_str'] = reverse
+    return type('Enum', (), enums)
+
+
+BAT_STATE = enum(BATTERY=0,CHARGING=1,CHARGED=2,LOWPOWER=3, SHUTDOWN=4)
+
 MIN_THRUST = 10000
 MAX_THRUST_CMD = 60000.0 # as command to the flie
 MAX_THRUST_FLIE  = 65535.0 # as value from the flie
+
+MIN_POWER = 3000
+MAX_POWER = 4150
 def thrustToPercentage(thrust,flie=True):
     return max(0,(float(thrust-MIN_THRUST)/((MAX_THRUST_FLIE if flie else MAX_THRUST_CMD)-MIN_THRUST))*100.0)
+
+
+def powerToPercentage(power):
+    return min(100,(max(0,(float(power-MIN_POWER)/(MAX_POWER-MIN_POWER)*100.0))))
+
 
 class FreqMonitor():
     """

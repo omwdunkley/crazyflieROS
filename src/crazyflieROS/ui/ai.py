@@ -34,8 +34,10 @@ __all__ = ['AttitudeIndicator']
 
 import sys
 from PyQt4 import QtGui, QtCore
-from PyQt4.QtCore import pyqtSlot, pyqtSignal, Qt
+from PyQt4.QtCore import pyqtSlot, pyqtSignal, Qt, QPointF,QRectF
+from PyQt4.QtGui import QColor, QBrush, QPen, QFont
 from cameraInput import VideoPyGame
+from commonTools import BAT_STATE, powerToPercentage
 
 class AttitudeIndicator(QtGui.QWidget):
     """Widget for showing attitude"""
@@ -49,9 +51,16 @@ class AttitudeIndicator(QtGui.QWidget):
         self.roll = 0
         self.pitch = 0
         self.yaw = 0
-        self.hover = False
+        self.hover = -1
         self.hoverASL = 0.0
         self.hoverTargetASL = 0.0
+        self.motors = (0.0,0.0,0.0,0.0)
+        self.thrust = 0.0
+        self.power = -1
+        self.temp = -1
+        self.bat = -1
+        self.cpu = -1
+        self.calib = -1
 
         self.pixmap = None # Background camera image
         self.needUpdate = True
@@ -83,8 +92,22 @@ class AttitudeIndicator(QtGui.QWidget):
         self.cam.sigPlaying.connect(self.setVideo)
 
 
+    def drawModeBox(self, qp, xy, col, txt):
+        #qp = QtGui.QPainter()
+        qp.save()
+        qp.translate(xy)
+        qp.setBrush(col.dark())
+        qp.setPen(QPen(col, 0.5, Qt.SolidLine))
+        qp.setFont(QFont('Monospace', 14, QFont.Monospace))
+        rh = 11
+        rw = 20
+        r=QRectF(-rw,-rh, 2*rw, 2*rh)
+        qp.drawRect(r)
+        qp.drawText(r, Qt.AlignCenter, txt)
+        qp.restore()
+
     def mouseDoubleClickEvent (self, e):
-        pass
+        self.showFullScreen()
 
     def contextMenuEvent(self, event):
         menu = QtGui.QMenu(self)
@@ -124,7 +147,24 @@ class AttitudeIndicator(QtGui.QWidget):
 
     def reset(self):
         self.setRollPitchYaw(0,0,0)
-        self.setHover(0)
+        self.setHover(-1)
+        self.setPower(-1)
+        self.setBattery(-1)
+        self.setRoll(0)
+        self.setPitch(0)
+        self.setYaw(0)
+        self.setCPU(-1)
+        self.setTemp(-1)
+        self.setBaro(-1)
+        self.setCalib(-1)
+        self.setMotors(0,0,0,0)
+        self.setAccZ(1)
+        self.msg = ""
+
+
+    def setCalib(self, calibrated):
+        self.calib = calibrated
+        self.needUpdate = True
 
     def updateAI(self):
         if self.msgRemove>0:
@@ -160,7 +200,13 @@ class AttitudeIndicator(QtGui.QWidget):
         
     def setHover(self, target):        
         self.hoverTargetASL = target
-        self.hover = target>0
+        print target
+        if target>0:
+            self.hover = 1
+        elif target<0:
+            self.hover = -1
+        else:
+            self.hover = 0
         self.needUpdate = True
         
     def setBaro(self, asl):
@@ -230,6 +276,127 @@ class AttitudeIndicator(QtGui.QWidget):
         """ Set a message to display at the bottom of the AI for duration seconds """
         self.msg = msg
         self.msgRemove = duration * self.hz
+
+    @pyqtSlot(float, float, float, float)
+    def setMotors(self, m0, m1,m2,m3):
+        self.motors = (m2, m1,m0,m3) # f, r, b,l
+        self.needUpdate = True
+
+    @pyqtSlot(int)
+    def setPower(self, power):
+        self.power = power
+        self.needUpdate = True
+
+    @pyqtSlot(int)
+    def setBattery(self, bat):
+        self.bat = bat
+        self.needUpdate = True
+
+    @pyqtSlot(float)
+    def setCPU(self, cpu):
+        self.cpu = cpu
+        self.needUpdate = True
+
+    @pyqtSlot(float)
+    def setTemp(self, temp):
+        self.temp = temp
+        self.needUpdate = True
+
+
+    def drawState(self, qp):
+        qp.resetTransform()
+        w = self.width()
+        h = self.height()
+
+
+
+        # USB vs BAT
+        posBat = QPointF(w*0.2, 30)
+        posUsb = QPointF(w*0.3, 30)
+        if self.power == BAT_STATE.BATTERY:
+            col = QColor(0,255,0, 200)
+            if self.bat > 0:
+                col  = QColor(int(255-powerToPercentage(self.bat)/100.*255.),255,0, 200)
+            self.drawModeBox(qp, posBat, col, 'BAT')
+        elif self.power == BAT_STATE.CHARGING:
+            self.drawModeBox(qp, posUsb, QColor(255,255,0, 200), 'USB')
+        elif self.power == BAT_STATE.CHARGED:
+            self.drawModeBox(qp, posUsb, QColor(0,255,0, 200), 'USB')
+        elif self.power == BAT_STATE.LOWPOWER:
+            self.drawModeBox(qp, posBat, QColor(0,0,255, 200), 'BAT')
+        elif self.power == BAT_STATE.SHUTDOWN: #what is this?
+            self.drawModeBox(qp, QPointF(w*0.4, 30), QColor(0,0,0, 128), 'WTF')
+
+        # HOV vs MANUAL # TODO PID
+        if self.hover == 0:
+            self.drawModeBox(qp, QPointF(w*0.8, 30), QColor(0,255,0, 200), 'MAN')
+        elif self.hover >0:
+            self.drawModeBox(qp, QPointF(w*0.8, 30), QColor(0,255,0, 200), 'HOV')
+
+        # Calibrated
+        if self.calib == 0:
+            self.drawModeBox(qp, QPointF(w*0.1, 30), QColor(255,0,0, 200), 'CAL')
+            self.setMsg('NOT CALIBRATED',1./2.2)
+        elif self.calib == 1:
+            self.drawModeBox(qp, QPointF(w*0.1, 30), QColor(0,255,0, 200), 'CAL')
+
+        if self.temp>50:
+            self.drawModeBox(qp, QPointF(w*0.7, 30), QColor(255,0,0, 200), 'TMP')
+        elif self.temp>40:
+            self.drawModeBox(qp, QPointF(w*0.7, 30), QColor(255,255,0, 200), 'TMP')
+
+        if self.cpu>90:
+            self.drawModeBox(qp, QPointF(w*0.6, 30), QColor(255,0,0, 200), 'CPU')
+        elif self.cpu>80:
+            self.drawModeBox(qp, QPointF(w*0.6, 30), QColor(255,255,0, 200), 'CPU')
+        # HOV vs MAN vs CTR
+
+    def drawMotors(self, qp):
+        # TODO Check if motor update is recent
+
+        defaultCol = QColor(0,255,0, 200)
+
+        #qp = QtGui.QPainter()
+        qp.resetTransform()
+        w = self.width()
+        h = self.height()
+
+
+        maxSize = min(w,h)*0.1
+        minSize = maxSize/10.
+        qp.translate(w- maxSize, h-maxSize)
+        qp.translate(-10,-10)
+        qp.rotate(45)
+
+
+
+        lighter = defaultCol
+        lighter.setAlphaF(0.1)
+        qp.setBrush(lighter.dark())
+        qp.setPen(lighter)
+
+        # Draw background circle
+        qp.drawEllipse(QPointF(0,0),maxSize,maxSize)
+
+        # Draw Thrust Average
+        spread = 2
+        avg = sum(self.motors)/len(self.motors) /100. * (maxSize-minSize) + minSize
+        lighter.setAlphaF(0.5)
+        qp.setPen(lighter.lighter())
+        qp.setBrush(QColor(0,0,0,0))
+        qp.drawEllipse(QPointF(0,0),avg, avg)
+
+        qp.setBrush(lighter.dark())
+        lighter.setAlphaF(0.2)
+        qp.setPen(lighter)
+
+        qp.setPen(QPen(defaultCol))
+        qp.setBrush(QBrush(defaultCol.dark()))
+
+        for i in range(4):
+            m = self.motors[i]*2/100. * (maxSize-minSize) + minSize
+            qp.drawPie(QRectF(spread-m/2., spread-m/2., m, m), 0, -90*16)
+            qp.rotate(-90)
 
 
 
@@ -347,12 +514,13 @@ class AttitudeIndicator(QtGui.QWidget):
         qp.resetTransform()
 
 
-        qp.translate(0,h/2)      
-        if not self.hover:  
-            qp.drawText(w-fh*10, fh/2, str(round(self.hoverASL,2)))  # asl
+        qp.translate(0,h/2)
+        # not hovering
+        if self.hover<=0 and self.hoverASL>0:
+            qp.drawText(w-fh*10, fh/2, str(round(self.hoverASL,2)))  # asl (center)
                
         
-        if self.hover:
+        elif self.hover>0:
             qp.drawText(w-fh*10, fh/2, str(round(self.hoverTargetASL,2)))  # target asl (center)    
             diff = round(self.hoverASL-self.hoverTargetASL,2)
             pos_y = -h/6*diff
@@ -413,7 +581,8 @@ class AttitudeIndicator(QtGui.QWidget):
             qp.drawText(0,0,w,h, QtCore.Qt.AlignCenter, 'AUTO')
 
 
-        
+        self.drawMotors(qp)
+        self.drawState(qp)
 
 
 if __name__ == "__main__":

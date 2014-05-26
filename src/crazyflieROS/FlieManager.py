@@ -172,8 +172,8 @@ class FlieControl(QObject):
     ### OUTGOING
 
     @pyqtSlot(bool)
-    def setHoverAllowed(self, on=True):
-        self.hoverAllowed=on
+    def setHoverDisabled(self, on=True):
+        self.hoverAllowed=not on
 
     @pyqtSlot(float, float, float, int, bool)
     def sendCmd(self, roll, pitch, yawrate, thrust, hover):
