@@ -542,7 +542,7 @@ class JoyController:
                 if hover and not self.prev_msg.hover:
                     # Starting Goal should be from current position
                     if self.PIDSetCurrentAuto:
-                        self.setGoalFromCurrent()
+                        new_settings["SetCurrent"] = True
 
                     # Reset PID controllers
                     for p in range(4):

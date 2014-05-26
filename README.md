@@ -462,6 +462,7 @@ At this point it makes sense to fly the flie around and make sure it is balanced
 
 #####You will also need the following transformations
  * ```rosrun tf static_transform_publisher -1.5 0 1 0 0 0 /world /camera_link 10```
+ * OR ```rosrun tf static_transform_publisher 0 1.5 1 0 0  0.7071 -0.7071 world /camera_link 10```
      * This relates the kinect to the world frame. If you use the above, make sure the kinect is level. If you position the kinect at an angle, you will need to change the transform above.
  * ```rosrun tf static_transform_publisher 0 0 0 0 0 0 /cf0 /cf_gt 10```
 

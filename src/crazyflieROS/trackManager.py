@@ -329,13 +329,18 @@ class KinectTracker(Tracker):
         self.cameraInfo = None
 
 
-    def setCameraGoal(self, xyz_world):
+    def getCameraGoal(self):
         """ Set the goal in camera coordinates from world coordinates """
         now = rospy.Time.now()
-        self.sub_tf.waitForTransform("/goal", "/camera_depth_frame", now, rospy.Duration(0.1))
-        (self.goal, rot) = self.sub_tf.lookupTransform("/goal", "/camera_depth_frame", now)
-        self.goal = list(self.goal)
-        self.pub_tf.sendTransform(self.goal, rot, "/goal", "/camera_depth_frame", now)#TODO: debugging only
+        try:
+            self.sub_tf.waitForTransform("/camera_depth_optical_frame","/goal", now, rospy.Duration(0.1))
+            (self.goal, rot) = self.sub_tf.lookupTransform("/camera_depth_optical_frame","/goal", now)
+            self.goal = list(self.goal)
+            #self.pub_tf.sendTransform(self.goal, rot, now, "/goalCam", "/camera_depth_optical_frame")#TODO: debugging only
+            return self.goal
+        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+            rospy.logwarn('Could not get Goal position in the camera frame')
+            pass
 
     def ros2cv(self, data, dt="passthrough"):
         """ Convert ros image to opencv image """
@@ -557,46 +562,47 @@ class KinectTracker(Tracker):
                     bm -=  mask[1:-1, 1:-1]*255
 
 
-
-                # Sort by distance from background#
-                #TODO
-
-                if self.priority == 0:
-                    # Distance from background
-                    flies = sorted(flies, key=itemgetter(6),reverse=True)
-                elif self.priority == 1:
-                    # Closest to goal
-                    flies = sorted([f.extend( (f[2]-self.goal[0])**2+(f[3]-self.goal[1])**2+(f[4]-self.goal[2])**2) for f in flies], key=itemgetter(7),reverse=False)
-                elif self.priority == 2:
-                    # Closest to camera
-                    flies = sorted(flies, key=itemgetter(4),reverse=False)
-                elif self.priority == 3:
-                    # Estimated object size
-                    flies = sorted([f.extend(abs(self.estSize-f[5])) for f in flies], key=itemgetter(7),reverse=False)
-                elif self.priority == 4:
-                    # Blob Size
-                    flies = sorted(flies, key=itemgetter(0),reverse=True)
-                else:
-                    rospy.logerr("Unknown priority type: %d", self.priority)
-
                 if len(flies)>0:
-                    dist, mxl, x, y, z, w, b_diff = flies[0][0:7]
-                    self.pub_tf.sendTransform([z,-x-0.02,-y], rpy2quat(0,0,math.pi/2), rospy.Time.now(), "cf_xyz", "camera_depth_frame")#TODO maybe we need to rotate 90" so x is aligned with optical axis
+                    # Sort by distance from background#
+                    #TODO
 
-                if showing:
-                    for i, flie in enumerate(flies):
-                        dist, mxl, x, y, z, w, b_diff = flies[i][0:7]
-                        if i==0:
-                            cv2.circle(show, mxl, int(dist), (0, 255, 0), 4)
-                        else:
-                            cv2.circle(show, mxl, int(dist), (12, 50, 12), 1)
+                    if self.priority == 0:
+                        # Distance from background
+                        flies = sorted(flies, key=itemgetter(6),reverse=True)
+                    elif self.priority == 1:
+                        # Closest to goal
+                        self.getCameraGoal()
+                        flies = sorted([f+[(f[2]-self.goal[0])**2+(f[3]-self.goal[1])**2+(f[4]-self.goal[2])**2] for f in flies], key=itemgetter(7),reverse=False)
+                    elif self.priority == 2:
+                        # Depth
+                        flies = sorted(flies, key=itemgetter(4),reverse=False)
+                    elif self.priority == 3:
+                        # Estimated object size
+                        flies = sorted([f+[abs(self.estSize-f[5])] for f in flies], key=itemgetter(7),reverse=False)
+                    elif self.priority == 4:
+                        # Blob Size
+                        flies = sorted(flies, key=itemgetter(0),reverse=True)
+                    else:
+                        rospy.logerr("Unknown priority type: %d", self.priority)
 
-                        cv2.circle(show, mxl, 2, (0, 255, 0))
-                        cv2.circle(show, mxl, int(b_diff*10), (255, 0, 0))
-                        cv2.putText(show, str(i),                    (mxl[0]-30, mxl[1]),    cv2.FONT_HERSHEY_PLAIN, 1.4, (0, 255, 255))
-                        cv2.putText(show, str(round(z, 2))+"m",      (mxl[0]+14, mxl[1]+00), cv2.FONT_HERSHEY_PLAIN, 1.4, (255, 255, 0))
-                        cv2.putText(show, str(round(w*100, 1))+"cm", (mxl[0]+14, mxl[1]+20), cv2.FONT_HERSHEY_PLAIN, 1.4, (255,0,255))
-                        cv2.putText(show, str(round(b_diff,2))+"m",  (mxl[0]+14, mxl[1]+40), cv2.FONT_HERSHEY_PLAIN, 1.4, (255, 0, 0))
+                    if len(flies)>0:
+                        dist, mxl, x, y, z, w, b_diff = flies[0][0:7]
+                        self.pub_tf.sendTransform([z,-x-0.02,-y], rpy2quat(0,0,math.pi/2), rospy.Time.now(), "cf_xyz", "camera_depth_frame")#TODO maybe we need to rotate 90" so x is aligned with optical axis
+
+                    if showing:
+                        for i, flie in enumerate(flies):
+                            dist, mxl, x, y, z, w, b_diff = flies[i][0:7]
+                            if i==0:
+                                cv2.circle(show, mxl, int(dist), (0, 255, 0), 4)
+                            else:
+                                cv2.circle(show, mxl, int(dist), (12, 50, 12), 1)
+
+                            cv2.circle(show, mxl, 2, (0, 255, 0))
+                            cv2.circle(show, mxl, int(b_diff*10), (255, 0, 0))
+                            cv2.putText(show, str(i),                    (mxl[0]-30, mxl[1]),    cv2.FONT_HERSHEY_PLAIN, 1.4, (0, 255, 255))
+                            cv2.putText(show, str(round(z, 2))+"m",      (mxl[0]+14, mxl[1]+00), cv2.FONT_HERSHEY_PLAIN, 1.4, (255, 255, 0))
+                            cv2.putText(show, str(round(w*100, 1))+"cm", (mxl[0]+14, mxl[1]+20), cv2.FONT_HERSHEY_PLAIN, 1.4, (255,0,255))
+                            cv2.putText(show, str(round(b_diff,2))+"m",  (mxl[0]+14, mxl[1]+40), cv2.FONT_HERSHEY_PLAIN, 1.4, (255, 0, 0))
         else:
             show = np.asarray( cv2.cvtColor(img*255, cv2.COLOR_GRAY2BGR), dtype=np.uint8)
 
