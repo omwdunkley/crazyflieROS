@@ -200,7 +200,6 @@ class AttitudeIndicator(QtGui.QWidget):
         
     def setHover(self, target):        
         self.hoverTargetASL = target
-        print target
         if target>0:
             self.hover = 1
         elif target<0:

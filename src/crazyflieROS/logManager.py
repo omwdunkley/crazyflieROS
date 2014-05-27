@@ -88,7 +88,6 @@ class LogGroup(QTreeWidgetItem):
 
         i = bisect.bisect_left(self.validHZ, hz)
         vHZ =  min(self.validHZ[max(0, i-1): i+2], key=lambda t: abs(hz - t))
-        print "Converting HZ: %f = %f" %(hz, vHZ)
         if hz!=vHZ:
             rospy.loginfo("Could not set HZ to specific value [%d], rounded to valid HZ [%d]", hz, vHZ)
         return vHZ
@@ -280,7 +279,7 @@ class LogGroup(QTreeWidgetItem):
 
         #print " -> Making new Log with %d ms interval"
         if self.lg:
-            print " ---> Previous Log detected, removing first"
+            #print " ---> Previous Log detected, removing first"
             self.lg.delete()
 
 

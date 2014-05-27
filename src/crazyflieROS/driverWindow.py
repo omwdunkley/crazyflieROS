@@ -545,7 +545,6 @@ class DriverWindow(QtGui.QMainWindow ):
             else:
                 rospy.logerr("UNKNOWN MESSAGE TYPE: %s", msg.msg)
             self.ui.statusbar.showMessage(msg.msg, 0)
-            print msg.msg
 
 
 
@@ -574,7 +573,7 @@ class InitThread(QThread):
         QThread.__init__(self)
         self.options = options
     def run(self):
-        rospy.init_node('CrazyflieDriver[%d]' % self.options.radio,
+        rospy.init_node('CrazyflieDriverUSB%d' % self.options.radio,
                         log_level=rospy.DEBUG if self.options.debug else rospy.INFO,
                         disable_signals=True,
                         anonymous=False)
