@@ -35,6 +35,7 @@ class ROSNode(QObject):
 
     sig_joydata = pyqtSignal(float, float, float, float, bool) #RPYThrustHover
     sig_joydataRaw = pyqtSignal(float, float, float, int, bool) #RPYThrustHover
+    sig_baro = pyqtSignal(float) # asl reading of another flie
 
     def __init__(self, options, parent=None):
         super(ROSNode, self).__init__(parent)
@@ -50,9 +51,31 @@ class ROSNode(QObject):
         # Subscribers
         self.sub_tf    = tf.TransformListener()
         self.sub_joy   = rospy.Subscriber("/cfjoy", cmdMSG, self.receiveJoystick)
+        self.sub_baro = None # Defined later
 
         self.master = rosgraph.Master('/rostopic')
 
+
+    @pyqtSlot(str)
+    def subBaro(self, topic):
+        if topic == '' and self.sub_baro is not None:
+            rospy.loginfo('Unsubscribing from %s')
+            self.sub_baro.unregister()
+            self.sub_baro = None
+            self.sig_baro.emit(0)
+        else:
+            try:
+                from crazyflieROS.msg import baroCF as baroMSG
+            except ImportError as exc:
+                rospy.logerr('Cound not import baroCF. Generate messages (settings tab), then rosmake. Details: '+"{}".format(exc))
+                return
+            rospy.loginfo('Subscribing to %s for relative barometer measurements...', topic)
+            self.sub_baro = rospy.Subscriber(str(topic), baroMSG, self.newBarodata)
+            rospy.loginfo('...Subscribied')
+
+
+    def newBarodata(self, b):
+        self.sig_baro.emit(b.asl)
 
 
     def getTopics(self):
@@ -126,16 +149,16 @@ class ROSNode(QObject):
 def generateRosMessages(toc):
     """ Generates the *.msg files for ROS from the TOC
     """
-    rospy.logino('Generating Messages')
+    rospy.loginfo('Generating Messages')
     if not toc:
         rospy.logwarn("No TOC available to generate ROS messages from")
         return
 
-    rospy.logino('Generating Messages...')
+    rospy.loginfo('Generating Messages...')
     path = get_pkg_dir('crazyflieROS')+"/msg/"
     for g in toc.keys():
         makeMsg(g, path, toc[g] )
-    rospy.logino('Done')
+    rospy.loginfo('Done')
 
 
 def makeMsg(name, path, members):

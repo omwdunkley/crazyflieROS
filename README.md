@@ -10,6 +10,8 @@ __Update:__ Branch joyManager was merged into master, no more mix-ups :)
 
 __Update:__ Sixaxis/sixpair instructions updated to (workaround for a bug introduced by the later kernels)
 
+__Update:__ Relative barometric pressure for above ground level estimation. [Details](#multiBaro)
+
 # Introduction
 This package / document was created to help some friends get working with the crazyflie, ROS and the mocap system here at TUM. Still very much a work in progress. 
 The goal is to obtain a general overview of the flie, get a development environment set up for changing the firmware and implementing client side code.
@@ -297,6 +299,9 @@ This is a ros node wrapped in QT gui. For now some of the functionality is still
     * With rviz, one can overlay the depth/rgb images with the flie pose estimation
 * PID Controller _(todo: merge in from joy_driver_pid.py)_
 * Monitoring Joystick input _(todo: merge in from joy_driver_pid.py)_
+* Barometric Pressure offset
+    * can set ground level with a single click
+    * can connect to a second flie and use it as a reference
 
 
 
@@ -521,6 +526,24 @@ At this point it makes sense to fly the flie around and make sure it is balanced
      * Manually fly to the goal, stabilise, then hold and press L1 all the way down. The flie should hold this position.
      * The PID values might be too conservative, play with them.
      * A lot more could be done here, such as clicking in rviz to set the goal
+
+
+# <a name="multiBaro"></a>Using a second flie for barometric pressure reference
+Connecting to multiple crazyflies with the same dongle is not supported yet (although there is an experimental branch I have not tested), but using two radios works with recent updates, despite being a little buggy.
+
+Two connect to two flies, attach two dongles, then run
+
+```
+rosrun crazyflieROS driver.py #defaults to --radio=0
+rosrun crazyflieROS driver.py #defaults to --radio=1
+```
+This should launch two nodes, one which advertises topics over /cf0/... and the other over /cf1/...
+
+Turn both flies on (make sure they use different channels), and scan using each client.
+Then connect each client to a different flie (using the dropdown). Sometimes scanning is a little buggy, somehow the order matters. Some sort of bug in the radio driver, supporting multiple radios is experimental.
+
+Make sure you are logging the baro.asl data with both clients (@ 100hz).
+Then put the flies on the ground, and in both clients go to settings, click  Check Sea Level, click Set Level. The, for the flie you wish to fly with, check advanced barometer, and press "connect". This now listens to the data from the other flie and uses it as a baseline. So if someone opens a window or so, both flies will notice the pressure change, but the flying flie wont care, as the relative pressure difference between them stays the same.
 
 
 # Adding a camera

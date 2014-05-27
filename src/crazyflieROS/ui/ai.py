@@ -155,7 +155,7 @@ class AttitudeIndicator(QtGui.QWidget):
         self.setYaw(0)
         self.setCPU(-1)
         self.setTemp(-1)
-        self.setBaro(-1)
+        self.setBaro(-10000) #baro off = <9999
         self.setCalib(-1)
         self.setMotors(0,0,0,0)
         self.setAccZ(1)
@@ -201,11 +201,11 @@ class AttitudeIndicator(QtGui.QWidget):
     def setHover(self, target):        
         self.hoverTargetASL = target
         if target>0:
-            self.hover = 1
+            self.hover = 1 #know we are hovering, target set
         elif target<0:
-            self.hover = -1
+            self.hover = -1 #dont know
         else:
-            self.hover = 0
+            self.hover = 0 #know we are not hovering
         self.needUpdate = True
         
     def setBaro(self, asl):
@@ -515,11 +515,11 @@ class AttitudeIndicator(QtGui.QWidget):
 
         qp.translate(0,h/2)
         # not hovering
-        if self.hover<=0 and self.hoverASL>0:
+        if self.hover<=0 and self.hoverASL>-9999:
             qp.drawText(w-fh*10, fh/2, str(round(self.hoverASL,2)))  # asl (center)
                
         
-        elif self.hover>0:
+        elif self.hover>0 and self.hoverASL>-9999:
             qp.drawText(w-fh*10, fh/2, str(round(self.hoverTargetASL,2)))  # target asl (center)    
             diff = round(self.hoverASL-self.hoverTargetASL,2)
             pos_y = -h/6*diff

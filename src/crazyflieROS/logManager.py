@@ -445,6 +445,12 @@ class LogManager(QTreeWidget):
         # Yaw offset to compensate for gyro drift
         self.yawOffset = 0.0
         self.preYaw = 0.0
+
+        # ASL offset
+        self.groundLevel = 0.0 # ground level (offset from gui)
+        self.preAsl = 0.0      # previous asl value
+        self.aslOffset = 0.0   # offset from other barometer
+
         # If we should spam ROS messages or not
         self.pubRos = True
 
@@ -454,15 +460,29 @@ class LogManager(QTreeWidget):
         """ Due to gyro drift, we can manually add an offset to any yaw log """
         self.yawOffset = -yaw
 
+    def getYaw(self):
+        return self.preYaw
+
+
+    @pyqtSlot(float)
+    def setAslOffset(self, asl):
+        """ asl offset from anohter flie"""
+        self.aslOffset = asl
+
+    @pyqtSlot(float)
+    def setGroundLevel(self, gl):
+        """ ground level offset from GUI"""
+        self.groundLevel = gl
+
+    def getASL(self):
+        return self.preAsl
+
+
+
     @pyqtSlot(bool)
     def setPubToRos(self, on=True):
         self.pubRos = on
         rospy.loginfo("ROS Messages turned [%s]", "ON" if on else "OFF")
-
-
-    def getYaw(self):
-        return self.preYaw
-
 
 
 
@@ -537,10 +557,7 @@ class LogManager(QTreeWidget):
         """ All incoming data is routed to this function. Ros data is spammed from the tree groups """
         rostime = rospy.Time.now()
 
-        # Yaw offset, also negate so its CW #TODO: gyro velocities negated???
-        if data.has_key("stabilizer.yaw"):
-            self.preYaw = -data["stabilizer.yaw"]
-            data["stabilizer.yaw"] = normaliseAngle(self.yawOffset + self.preYaw)
+
 
         # Battery
         if isGroup(data, "pm"):
@@ -556,17 +573,15 @@ class LogManager(QTreeWidget):
 
         # RPY
         elif isGroup(data, "stabilizer"):
-
+            if data.has_key("stabilizer.yaw"):
+                # Yaw offset, also negate so its CW #TODO: gyro velocities negated???
+                self.preYaw = -data["stabilizer.yaw"]
+                data["stabilizer.yaw"] = normaliseAngle(self.yawOffset + self.preYaw)
             if hasAllKeys(data, ["roll","pitch","yaw"], "stabilizer"):
                 self.sig_rpy.emit(data["stabilizer.roll"],data["stabilizer.pitch"],data["stabilizer.yaw"])
             if hasAllKeys(data, ["thrust"], "stabilizer"):
                 self.sig_thrust.emit(data["stabilizer.thrust"])
 
-
-        # Hover Target
-        elif isGroup(data, "altHold"):
-            if hasAllKeys(data, ["target"], "altHold"):
-                self.sig_hoverTarget.emit(data["altHold.target"])
         # Accelerometer
         elif isGroup(data, "acc"):
             if hasAllKeys(data, ["x","y","z"], "acc"):
@@ -585,12 +600,26 @@ class LogManager(QTreeWidget):
 
         # Barometer
         elif isGroup(data, "baro"):
+            if 'baro.asl' in data:
+                self.preAsl = self.preAsl*0.9 + data['baro.asl']*0.1 #little bit of smoothing
+            for k in data.keys():
+                if k.startswith('baro.asl'):
+                    data[k] =  data[k] - self.groundLevel - self.aslOffset
             if hasAllKeys(data, ["asl"], "baro"):
                 self.sig_baroASL.emit(data["baro.asl"])
             if hasAllKeys(data, ["temp"], "baro"):
                 self.sig_temp.emit(data["baro.temp"])
             if hasAllKeys(data, ["pressure"], "baro"):
                 self.sig_pressure.emit(data["baro.pressure"])
+
+        # Hover Target
+        elif isGroup(data, "altHold"):
+            if hasAllKeys(data, ["target"], "altHold"):
+                # baro offset
+                data["altHold.target"] =  data["altHold.target"] - self.groundLevel - self.aslOffset
+                self.sig_hoverTarget.emit(data["altHold.target"])
+
+
 
         ## Sys can fly TODO: doesnt seem to work
         #elif isGroup(data, "sys"):

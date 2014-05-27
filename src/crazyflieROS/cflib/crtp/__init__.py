@@ -88,3 +88,4 @@ def get_link_driver(uri, link_quality_callback=None, link_error_callback=None):
             return instance
         except WrongUriType:
             continue
+    return None

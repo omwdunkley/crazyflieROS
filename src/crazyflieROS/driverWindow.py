@@ -3,6 +3,7 @@ import os, sys
 
 from PyQt4 import QtGui, uic
 from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot, QThread, QObject, QTimer, QSettings, QPoint, QSize, QVariant
+from PyQt4.QtGui import QPushButton
 from ui.ai import AttitudeIndicator
 from trackManager import TrackManager
 from logManager import LogManager
@@ -121,16 +122,23 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.doubleSpinBox_yaw.valueChanged.connect(self.logManager.setYawOffset)
         self.ui.checkBox_yaw.stateChanged.connect(lambda x: self.logManager.setYawOffset(self.ui.doubleSpinBox_yaw.value() if x else 0))
         self.ui.checkBox_yaw.stateChanged.emit(self.ui.checkBox_yaw.checkState()) # force update
-
-        self.ui.checkBox_rosLog.stateChanged.connect(self.logManager.setPubToRos)
-        self.ui.groupBox_ros.clicked.connect(lambda x: self.logManager.setPubToRos(min(self.ui.groupBox_ros.isChecked(), self.ui.checkBox_rosLog.checkState())))
         self.ui.pushButton_north.clicked.connect(lambda: self.ui.doubleSpinBox_yaw.setValue(self.logManager.getYaw()))
 
-
+        # ASL offset
+        self.ui.doubleSpinBox_ground.valueChanged.connect(self.logManager.setGroundLevel)
+        self.ui.checkBox_ground.stateChanged.connect(lambda x: self.logManager.setGroundLevel(self.ui.doubleSpinBox_ground.value() if x else 0))
+        self.ui.checkBox_ground.stateChanged.emit(self.ui.checkBox_ground.checkState())
+        self.ui.pushButton_ground.clicked.connect(lambda: self.ui.doubleSpinBox_ground.setValue(self.logManager.getASL()))
+        self.ros.sig_baro.connect(self.logManager.setAslOffset)
 
 
         # init previous settings
         self.readSettings()
+
+
+        self.ui.checkBox_rosLog.stateChanged.connect(self.logManager.setPubToRos)
+        self.ui.groupBox_ros.clicked.connect(lambda x: self.logManager.setPubToRos(min(self.ui.groupBox_ros.isChecked(), self.ui.checkBox_rosLog.checkState()))) #
+
 
 
 
@@ -180,6 +188,8 @@ class DriverWindow(QtGui.QMainWindow ):
 
         self.ui.pushButton_baro.clicked.connect(self.updateBaroTopics)
 
+        self.ui.groupBox_baro.toggled.connect(lambda x: self.updateBaroTopics(not x))
+
 
         # Connections to GUI
         self.flie.sig_packetSpeed.connect(self.updatePacketRate)
@@ -206,6 +216,7 @@ class DriverWindow(QtGui.QMainWindow ):
         self.flie.sig_stateUpdate.connect(self.updateFlieState)
         self.flie.sig_console.connect(self.ui.console.insertPlainText)
 
+
         # Show window
         self.show()
 
@@ -213,14 +224,55 @@ class DriverWindow(QtGui.QMainWindow ):
         init_drivers(enable_debug_driver=False)
         self.startScanURI()
 
+
+
+
+
+
     @pyqtSlot()
-    def updateBaroTopics(self):
-        topics = self.ros.getTopics()
-        topics = [t for t in topics  if t.endswith("baro")]
-        if len(topics)>0:
-            self.ui.comboBox_baro.addItems(topics)
-        else:
+    def updateBaroTopics(self, forceReset=False):
+        """ Handles using another baro as a ground station.
+
+        """
+
+        if forceReset:
+            if self.ui.pushButton_baro.text() =='Disconnect':
+                print 'Disconnecting from', self.ui.comboBox_baro.currentText()
+                self.ros.subBaro('')
+
+            self.ui.comboBox_baro.clear()
             self.ui.comboBox_baro.addItem("None Detected")
+            self.ui.pushButton_baro.setText('Refresh')
+
+        else:
+            if self.ui.pushButton_baro.text() =='Connect':
+                # Connect
+                self.ui.comboBox_baro.setDisabled(True)
+                print 'Connecting to', self.ui.comboBox_baro.currentText()
+                self.ros.subBaro(self.ui.comboBox_baro.currentText())
+                self.ui.pushButton_baro.setText('Disconnect')
+
+
+            elif self.ui.pushButton_baro.text() =='Disconnect':
+                # Disconnect
+                print 'Disconnecting from', self.ui.comboBox_baro.currentText()
+                self.ros.subBaro('')
+                self.ui.comboBox_baro.clear()
+                self.ui.comboBox_baro.addItem("None Detected")
+                self.ui.pushButton_baro.setText('Refresh')
+                self.ui.comboBox_baro.setDisabled(False)
+
+            else:
+                # Scan
+                self.ui.comboBox_baro.setDisabled(False)
+                self.ui.pushButton_baro.setDisabled(False)
+                self.ui.comboBox_baro.clear()
+                topics = [t for t in self.ros.getTopics() if t.endswith("/baro") and len(t)>=6 and t[-6]!=str(self.options.radio)]
+                if len(topics)>0:
+                    self.ui.comboBox_baro.addItems(topics)
+                    self.ui.pushButton_baro.setText('Connect')
+                else:
+                    self.ui.comboBox_baro.addItem("None Detected")
 
 
 
@@ -236,8 +288,14 @@ class DriverWindow(QtGui.QMainWindow ):
 
     def setToUpdate(self, name, func, *args):
         """ Add functions to call at gui update hz rate"""
-        self.guiUpdateQueue[name] = partial(func, *args)
-        self.guiUpdateQueueSave +=1
+        if self.ui.checkBox_guiHZ.isChecked():
+            # Limit rate
+            self.guiUpdateQueue[name] = partial(func, *args)
+            self.guiUpdateQueueSave +=1
+        else:
+            #dont limit rate
+            f = partial(func, *args)
+            f()
 
     @pyqtSlot(float, float, float, float, bool)
     def setInputJoy(self, r, p, y, t, h):
@@ -358,6 +416,7 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.progressbar_bat.setValue(3000)
         self.ui.progressbar_link.setValue(0)
         self.ui.progressbar_cpu.setValue(0)
+        self.ui.comboBox_connect.setDisabled(False)
 
         if not initial:
             self.ai.reset()
