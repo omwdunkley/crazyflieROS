@@ -2,7 +2,7 @@ CRAZYFLIE ROS DRIVER WITH GUI
 ============================
 **CrazyflieROS Node Details [below](#details).**
 
-This assumes my latest [custom firmware](https://github.com/bitcraze/crazyflie-firmware) flashed.
+This assumes my latest [custom firmware](https://github.com/omwdunkley/crazyflie-firmware) flashed.
 
 __Please note this document might be outdated. For discussions and questions on using the kinect part, please ask [here](http://forum.bitcraze.se/viewtopic.php?f=6&t=800).__
 
