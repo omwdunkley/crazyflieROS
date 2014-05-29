@@ -10,11 +10,12 @@
     <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" required="true" output="screen" >
         <param name="video_device" value="$(arg DEVICE)" />
         <param name="image_width" value="720" />
+        <param name="framerate" value="25" />
         <param name="image_height" value="576" />
         <param name="pixel_format" value="yuyv" />
         <param name="camera_frame_id" value="$(arg FRAME)" />
-        <param name="io_method" value="mmap"/>   
-        <!-- remap from="/usb_cam/" to="/cf/cam/" -->     
+        <param name="io_method" value="mmap"/>    <!-- read mmap userptr -->
+        <remap from="/usb_cam/image_raw" to="$(arg NAME)/image_raw"/>     
     </node>
 
 
@@ -38,6 +39,6 @@
 
 
     <!-- Publish Transform -->
-    <node name="cam_transform" pkg="tf" type="static_transform_publisher" args="0 0 0 1.57 3.14 1.57 /cf_q $(arg FRAME) 10"/>
+    <!-- node name="cam_transform" pkg="tf" type="static_transform_publisher" args="0 0 0 1.57 3.14 1.57 /cf_q $(arg FRAME) 10"/ -->
     
 </launch>

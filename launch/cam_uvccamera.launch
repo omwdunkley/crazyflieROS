@@ -1,4 +1,3 @@
-<!-- https://github.com/pirobot/uvc_cam/blob/hydro-devel -->
 <launch>
  <!-- Options -->
     <arg name="cam"/>
@@ -10,13 +9,12 @@
     
 
 
-    
-    <node name="uvc_cam_node" pkg="uvc_cam" type="uvc_cam_node" required="true" output="screen">
+    <node name="uvc_camera_node" pkg="uvc_camera" type="uvc_camera_node" required="true" output="screen">
         <param name="device" value="$(arg DEVICE)" />
         <param name="width" value="720" />
         <param name="height" value="576" />
         <param name="frame_id" value="$(arg FRAME)" />
-        <param name="frame_rate" value="25.0"/>    
+        <param name="fps" value="25"/>    
         <remap from="image_raw" to="$(arg NAME)/image_raw"/>     
     </node>
 

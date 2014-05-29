@@ -43,7 +43,7 @@
 
 
     <!-- Publish Transform -->
-    <node name="cam_transform" pkg="tf" type="static_transform_publisher" args="0 0 0 1.57 3.14 1.57 /cf $(arg FRAME) 10"/>
+    <!-- node name="cam_transform" pkg="tf" type="static_transform_publisher" args="0 0 0 1.57 3.14 1.57 /cf $(arg FRAME) 10"/ -->
 
 
 
