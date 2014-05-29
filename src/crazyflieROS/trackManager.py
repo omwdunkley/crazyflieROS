@@ -277,8 +277,8 @@ class KinectTracker(Tracker):
         # Ros Stuff
         self.sub_depth = None #Initialised later
         self.bridge = CvBridge()
-        self.pub_depth = rospy.Publisher("/camera/detector/image_raw", ImageMSG)
-        self.pub_camera = rospy.Publisher("/camera/detector/camera_info", CamInfoMSG)
+        self.pub_depth = rospy.Publisher("/camera/detector/image_raw", ImageMSG, queue_size=5)
+        self.pub_camera = rospy.Publisher("/camera/detector/camera_info", CamInfoMSG, queue_size=5)
 
 
         # Parameters

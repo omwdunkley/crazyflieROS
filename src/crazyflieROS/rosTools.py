@@ -95,7 +95,7 @@ class ROSNode(QObject):
                 self.publishers[group].publish(msg)
             else:
                 rospy.loginfo('Generating Publisher for topic </cf%d/%s>',self.options.radio, group)
-                self.publishers[group] = rospy.Publisher("/cf%d/%s" % (self.options.radio, group), eval('msgCF.'+group+'CF'))
+                self.publishers[group] = rospy.Publisher("/cf%d/%s" % (self.options.radio, group), eval('msgCF.'+group+'CF'), queue_size=25)
                 self.publishers[group].publish(msg)
         else:
             rospy.logerr("Please generate messages: %s.msg does not exist", group)
