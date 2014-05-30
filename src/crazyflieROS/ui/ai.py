@@ -28,8 +28,7 @@
 """
 Attitude indicator widget.
 """
-from pygccxml.declarations.decl_factory import decl_factory_t
-from bin.joy_driver_pid import percentageToThrust
+#from joy_driver_pid import percentageToThrust
 
 
 __author__ = 'Bitcraze AB'

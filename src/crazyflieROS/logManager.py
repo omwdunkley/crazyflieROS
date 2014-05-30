@@ -625,11 +625,22 @@ class LogManager(QTreeWidget):
                 self.preAsl = self.preAsl*0.9 + data['baro.asl']*0.1 #little bit of smoothing
             for k in data.keys():
                 if k.startswith('baro.asl'):
-                    data[k] =  data[k] - self.groundLevel - self.aslOffset
-            if hasAllKeys(data, ["asl"], "baro"):
-                self.sig_baroASL.emit(data["baro.asl"])
+                    data[k] =  data[k] - self.groundLevel
+
+            # show aslLong to gui
             if hasAllKeys(data, ["aslLong"], "baro"):
                 self.sig_aslLong.emit(data["baro.aslLong"])
+
+            # aslLong = uncompensated asl for ROS
+            #TODO: cheap hack, use aslLong to store raw
+            data["baro.aslLong"] = data["baro.asl"]
+
+            # asl is compensated, for ros and gui
+            if hasAllKeys(data, ["asl"], "baro"):
+                data["baro.asl"] = data["baro.asl"] - self.aslOffset
+                self.sig_baroASL.emit(data["baro.asl"])
+
+
             if hasAllKeys(data, ["temp"], "baro"):
                 self.sig_temp.emit(data["baro.temp"])
             if hasAllKeys(data, ["pressure"], "baro"):

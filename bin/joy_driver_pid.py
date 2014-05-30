@@ -25,7 +25,7 @@ import time
 
 def fATAN(dist, r):  return degrees(atan(dist))*sqrt(r)
 def fASIN (dist, r): return degrees(asin(min(1.,max(-1, dist))))*r
-def fLIN(dist):   return dist
+def fLIN(dist, mag):   return dist*mag
 
 
 bla="""
@@ -164,6 +164,14 @@ trajectory = [(-0.5,0.1,1,0),
               (1,0.0,0.7,-120.),
               (1,0.0,1.0,0.)
 
+              ]
+
+
+
+trajectory = [(1,0,1,0),
+              (-1,0,1,0),
+              (1,0,1,45),
+              (-1,0,1,45)
               ]
 
 
@@ -337,8 +345,8 @@ class JoyController:
         self.sub_joy   = rospy.Subscriber("/joy", JoyMSG, self.new_joydata)
         self.sub_tf    = tf.TransformListener()         
         self.pub_tf    = tf.TransformBroadcaster()    
-        self.pub_cfJoy = rospy.Publisher("/cfjoy", CFJoyMSG)
-        self.pub_PID = rospy.Publisher("/pid", PidMSG)
+        self.pub_cfJoy = rospy.Publisher("/cfjoy", CFJoyMSG, queue_size=50)
+        self.pub_PID = rospy.Publisher("/pid", PidMSG,queue_size=50)
 
         # PIDs for R,P,Y,THROTTLE
         self.PID = (PID(), PID(), PID(), PID()) # XY, Throttle, Yaw
