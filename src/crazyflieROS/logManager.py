@@ -37,6 +37,8 @@ class LogGroup(QTreeWidgetItem):
 
     """
 
+
+
     def __init__(self, parent, name, children, hz=50):
         super(LogGroup, self).__init__(parent)
         self.name = name
@@ -46,6 +48,7 @@ class LogGroup(QTreeWidgetItem):
         self.cAll = True
         self.cNone = True
         self.validHZ = list(OrderedDict.fromkeys([round(100/floor(100/x),2) for x in range(1,100)]))
+        self.hzTarget = hz
 
         # Monitor the incoming frequency
         self.fm = None
@@ -75,9 +78,6 @@ class LogGroup(QTreeWidgetItem):
             self.requestLog()
 
 
-
-
-
     def setEstimateHzOn(self, on):
         """ If on then we esstiamte the HZ """
         self.fmOn = on
@@ -89,7 +89,7 @@ class LogGroup(QTreeWidgetItem):
         i = bisect.bisect_left(self.validHZ, hz)
         vHZ =  min(self.validHZ[max(0, i-1): i+2], key=lambda t: abs(hz - t))
         if hz!=vHZ:
-            rospy.loginfo("Could not set HZ to specific value [%d], rounded to valid HZ [%d]", hz, vHZ)
+            rospy.loginfo("Could not set HZ to specific value [%d], rounded to valid HZ [%.4f]", hz, vHZ)
         return vHZ
 
 
@@ -100,6 +100,7 @@ class LogGroup(QTreeWidgetItem):
         # Read target HZ
         hzQv = settings.value("log_"+self.name+"_hz",QVariant(20))
         QtGui.QTreeWidgetItem.setData(self, 2, Qt.DisplayRole, hzQv)
+        self.hzTarget = self.getValidHZ(hzQv.toFloat()[0])
 
         # Read if checked. If partially checked, uncheck
         onQv = settings.value("log_"+self.name+"_on", QVariant(Qt.Unchecked))
@@ -129,7 +130,11 @@ class LogGroup(QTreeWidgetItem):
     def updateFM(self):
         # if not self.isActive()
         if self.fm:
-            QtGui.QTreeWidgetItem.setData(self, 3, Qt.DisplayRole, round(self.fm.get_hz(),2))
+            hz = self.fm.get_hz()
+            QtGui.QTreeWidgetItem.setData(self, 3, Qt.DisplayRole, round(hz,2))
+            return self.name, hz#, -1.0 if self.lg is None else self.hzTarget
+        else:
+            return self.name, -1.0#, -1.0 if self.lg is None else self.hzTarget
 
 
     def logDataCB(self, ts, data, lg):
@@ -153,13 +158,12 @@ class LogGroup(QTreeWidgetItem):
 
 
         if on:
-            rospy.loginfo( "[%d: %s] LogCB STARTED" % (self.lg.id, self.name))
+            rospy.loginfo( "[%d: %s @ %.2fhz] LogCB STARTED" % (self.lg.id, self.name, self.hzTarget))
             QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Checked)
             QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "On")
             self.setAllState(Qt.Checked, activeOnly=True)
         else:
-            rospy.loginfo( "[%d] LogCB STOPPED" % (self.name))
-            pass
+            rospy.loginfo( "[%s] LogCB STOPPED" % ( self.name))
             #print "[%s]LogCB ENDED(%d) " % (self.name, self.c)
             #if self.allSelected():
             #    self.setAllState(Qt.Unchecked)
@@ -200,6 +204,8 @@ class LogGroup(QTreeWidgetItem):
         #    self.setAllState(Qt.Checked, activeOnly=True)
         QtGui.QTreeWidgetItem.setData(self, 0, Qt.CheckStateRole, Qt.Unchecked)
         QtGui.QTreeWidgetItem.setData(self, 1, Qt.DisplayRole, "Off")
+        self.treeWidget().sig_logStatus.emit(self.name, -1)
+        self.fm = None
 
 
     def errorLog(self, block, msg):
@@ -211,6 +217,7 @@ class LogGroup(QTreeWidgetItem):
             self.setAllState(Qt.Unchecked)
         else:
             self.setAllState(Qt.Checked, activeOnly=True)
+        self.fm = None
 
 
     def setData(self, column, role, value):
@@ -249,10 +256,12 @@ class LogGroup(QTreeWidgetItem):
                 elif preValue==Qt.Checked:
                     #print "hz changed from %.2f to %.2f while logging, replace log" % (preHz, hz)
                     QtGui.QTreeWidgetItem.setData(self, column, role, hz)
+                    self.hzTarget = hz
                     self.requestLog()
                 elif preValue==Qt.Unchecked:
                     #print "hz changed from %.2f to %.2f, not logging yet" % (preHz, hz)
                     QtGui.QTreeWidgetItem.setData(self, column, role, hz)
+                    self.hzTarget = hz
 
     def childStateChanged(self, child, newState):
         if self.checkState(0) == Qt.Unchecked:
@@ -283,8 +292,8 @@ class LogGroup(QTreeWidgetItem):
             self.lg.delete()
 
 
-        self.fm = FreqMonitor(window=max(10, int(1.2*float(self.text(2)))))
-        self.lg = LogConfig(self.name, 1000/int(float(self.text(2))))
+        self.fm = FreqMonitor(window=max(10, int(1.2*self.hzTarget)))
+        self.lg = LogConfig(self.name, int(round(1000./self.hzTarget)))
         #print " ---> Adding children to new log"
         for x in range(self.childCount()):
             c = self.child(x)
@@ -301,12 +310,17 @@ class LogGroup(QTreeWidgetItem):
             self.lg.started_cb.add_callback(self.logStartedCB)
             self.lg.error_cb.add_callback(self.treeWidget().sig_logError.emit)
             self.lg.error_cb.add_callback(self.errorLog)
+
+            self.treeWidget().sig_logStatus.emit(self.name, self.hzTarget)
+
             #print " --- --> callbacks added, starting new log NOW"
             self.lg.start()
+
         else:
             #print " --- --> FAIL"
             self.errorLog(None, "Invalid Config")
             self.lg = None
+            self.fm = None
 
 
     def setAllState(self, chkState, activeOnly=False):
@@ -402,6 +416,7 @@ class LogManager(QTreeWidget):
     sig_rpy = pyqtSignal(float, float, float)
     sig_hoverTarget = pyqtSignal(float) #0 if not hovering, else ASL target
     sig_baroASL = pyqtSignal(float)
+    sig_aslLong= pyqtSignal(float)
     sig_temp = pyqtSignal(float)
     sig_pressure = pyqtSignal(float)
     sig_accZ = pyqtSignal(float) #z acceleration
@@ -409,6 +424,8 @@ class LogManager(QTreeWidget):
     sig_acc = pyqtSignal(float,float,float)
     sig_thrust = pyqtSignal(int)
     sig_motors = pyqtSignal(int,int,int,int) # M1 through M4
+    sig_hzMeasure = pyqtSignal(str, float) #name, measured hz
+    sig_logStatus = pyqtSignal(str, float) # logging group, target hz (-1 = off)
     #sig_sysCanFly = pyqtSignal(bool) #value never changes, fix in firmware
 
 
@@ -499,11 +516,14 @@ class LogManager(QTreeWidget):
     def updateFreqMonitor(self):
         """ Called periodically by the timerHZ timer. Makes each active log group update their log data frequency """
         for i in range(self.topLevelItemCount()):
-            self.topLevelItem(i).updateFM()
+            name,hz = self.topLevelItem(i).updateFM()
+            if hz>=0:
+                self.sig_hzMeasure.emit(name,hz)
 
     def logError(self, block, msg):
         """ All logging configurations report errors to this function """
         rospy.logerr("Logging error with %s: %s", block.name, msg )
+        self.sig_logStatus.emit(block.name, -2)
 
     def newToc(self, uri):
         """ Called when a new TOC has been downloaded. Populate the table, create and start log configs"""
@@ -521,10 +541,11 @@ class LogManager(QTreeWidget):
         if self.estimateHzOn:
             self.timerHZUpdate.start()
 
+
     def saveSettings(self):
         """ This function is called when the flie disconnects. It saves the state of each log configuration (on/off, subset of params, hz) """
         for i in range(self.topLevelItemCount()):
-            self.topLevelItem(i).writeSettings()
+            self.topLevelItem(i).writeSettings() #TODO: should pass radio number!
 
     def purgeToc(self, uri):
         """ Called when the flie disconnects. Stop monitoring HZ, saves the state clears the treeview """
@@ -607,6 +628,8 @@ class LogManager(QTreeWidget):
                     data[k] =  data[k] - self.groundLevel - self.aslOffset
             if hasAllKeys(data, ["asl"], "baro"):
                 self.sig_baroASL.emit(data["baro.asl"])
+            if hasAllKeys(data, ["aslLong"], "baro"):
+                self.sig_aslLong.emit(data["baro.aslLong"])
             if hasAllKeys(data, ["temp"], "baro"):
                 self.sig_temp.emit(data["baro.temp"])
             if hasAllKeys(data, ["pressure"], "baro"):

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'driverGUI.ui'
 #
-# Created: Thu May 29 22:53:05 2014
+# Created: Fri May 30 01:44:44 2014
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -645,6 +645,29 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.groupBox_input, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.doubleSpinBox_t_t.setVisible)
         QtCore.QObject.connect(self.groupBox_input, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.label_11.setVisible)
         QtCore.QObject.connect(self.groupBox_input, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.label_9.setVisible)
+        QtCore.QObject.connect(self.horizontalSlider_guiHZ, QtCore.SIGNAL(_fromUtf8("valueChanged(int)")), self.spinBox_guiHZ.setValue)
+        QtCore.QObject.connect(self.horizontalSlider_pktHZ, QtCore.SIGNAL(_fromUtf8("valueChanged(int)")), self.spinBox_pktHZ.setValue)
+        QtCore.QObject.connect(self.horizontalSlider_logHZ, QtCore.SIGNAL(_fromUtf8("valueChanged(int)")), self.spinBox_logHZ.setValue)
+        QtCore.QObject.connect(self.horizontalSlider_AI, QtCore.SIGNAL(_fromUtf8("valueChanged(int)")), self.spinBox_AIHZ.setValue)
+        QtCore.QObject.connect(self.spinBox_guiHZ, QtCore.SIGNAL(_fromUtf8("valueChanged(int)")), self.horizontalSlider_guiHZ.setValue)
+        QtCore.QObject.connect(self.spinBox_pktHZ, QtCore.SIGNAL(_fromUtf8("valueChanged(int)")), self.horizontalSlider_pktHZ.setValue)
+        QtCore.QObject.connect(self.spinBox_logHZ, QtCore.SIGNAL(_fromUtf8("valueChanged(int)")), self.horizontalSlider_logHZ.setValue)
+        QtCore.QObject.connect(self.spinBox_AIHZ, QtCore.SIGNAL(_fromUtf8("valueChanged(int)")), self.horizontalSlider_AI.setValue)
+        QtCore.QObject.connect(self.checkBox_guiHZ, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.horizontalSlider_guiHZ.setEnabled)
+        QtCore.QObject.connect(self.checkBox_guiHZ, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.spinBox_guiHZ.setEnabled)
+        QtCore.QObject.connect(self.checkBox_pktHZ, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.horizontalSlider_pktHZ.setEnabled)
+        QtCore.QObject.connect(self.checkBox_pktHZ, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.spinBox_pktHZ.setEnabled)
+        QtCore.QObject.connect(self.checkBox_logHZ, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.horizontalSlider_logHZ.setEnabled)
+        QtCore.QObject.connect(self.checkBox_logHZ, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.spinBox_logHZ.setEnabled)
+        QtCore.QObject.connect(self.checkBox_AI, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.horizontalSlider_AI.setEnabled)
+        QtCore.QObject.connect(self.checkBox_AI, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.spinBox_AIHZ.setEnabled)
+        QtCore.QObject.connect(self.checkBox_yaw, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.horizontalSlider_yaw.setEnabled)
+        QtCore.QObject.connect(self.checkBox_yaw, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.doubleSpinBox_yaw.setEnabled)
+        QtCore.QObject.connect(self.checkBox_yaw, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.pushButton_north.setEnabled)
+        QtCore.QObject.connect(self.checkBox_ground, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.doubleSpinBox_ground.setEnabled)
+        QtCore.QObject.connect(self.checkBox_ground, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.pushButton_ground.setEnabled)
+        QtCore.QObject.connect(self.checkBox_pktHZ, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.progressBar_pktIn.setVisible)
+        QtCore.QObject.connect(self.checkBox_pktHZ, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), self.progressBar_pktOut.setVisible)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

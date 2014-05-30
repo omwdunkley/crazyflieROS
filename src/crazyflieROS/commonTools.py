@@ -1,6 +1,6 @@
 __author__ = 'ollie'
 __author__ = 'ollie'
-__all__= ['FreqMonitor','KBSecMonitor','hasAllKeys', 'isGroup', 'getGroup', 'getNames','thrustToPercentage','MIN_THRUST','MAX_THRUST_CMD','MAX_THRUST_FLIE','BAT_STATE','powerToPercentage','MIN_POWER','MAX_POWER']
+__all__= ['FreqMonitor','KBSecMonitor','hasAllKeys', 'isGroup', 'getGroup', 'getNames','thrustToPercentage','MIN_THRUST','MAX_THRUST_CMD','MAX_THRUST_FLIE','BAT_STATE','powerToPercentage','MIN_POWER','MAX_POWER','STATE']
 #import logging
 from PyQt4.QtCore import QObject, QThread, QTimer, pyqtSignal, pyqtSlot
 
@@ -31,6 +31,27 @@ def thrustToPercentage(thrust,flie=True):
 def powerToPercentage(power):
     return min(100,(max(0,(float(power-MIN_POWER)/(MAX_POWER-MIN_POWER)*100.0))))
 
+
+class STATE:
+    """ Class to keep track of flie state.
+         10 -> 1 -> 2 -> 3 -> 10 -> (12) # Disconnected -> Connected -> Disconnected / loose connection
+         10 -> 1 -> 11      # Connection lost while trying to connect
+         10 -> 1 -> 2 -> 12 # Connection lost while trying to connect
+    """
+    # < 0 -> unknown
+    UNKNOWN              =-1 # fallback
+
+    # < 0 < 10 -> Connecting or connected
+    CONNECTION_REQUESTED = 1 # attempting to connect
+    LINK_ESTABLISHED     = 2 # connected, downloading TOC
+    CONNECTED            = 3 # connected, TOC downloads
+
+    # >= 9 -> not connected
+    GEN_DISCONNECTED     = 9
+    DISCONNECTED         = 10 # not connected
+    CONNECTION_FAILED    = 11 # Tried to connect but failed
+    CONNECTION_LOST      = 12 # Unintentional Disconnect
+    CONNECTION_RETRYWAIT = 13 # Connect lost/failed and now waiting a second to retry again
 
 class FreqMonitor():
     """

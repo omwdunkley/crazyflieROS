@@ -113,7 +113,16 @@ class DriverWindow(QtGui.QMainWindow ):
         self.logManager.sig_batteryState.connect(self.ai.setPower)
         self.logManager.sig_temp.connect(self.ai.setTemp)
         self.logManager.sig_cpuUpdated.connect(self.ai.setCPU)
+        self.logManager.sig_pressure.connect(self.ai.setPressure)
+        self.logManager.sig_aslLong.connect(self.ai.setAslLong)
         self.paramManager.sig_gyroCalib.connect(self.ai.setCalib)
+        self.flie.inKBPS.sig_KBPS.connect(self.ai.setPktsIn)
+        self.flie.outKBPS.sig_KBPS.connect(self.ai.setPktsOut)
+        self.flie.sig_flieLink.connect(self.ai.setLinkQuality)
+        self.flie.sig_stateUpdate.connect(self.ai.setFlieState)
+        self.ui.checkBox_reconnect.stateChanged.connect(self.ai.setAutoReconnect)
+        self.logManager.sig_hzMeasure.connect(self.ai.updateHz)
+        self.logManager.sig_logStatus.connect(self.ai.updateHzTarget)
 
 
         # Yaw offset
@@ -142,7 +151,7 @@ class DriverWindow(QtGui.QMainWindow ):
 
 
 
-        # Updateing the GUI (if we didnt do this, every change would result in an update...)
+        # Updating the GUI (if we didnt do this, every change would result in an update...)
         self.guiUpdateQueue = {}
         self.guiUpdateQueueSave = 0
         self.guiUpdateTimer = QTimer()
@@ -354,6 +363,7 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.horizontalSlider_pktHZ.setValue(settings.value("pktHzVal", QVariant(self.ui.horizontalSlider_pktHZ.value())).toInt()[0])
         self.ui.horizontalSlider_logHZ.setValue(settings.value("logHzVal", QVariant(self.ui.horizontalSlider_logHZ.value())).toInt()[0])
         self.ui.horizontalSlider_guiHZ.setValue(settings.value("guiHzVal", QVariant(self.ui.horizontalSlider_guiHZ.value())).toInt()[0])
+        self.ui.horizontalSlider_AI.setValue(settings.value("aiHzVal", QVariant(self.ui.horizontalSlider_AI.value())).toInt()[0])
 
         self.logManager.header().restoreState(settings.value("logTreeH", self.logManager.header().saveState()).toByteArray())
         self.paramManager.header().restoreState(settings.value("paramTreeH", self.paramManager.header().saveState()).toByteArray())
@@ -376,6 +386,7 @@ class DriverWindow(QtGui.QMainWindow ):
         settings.setValue("pktHzVal", QVariant(self.ui.horizontalSlider_pktHZ.value()))
         settings.setValue("logHzVal", QVariant(self.ui.horizontalSlider_logHZ.value()))
         settings.setValue("guiHzVal", QVariant(self.ui.horizontalSlider_guiHZ.value()))
+        settings.setValue("aiHzVal", QVariant(self.ui.horizontalSlider_AI.value()))
 
         settings.setValue("logTreeH",QVariant(self.logManager.header().saveState()))
         settings.setValue("paramTreeH",QVariant(self.paramManager.header().saveState()))

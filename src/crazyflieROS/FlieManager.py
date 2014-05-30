@@ -4,32 +4,12 @@ __all__=['FlieControl','STATE']
 
 from PyQt4 import QtGui, uic
 from PyQt4.QtCore import Qt, pyqtSignal, pyqtSlot, QObject, QTimer
-from commonTools import KBSecMonitor, FreqMonitor
+from commonTools import KBSecMonitor, FreqMonitor, STATE
 from cflib.crazyflie import Crazyflie
 import rospy
 #import logging
 #logger = logging.getLogger(__name__)
 
-class STATE:
-    """ Class to keep track of flie state.
-         10 -> 1 -> 2 -> 3 -> 10 -> (12) # Disconnected -> Connected -> Disconnected / loose connection
-         10 -> 1 -> 11      # Connection lost while trying to connect
-         10 -> 1 -> 2 -> 12 # Connection lost while trying to connect
-    """
-    # < 0 -> unknown
-    UNKNOWN              =-1 # fallback
-
-    # < 0 < 10 -> Connecting or connected
-    CONNECTION_REQUESTED = 1 # attempting to connect
-    LINK_ESTABLISHED     = 2 # connected, downloading TOC
-    CONNECTED            = 3 # connected, TOC downloads
-
-    # >= 9 -> not connected
-    GEN_DISCONNECTED     = 9
-    DISCONNECTED         = 10 # not connected
-    CONNECTION_FAILED    = 11 # Tried to connect but failed
-    CONNECTION_LOST      = 12 # Unintentional Disconnect
-    CONNECTION_RETRYWAIT = 13 # Connect lost/failed and now waiting a second to retry again
 
 class FlieControl(QObject):
     """ Class that andles the flie library """
@@ -164,6 +144,10 @@ class FlieControl(QObject):
     def packetSentCB(self, pk=None):
         """ Called for every packet sent """
         self.outKBPS.count(1+len(pk.datal)) #TODO: write function that gets the size directly
+
+    def setPacketUpdateSpeed(self, hz):
+        self.inKBPS.setHZ(hz)
+        self.outKBPS.setHZ(hz)
 
 
     ### LOG CALLBACKS

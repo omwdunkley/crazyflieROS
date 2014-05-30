@@ -1507,11 +1507,11 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>64</x>
-     <y>317</y>
+     <x>75</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
-     <x>353</x>
+     <x>297</x>
      <y>292</y>
     </hint>
    </hints>
@@ -1523,11 +1523,11 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>92</x>
-     <y>322</y>
+     <x>101</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
-     <x>111</x>
+     <x>136</x>
      <y>292</y>
     </hint>
    </hints>
@@ -1539,11 +1539,11 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>96</x>
-     <y>319</y>
+     <x>101</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
-     <x>353</x>
+     <x>297</x>
      <y>319</y>
     </hint>
    </hints>
@@ -1555,11 +1555,11 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>287</x>
-     <y>315</y>
+     <x>101</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
-     <x>353</x>
+     <x>297</x>
      <y>346</y>
     </hint>
    </hints>
@@ -1571,11 +1571,11 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>203</x>
-     <y>315</y>
+     <x>101</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
-     <x>353</x>
+     <x>297</x>
      <y>373</y>
     </hint>
    </hints>
@@ -1587,11 +1587,11 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>26</x>
-     <y>297</y>
+     <x>37</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
-     <x>100</x>
+     <x>128</x>
      <y>400</y>
     </hint>
    </hints>
@@ -1603,11 +1603,11 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>72</x>
-     <y>244</y>
+     <x>83</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
-     <x>127</x>
+     <x>136</x>
      <y>373</y>
     </hint>
    </hints>
@@ -1619,11 +1619,11 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>43</x>
-     <y>317</y>
+     <x>54</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
-     <x>114</x>
+     <x>136</x>
      <y>346</y>
     </hint>
    </hints>
@@ -1635,11 +1635,11 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>41</x>
-     <y>335</y>
+     <x>52</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
-     <x>102</x>
+     <x>130</x>
      <y>319</y>
     </hint>
    </hints>
@@ -1651,11 +1651,11 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>181</x>
-     <y>319</y>
+     <x>101</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
-     <x>514</x>
+     <x>459</x>
      <y>400</y>
     </hint>
    </hints>
@@ -1667,12 +1667,12 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>60</x>
-     <y>231</y>
+     <x>71</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
-     <x>421</x>
-     <y>273</y>
+     <x>459</x>
+     <y>292</y>
     </hint>
    </hints>
   </connection>
@@ -1683,12 +1683,12 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>476</x>
-     <y>231</y>
+     <x>101</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
-     <x>320</x>
-     <y>385</y>
+     <x>297</x>
+     <y>400</y>
     </hint>
    </hints>
   </connection>
@@ -1699,12 +1699,12 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>387</x>
-     <y>240</y>
+     <x>101</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
-     <x>397</x>
-     <y>305</y>
+     <x>459</x>
+     <y>319</y>
     </hint>
    </hints>
   </connection>
@@ -1715,12 +1715,12 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>286</x>
-     <y>237</y>
+     <x>101</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
-     <x>435</x>
-     <y>339</y>
+     <x>459</x>
+     <y>346</y>
     </hint>
    </hints>
   </connection>
@@ -1731,12 +1731,12 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>254</x>
-     <y>238</y>
+     <x>101</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
-     <x>387</x>
-     <y>356</y>
+     <x>459</x>
+     <y>373</y>
     </hint>
    </hints>
   </connection>
@@ -1747,12 +1747,12 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>149</x>
-     <y>236</y>
+     <x>101</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
-     <x>286</x>
-     <y>253</y>
+     <x>297</x>
+     <y>265</y>
     </hint>
    </hints>
   </connection>
@@ -1763,12 +1763,380 @@
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>221</x>
-     <y>238</y>
+     <x>101</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
-     <x>429</x>
-     <y>257</y>
+     <x>459</x>
+     <y>265</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>horizontalSlider_guiHZ</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>spinBox_guiHZ</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>303</x>
+     <y>244</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>455</x>
+     <y>238</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>horizontalSlider_pktHZ</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>spinBox_pktHZ</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>360</x>
+     <y>276</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>488</x>
+     <y>292</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>horizontalSlider_logHZ</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>spinBox_logHZ</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>284</x>
+     <y>324</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>471</x>
+     <y>319</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>horizontalSlider_AI</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>spinBox_AIHZ</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>247</x>
+     <y>362</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>474</x>
+     <y>362</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_guiHZ</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>horizontalSlider_guiHZ</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>497</x>
+     <y>239</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>396</x>
+     <y>246</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_pktHZ</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>horizontalSlider_pktHZ</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>514</x>
+     <y>281</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>359</x>
+     <y>286</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_logHZ</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>horizontalSlider_logHZ</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>489</x>
+     <y>316</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>395</x>
+     <y>311</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_AIHZ</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>horizontalSlider_AI</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>476</x>
+     <y>359</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>307</x>
+     <y>369</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_guiHZ</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>horizontalSlider_guiHZ</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>65</x>
+     <y>235</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>208</x>
+     <y>238</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_guiHZ</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>spinBox_guiHZ</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>107</x>
+     <y>248</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>242</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_pktHZ</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>horizontalSlider_pktHZ</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>126</x>
+     <y>282</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>243</x>
+     <y>280</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_pktHZ</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>spinBox_pktHZ</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>141</x>
+     <y>279</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>488</x>
+     <y>283</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_logHZ</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>horizontalSlider_logHZ</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>122</x>
+     <y>316</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>241</x>
+     <y>325</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_logHZ</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>spinBox_logHZ</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>127</x>
+     <y>318</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>500</x>
+     <y>329</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_AI</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>horizontalSlider_AI</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>135</x>
+     <y>360</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>243</x>
+     <y>358</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_AI</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>spinBox_AIHZ</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>130</x>
+     <y>358</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>478</x>
+     <y>363</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_yaw</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>horizontalSlider_yaw</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>121</x>
+     <y>400</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>232</x>
+     <y>405</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_yaw</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>doubleSpinBox_yaw</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>82</x>
+     <y>403</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>453</x>
+     <y>404</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_yaw</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>pushButton_north</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>71</x>
+     <y>400</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>290</x>
+     <y>431</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_ground</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>doubleSpinBox_ground</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>100</x>
+     <y>464</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>279</x>
+     <y>473</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_ground</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>pushButton_ground</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>73</x>
+     <y>467</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>283</x>
+     <y>501</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_pktHZ</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>progressBar_pktIn</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>77</x>
+     <y>279</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>138</x>
+     <y>750</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_pktHZ</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>progressBar_pktOut</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>113</x>
+     <y>286</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>415</x>
+     <y>754</y>
     </hint>
    </hints>
   </connection>

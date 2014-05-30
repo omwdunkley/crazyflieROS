@@ -28,16 +28,40 @@
 """
 Attitude indicator widget.
 """
+from pygccxml.declarations.decl_factory import decl_factory_t
+from bin.joy_driver_pid import percentageToThrust
+
 
 __author__ = 'Bitcraze AB'
 __all__ = ['AttitudeIndicator']
 
 import sys
 from PyQt4 import QtGui, QtCore
-from PyQt4.QtCore import pyqtSlot, pyqtSignal, Qt, QPointF,QRectF
+from PyQt4.QtCore import pyqtSlot, pyqtSignal, Qt, QPointF,QRectF, QChar, QString
 from PyQt4.QtGui import QColor, QBrush, QPen, QFont
 from cameraInput import VideoPyGame
-from commonTools import BAT_STATE, powerToPercentage
+from commonTools import BAT_STATE, powerToPercentage, STATE
+
+
+class HzDisplay():
+    def __init__(self):
+        self.hz = {} #(hz, target)
+
+    # val<0: not monitoring; target<0: off
+    def updateHZ(self, name, val):
+        self.hz[name][0]=val
+        #print "%s: %.2fhz" % (name, val)
+
+    def updateTarget(self, name, target):
+        #if target<0:
+        #    self.hz.pop(name, None)
+        #else:
+        self.hz[name] = [0,target]
+
+    def clear(self):
+        self.hz.clear()
+
+
 
 class AttitudeIndicator(QtGui.QWidget):
     """Widget for showing attitude"""
@@ -54,13 +78,22 @@ class AttitudeIndicator(QtGui.QWidget):
         self.hover = -1
         self.hoverASL = 0.0
         self.hoverTargetASL = 0.0
-        self.motors = (0.0,0.0,0.0,0.0)
+        self.motors = (-1.0,-1.0,-1.0,-1.0)
         self.thrust = 0.0
         self.power = -1
         self.temp = -1
+        self.pressure = -1
+        self.aslLong = -1
         self.bat = -1
         self.cpu = -1
         self.calib = -1
+        self.pktsIn = -1
+        self.pktsOut = -1
+        self.link = -1
+        self.connection = STATE.DISCONNECTED
+        self.autoReconnectOn = False
+
+        self.hzDisplay = HzDisplay()
 
         self.pixmap = None # Background camera image
         self.needUpdate = True
@@ -91,6 +124,17 @@ class AttitudeIndicator(QtGui.QWidget):
         self.cam.sigPixmap.connect(self.setPixmap)
         self.cam.sigPlaying.connect(self.setVideo)
 
+
+    @pyqtSlot(str, float)
+    def updateHz(self, name, val):
+        self.hzDisplay.updateHZ(name, val)
+
+    @pyqtSlot(str, float)
+    def updateHzTarget(self, name, target):
+        self.hzDisplay.updateTarget(name, target)
+
+    def setAutoReconnect(self, on):
+        self.autoReconnectOn = on
 
     def drawModeBox(self, qp, xy, col, txt):
         #qp = QtGui.QPainter()
@@ -140,6 +184,42 @@ class AttitudeIndicator(QtGui.QWidget):
 
 
 
+    @pyqtSlot(int, str, str)
+    def setFlieState(self, state, uri, msg):
+        """ Function that receives all the state updates from the flie.
+        """
+
+        if state == STATE.CONNECTION_REQUESTED:
+            self.setMsg("Connection to [%s] requested" % uri)
+
+        elif state == STATE.LINK_ESTABLISHED:
+            self.setMsg("Link to [%s] established, Download TOC..." % uri)
+
+
+        elif state == STATE.CONNECTED:
+            self.setMsg("Connected to [%s]" % uri)
+
+        elif state == STATE.DISCONNECTED:
+            self.setMsg("Disconnected from [%s]" % uri)
+
+        elif state == STATE.CONNECTION_FAILED:
+            if self.autoReconnectOn:
+                self.setMsg("Connecting to [%s] failed: %s\nRetrying..." % (uri, msg)) # TODO YELLOW
+            else:
+                self.setMsg("Connecting to [%s] failed: %s" % (uri, msg)) # TODO YELLOW
+
+
+        elif state == STATE.CONNECTION_LOST:
+            if self.autoReconnectOn:
+                self.setMsg("Connected lost from [%s]: %s\nRetrying..." % (uri, msg)) # TODO YELLOW
+            else:
+                self.setMsg("Connected lost from [%s]: %s" % (uri, msg)) # TODO YELLOW
+
+
+        self.connection = state
+        self.needUpdate = True
+
+
 
     def setUpdateSpeed(self, hz=30):
         self.hz = hz
@@ -157,9 +237,15 @@ class AttitudeIndicator(QtGui.QWidget):
         self.setTemp(-1)
         self.setBaro(-10000) #baro off = <9999
         self.setCalib(-1)
-        self.setMotors(0,0,0,0)
-        self.setAccZ(1)
-        self.msg = ""
+        self.setMotors(-1,-1,-1,-1)
+        self.setAccZ(-1)
+        self.setPktsIn(-1)
+        self.setPktsOut(-1)
+        self.setLinkQuality(-1)
+        self.setAslLong(-1)
+        self.setPressure(-1)
+        self.setLinkQuality(-1)
+        #self.msg = ""
 
 
     def setCalib(self, calibrated):
@@ -211,6 +297,12 @@ class AttitudeIndicator(QtGui.QWidget):
     def setBaro(self, asl):
         self.hoverASL = asl
         self.needUpdate = True
+
+    def setPressure(self, pressure):
+        self.pressure = pressure
+
+    def setAslLong(self, asl):
+        self.aslLong = asl
 
     def setRollPitchYaw(self, roll, pitch, yaw):
         self.roll = roll
@@ -291,6 +383,19 @@ class AttitudeIndicator(QtGui.QWidget):
         self.bat = bat
         self.needUpdate = True
 
+    def setPktsIn(self, pk):
+        if self.connection==STATE.LINK_ESTABLISHED or self.connection==STATE.CONNECTED or pk<0:
+            self.pktsIn = pk
+            self.needUpdate = True
+
+    def setPktsOut(self, pk):
+        if self.connection==STATE.LINK_ESTABLISHED or self.connection==STATE.CONNECTED or pk<0:
+            self.pktsOut = pk
+            self.needUpdate = True
+
+    def setLinkQuality(self, l):
+        self.link = l
+
     @pyqtSlot(float)
     def setCPU(self, cpu):
         self.cpu = cpu
@@ -300,6 +405,29 @@ class AttitudeIndicator(QtGui.QWidget):
     def setTemp(self, temp):
         self.temp = temp
         self.needUpdate = True
+
+    def drawHZ(self,qp):
+        qp.resetTransform()
+        w = self.width()
+        h = self.height()
+        defaultCol = QColor(0,255,0, 200)
+
+        top = 50
+        bottom = h-50
+        width, height = w*0.2, 22
+        dist = 10
+        space = height+dist
+        pos = width/4
+
+        for i,k in enumerate(self.hzDisplay.hz.keys()):
+            t = self.hzDisplay.hz[k][1]
+            v = self.hzDisplay.hz[k][0]
+            if t<0:
+                self.drawBar(qp, QRectF(pos, top+space*(6+i), width,height), QColor(128,128,128,200), k+' OFF', 0, 0, 1)
+            else:
+                self.drawBar(qp, QRectF(pos, top+space*(6+i), width,height), defaultCol, k+': %5.1fhz'%v, v, 0, t)
+
+
 
 
     def drawState(self, qp):
@@ -332,6 +460,22 @@ class AttitudeIndicator(QtGui.QWidget):
         elif self.hover >0:
             self.drawModeBox(qp, QPointF(w*0.8, 30), QColor(0,255,0, 200), 'HOV')
 
+        # connection state
+        if self.connection == STATE.CONNECTED:
+            self.drawModeBox(qp, QPointF(w*0.9, 30), QColor(0,255,0, 200), 'CON')
+        elif self.connection == STATE.CONNECTION_REQUESTED:
+            self.drawModeBox(qp, QPointF(w*0.9, 30), QColor(255,255,0, 200), 'CON')
+        elif self.connection == STATE.LINK_ESTABLISHED:
+            self.drawModeBox(qp, QPointF(w*0.9, 30), QColor(30,200,204, 200), 'CON')
+        elif self.connection == STATE.DISCONNECTED:
+            self.drawModeBox(qp, QPointF(w*0.9, 30), QColor(128,128,128, 200), 'CON')
+        elif self.connection == STATE.CONNECTION_FAILED:
+            self.drawModeBox(qp, QPointF(w*0.9, 30), QColor(255,0,0, 200), 'CON')
+        elif self.connection == STATE.CONNECTION_LOST:
+            self.drawModeBox(qp, QPointF(w*0.9, 30), QColor(255,9,0, 200), 'CON')
+        elif self.connection == STATE.CONNECTION_RETRYWAIT:
+            self.drawModeBox(qp, QPointF(w*0.9, 30), QColor(255,128,0, 200), 'CON')
+
         # Calibrated
         if self.calib == 0:
             self.drawModeBox(qp, QPointF(w*0.1, 30), QColor(255,0,0, 200), 'CAL')
@@ -350,8 +494,67 @@ class AttitudeIndicator(QtGui.QWidget):
             self.drawModeBox(qp, QPointF(w*0.6, 30), QColor(255,255,0, 200), 'CPU')
         # HOV vs MAN vs CTR
 
+
+
+    def drawBar(self, qp, rect, col, txt, val, minVal=0, maxVal=100):
+        valN = (float(val)-minVal)/(maxVal-minVal)*100.
+        percent = min(max(valN,0),100)
+        #qp = QtGui.QPainter()
+        qp.setBrush(QColor(0,0,0,0))
+        qp.setPen(col)
+        qp.drawRect(rect)
+        qp.setBrush(col.light())
+        qp.drawText(rect, Qt.AlignCenter, txt)
+        qp.setBrush(col.dark())
+        qp.drawRect(QRectF(rect.left(), rect.top(), rect.width()/100.*percent, rect.height()))
+
+
+    def drawStats(self, qp):
+        defaultCol = QColor(0,255,0, 200)
+
+        #qp = QtGui.QPainter()
+        qp.resetTransform()
+        w = self.width()
+        h = self.height()
+
+        top = 50
+        bottom = h-50
+        width, height = w*0.2, 22
+        dist = 10
+        space = height+dist
+        pos = width/4
+
+
+        # DRAW PROGRESS BAGS (left)
+        if self.bat>-1:
+            self.drawBar(qp, QRectF(pos, top+space*0, width,height), defaultCol, 'BAT %4.2fV'%(self.bat/1000.), self.bat, 3000, 4150)
+        if self.link>-1:
+            self.drawBar(qp, QRectF(pos, top+space*1, width,height), defaultCol, 'SIG %03d%%'%self.link, self.link)
+        if self.cpu>-1:
+            self.drawBar(qp, QRectF(pos, top+space*2, width,height), defaultCol, 'CPU %03d%%'%self.cpu, self.cpu)
+
+
+
+        # DRAW RAW STATS( right)
+        pos = w-width/4-width/2
+        space = height+2
+
+        if self.pktsOut>-1:
+            qp.drawText(QRectF(pos, top+space*0, width,height), Qt.AlignLeft, '%04d kb/s'%self.pktsOut)
+        if self.pktsIn>-1:
+            qp.drawText(QRectF(pos, top+space*1, width,height), Qt.AlignLeft, '%04d kb/s'%self.pktsIn)
+
+        if self.pressure>-1:
+            qp.drawText(QRectF(pos, top+space*3, width,height), Qt.AlignLeft, '%06.2f hPa'%self.pressure)
+        if self.temp>-1:
+            qp.drawText(QRectF(pos, top+space*4, width,height), Qt.AlignLeft, QString('%05.2f'%self.temp)+QChar(0xC2)+QString("C"))
+        if self.aslLong>-1:
+            qp.drawText(QRectF(pos, top+space*5, width,height), Qt.AlignLeft, '%4.2f m'%self.aslLong)
+
     def drawMotors(self, qp):
         # TODO Check if motor update is recent
+        if (self.motors[0]<0):
+            return
 
         defaultCol = QColor(0,255,0, 200)
 
@@ -582,6 +785,8 @@ class AttitudeIndicator(QtGui.QWidget):
 
         self.drawMotors(qp)
         self.drawState(qp)
+        self.drawStats(qp)
+        self.drawHZ(qp)
 
 
 if __name__ == "__main__":
