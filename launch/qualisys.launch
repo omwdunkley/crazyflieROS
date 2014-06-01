@@ -1,0 +1,14 @@
+<launch>
+    <!-- Options -->
+
+	<arg name="nr"    default="0"/>
+
+
+	<node pkg="tf" type="static_transform_publisher" name="W2Q_tf" args="0 0 0 0 0 0 1 /world  /Qualisys 10" output="screen"/>
+	<node pkg="tf" type="static_transform_publisher" name="Q2F_tf" args="0 0 0 0 0 0 1 /Q$(arg nr) /cf_gt 10" output="screen" />
+	<node pkg="Qualisys2Ros" type="Qualisys2Ros" name="Qualisys2Ros" output="screen"/>
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find crazyflieROS)/kinect.rviz"/>
+
+
+
+</launch>

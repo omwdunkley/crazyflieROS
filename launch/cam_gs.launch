@@ -5,9 +5,9 @@
     <arg name="DEVICE" default="/dev/video$(arg cam)"/>
     <arg name="FPS"    default="25/1"/>
     <arg name="NAME"   value="cf/cam" />
-    <arg name="VIEW"   default="true"/>
+    <arg name="VIEW"   default="false"/>
     <arg name="RECT"   default="false"/>
-    <arg name="FRAME"  default="cam"/>
+    <arg name="FRAME"  default="/cf_gt"/>
 
     <!-- gst-launch v4l2src device=/dev/video0 ! video/x-raw-yuv,format=\(fourcc\)YUY2,width=720,height=576,framerate=25/1 ! ffmpegcolorspace ! xvimagesink -->
 
