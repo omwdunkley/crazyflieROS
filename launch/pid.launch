@@ -7,7 +7,7 @@
         <param name="coalesce_interval" value="0.01" /> 
         <param name="autorepeat_rate" value="100" /> 
     </node>     
-    <node pkg="crazyflieROS" type="joy_driver_pid.py" name="CrazyFlieJoystickDriver" output="screen" respawn="true" />
+    <node pkg="crazyflieROS" type="joy_driver_pid.py" name="CrazyFlieJoystickDriver" output="screen" respawn="false" />
     <node pkg="crazyflieROS" type="reconfigure_gui" name="reconfigure_gui" output="screen" respawn="true" />              
     
    

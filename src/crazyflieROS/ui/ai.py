@@ -546,7 +546,7 @@ class AttitudeIndicator(QtGui.QWidget):
         if self.pressure>-1:
             qp.drawText(QRectF(pos, top+space*3, width,height), Qt.AlignLeft, '%06.2f hPa'%self.pressure)
         if self.temp>-1:
-            qp.drawText(QRectF(pos, top+space*4, width,height), Qt.AlignLeft, QString('%05.2f'%self.temp)+QChar(0xC2)+QString("C"))
+            qp.drawText(QRectF(pos, top+space*4, width,height), Qt.AlignLeft, QString('%05.2f'%self.temp)+QChar(0260)+QString("C"))
         if self.aslLong>-1:
             qp.drawText(QRectF(pos, top+space*5, width,height), Qt.AlignLeft, '%4.2f m'%self.aslLong)
 
@@ -563,10 +563,10 @@ class AttitudeIndicator(QtGui.QWidget):
         h = self.height()
 
 
-        maxSize = min(w,h)*0.1
+        maxSize = min(w,h)*0.175
         minSize = maxSize/10.
         qp.translate(w- maxSize, h-maxSize)
-        qp.translate(-10,-10)
+        qp.translate(-12,-12)
         qp.rotate(45)
 
 

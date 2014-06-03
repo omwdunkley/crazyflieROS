@@ -2,7 +2,7 @@
 import roslib;
 roslib.load_manifest("crazyflieROS")
 import rospy
-
+import random
 from sensor_msgs.msg import Joy as JoyMSG
 from crazyflieROS.msg import cmd as CFJoyMSG
 from crazyflieROS.msg import pid as PidMSG
@@ -51,14 +51,18 @@ trajectory = [(0,0,0.5,0),
 
 
 
+
 # Left-right Trajectory. ALigned and 45degrees
-trajectory = [(1.5,0,1,0),  #go left
-              (-1.5,0,1,0), #go right
-              (-1.5,0,1,45), #rotate
-              (1.5,0,1,45), #go left
-              (-1.5,0,1,45), #go right
-		      (-1.5,0,1,0), #rotate back
-              ]
+L=-1.0
+R= -L
+F = 0.0
+B = -F
+rot = 0.0
+M=0.0
+U=1.0
+trajectory = [(L,F,U,rot),(R,F,U,rot)]
+
+
 
 # 3d circuit
 U = 1.5
@@ -67,10 +71,15 @@ L = -1.25
 R = -L
 F = 1.25
 B = -F
-rot = 0
+rot = 90
 M = 0
 trajectory = [(M,F,D,rot), (L,F,D,rot), (L,B,D,rot), (R,B,D,rot), (R,F,D,rot), (R,F,U,rot), (L,F,U,rot), (L,B,U,rot), (M,B,U,rot), (M,M,U,rot), (M,M,1.0,rot),(M,M,0.5,rot),(M,M,0.2,rot)]
 
+# yaw
+trajectory = [(M,M,D,0),(M,M,D,90),(M,M,D,0),(M,M,D,135),(M,M,D,0),(M,M,D,180)]
+
+# cam house
+trajectory = [(M,M,0.5,90), (M,M,1.0,90), (M,M,1.5,90),(M,M,1.0,90), (M,M,0.5,90), (M,F,D,rot), (L,F,D,rot), (L,B,D,rot), (R,B,D,rot), (R,F,D,rot), (R,F,U,rot), (L,F,U,rot), (L,B,U,rot), (M,B,U,rot), (M,M,U,rot), (M,M,1.0,rot),(M,M,0.5,rot),(M,M,0.2,rot)]
 
 
 
@@ -241,7 +250,7 @@ class JoyController:
         self.sub_joy   = rospy.Subscriber("/joy", JoyMSG, self.new_joydata)
         self.sub_tf    = tf.TransformListener()         
         self.pub_tf    = tf.TransformBroadcaster()    
-        self.pub_cfJoy = rospy.Publisher("/cfjoy", CFJoyMSG, queue_size=50)
+        self.pub_cfJoy = rospy.Publisher("/cfjoy", CFJoyMSG, queue_size=2)
         self.pub_PID = rospy.Publisher("/pid", PidMSG,queue_size=50)
 
         # PIDs for R,P,Y,THROTTLE
@@ -589,11 +598,15 @@ class JoyController:
         self.prev_msg.hover = hover
 
 
-    def lookupTransformInWorld(self, frame='/cf_gt', forceRealtime = False, ):
+    def lookupTransformInWorld(self, frame='/cf_gt', forceRealtime = False, poseNoiseMeters=0.0 ):
         now = rospy.Time(0)
         if self.PIDDelay > 0.00001 and not forceRealtime:
+            #rospy.logwarn('Delay in TF Pose: %5.3s', self.PIDDelay)
             now = rospy.Time.now()-rospy.Duration(self.PIDDelay)
         (trans,rot) = self.sub_tf.lookupTransform('/world', frame, now)
+
+        if poseNoiseMeters>0:
+            trans = [trans[0]+random.normalvariate(0,poseNoiseMeters), trans[1]+random.normalvariate(0,poseNoiseMeters), trans[2]+random.normalvariate(0,poseNoiseMeters)]
         return (trans,rot)
 
 
@@ -616,7 +629,7 @@ class JoyController:
 
 
         # Look up 6D flie pose, publish 3d+yaw pose
-        (trans,rot) = self.lookupTransformInWorld(frame='/cf_gt')
+        (trans,rot) = self.lookupTransformInWorld(frame='/cf_gt', poseNoiseMeters=0.0)
         euler = tf.transformations.euler_from_quaternion(rot)
         q = tf.transformations.quaternion_from_euler(0, 0, euler[2])
         self.pub_tf.sendTransform(trans, q, rospy.Time.now(), "/cf_gt2d", "/world")
