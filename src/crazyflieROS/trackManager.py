@@ -342,6 +342,27 @@ class KinectTracker(Tracker):
             rospy.logwarn('Could not get Goal position in the camera frame')
             pass
 
+    def getGTDist(self):
+        now = rospy.Time.now()
+        try:
+            self.sub_tf.waitForTransform("/camera_depth_optical_frame","/cf_gt", now, rospy.Duration(0.1))
+            (t, r) = self.sub_tf.lookupTransform("/camera_depth_optical_frame","/cf_gt", now )
+            return list(t)
+        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+            rospy.logwarn('Could not get ground truth position in the camera frame')
+            pass
+
+    def getKinectPoint(self):
+        now = rospy.Time.now()
+        try:
+            self.sub_tf.waitForTransform("/world","/camera_depth_optical_frame", now, rospy.Duration(0.1))
+            (t, r) = self.sub_tf.lookupTransform("/world","/camera_depth_optical_frame", now)
+            return list(t), list(r)
+        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+            rospy.logwarn('Could not get ground kinect position in the world')
+            pass
+
+
     def ros2cv(self, data, dt="passthrough"):
         """ Convert ros image to opencv image """
         try:
@@ -575,7 +596,11 @@ class KinectTracker(Tracker):
                         flies = sorted([f+[(f[2]-self.goal[0])**2+(f[3]-self.goal[1])**2+(f[4]-self.goal[2])**2] for f in flies], key=itemgetter(7),reverse=False)
                     elif self.priority == 2:
                         # Depth
-                        flies = sorted(flies, key=itemgetter(4),reverse=False)
+                        #flies = sorted(flies, key=itemgetter(4),reverse=False)
+                        # Closest to GT
+                        gt = self.getGTDist()
+                        flies = sorted([f+[(f[2]-gt[0])**2+(f[3]-gt[1])**2+(f[4]-gt[2])**2] for f in flies], key=itemgetter(7),reverse=False)
+
                     elif self.priority == 3:
                         # Estimated object size
                         flies = sorted([f+[abs(self.estSize-f[5])] for f in flies], key=itemgetter(7),reverse=False)
@@ -587,7 +612,11 @@ class KinectTracker(Tracker):
 
                     if len(flies)>0:
                         dist, mxl, x, y, z, w, b_diff = flies[0][0:7]
-                        self.pub_tf.sendTransform([z,-x-0.02,-y], rpy2quat(0,0,math.pi/2), rospy.Time.now(), "cf_xyz", "camera_depth_frame")#TODO maybe we need to rotate 90" so x is aligned with optical axis
+
+                        # publish with level rotation
+                        t,r, = self.getKinectPoint()
+                        #self.pub_tf.sendTransform([z,-x-0.02,-y], (0,0,0,1), rospy.Time.now(), "cf_xyz", "camera_depth_frame")#TODO maybe we need to rotate 90" so x is aligned with optical axis
+                        self.pub_tf.sendTransform([x,y,z], (-r[0],-r[1],-r[2],r[3]), rospy.Time.now(), "cf_xyz", "camera_depth_optical_frame")#TODO maybe we need to rotate 90" so x is aligned with optical axis
 
                     if showing:
                         for i, flie in enumerate(flies):

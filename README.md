@@ -631,3 +631,13 @@ Remember
 
 
  
+# Notes
+
+
+Q Control + Track
+K Track
+ * X
+
+
+rosrucrazyflieROS printW2K.py 
+rosrun tf static_transform_publisher 0 0 0 0.121965 0.126995 -0.691227 0.700858  /cf0 /cf_kinect 10
