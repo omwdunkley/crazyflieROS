@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'trackerGUI.ui'
 #
-# Created: Fri May 30 01:44:44 2014
-#      by: PyQt4 UI code generator 4.9.1
+# Created: Sat Jun  7 00:22:54 2014
+#      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_ScrollAreaTracker(object):
     def setupUi(self, ScrollAreaTracker):
@@ -226,65 +235,65 @@ class Ui_ScrollAreaTracker(object):
         QtCore.QMetaObject.connectSlotsByName(ScrollAreaTracker)
 
     def retranslateUi(self, ScrollAreaTracker):
-        ScrollAreaTracker.setWindowTitle(QtGui.QApplication.translate("ScrollAreaTracker", "ScrollArea", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_slam.setTitle(QtGui.QApplication.translate("ScrollAreaTracker", "Mono Slam", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_qualisys.setTitle(QtGui.QApplication.translate("ScrollAreaTracker", "Qualisys Configuration", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_24.setText(QtGui.QApplication.translate("ScrollAreaTracker", "Artificial Detection Delay", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_23.setText(QtGui.QApplication.translate("ScrollAreaTracker", "Crazyflie Frame ID", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_q1.setItemText(0, QtGui.QApplication.translate("ScrollAreaTracker", "/Q0", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_q1.setItemText(1, QtGui.QApplication.translate("ScrollAreaTracker", "/Q1", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_q1.setItemText(2, QtGui.QApplication.translate("ScrollAreaTracker", "/Q2", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_22.setText(QtGui.QApplication.translate("ScrollAreaTracker", "Wand Frame ID", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_q0.setItemText(0, QtGui.QApplication.translate("ScrollAreaTracker", "/Q0", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_q0.setItemText(1, QtGui.QApplication.translate("ScrollAreaTracker", "/Q1", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_q0.setItemText(2, QtGui.QApplication.translate("ScrollAreaTracker", "/Q2", None, QtGui.QApplication.UnicodeUTF8))
-        self.doubleSpinBox_6.setSuffix(QtGui.QApplication.translate("ScrollAreaTracker", " seconds", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_tracker.setItemText(0, QtGui.QApplication.translate("ScrollAreaTracker", "Qualisys Motion Tracker", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_tracker.setItemText(1, QtGui.QApplication.translate("ScrollAreaTracker", "Kinect", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_tracker.setItemText(2, QtGui.QApplication.translate("ScrollAreaTracker", "MonoSlam", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_trackStart.setText(QtGui.QApplication.translate("ScrollAreaTracker", "Enable Tracker", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_kinectBG.setTitle(QtGui.QApplication.translate("ScrollAreaTracker", "Background Detection", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_reset.setText(QtGui.QApplication.translate("ScrollAreaTracker", "Reset Background", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_kinMethod.setItemText(0, QtGui.QApplication.translate("ScrollAreaTracker", "Median", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_kinMethod.setItemText(1, QtGui.QApplication.translate("ScrollAreaTracker", "Minimum", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_17.setText(QtGui.QApplication.translate("ScrollAreaTracker", "Method", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_11.setToolTip(QtGui.QApplication.translate("ScrollAreaTracker", "Maximum distance in the scenem usually no need to change this", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_11.setText(QtGui.QApplication.translate("ScrollAreaTracker", "Maximum Depth", None, QtGui.QApplication.UnicodeUTF8))
-        self.doubleSpinBox_kinMaxDepth.setToolTip(QtGui.QApplication.translate("ScrollAreaTracker", "Maximum distance in the scenem usually no need to change this", None, QtGui.QApplication.UnicodeUTF8))
-        self.doubleSpinBox_kinMaxDepth.setSuffix(QtGui.QApplication.translate("ScrollAreaTracker", " m", None, QtGui.QApplication.UnicodeUTF8))
-        self.doubleSpinBox_kinObsTime.setSuffix(QtGui.QApplication.translate("ScrollAreaTracker", " seconds", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_18.setText(QtGui.QApplication.translate("ScrollAreaTracker", "Observation Time", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("ScrollAreaTracker", "Foreground Distance", None, QtGui.QApplication.UnicodeUTF8))
-        self.doubleSpinBox_kinFG.setSuffix(QtGui.QApplication.translate("ScrollAreaTracker", " cm", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_kinectFG.setTitle(QtGui.QApplication.translate("ScrollAreaTracker", "Crazyflie Detection", None, QtGui.QApplication.UnicodeUTF8))
-        self.spinBox_kernelSize.setSuffix(QtGui.QApplication.translate("ScrollAreaTracker", " *2+1", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_21.setText(QtGui.QApplication.translate("ScrollAreaTracker", "Depth Estimation", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_13.setToolTip(QtGui.QApplication.translate("ScrollAreaTracker", "Maximum distance in the scenem usually no need to change this", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_13.setText(QtGui.QApplication.translate("ScrollAreaTracker", "SizeTolerance", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_19.setText(QtGui.QApplication.translate("ScrollAreaTracker", "Prioritise", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_12.setToolTip(QtGui.QApplication.translate("ScrollAreaTracker", "How far away something has to be from the background to consider it foreground", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_12.setText(QtGui.QApplication.translate("ScrollAreaTracker", "Detection Size", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_15.setToolTip(QtGui.QApplication.translate("ScrollAreaTracker", "Maximum distance in the scenem usually no need to change this", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_15.setText(QtGui.QApplication.translate("ScrollAreaTracker", "Opening Kernel Iterations", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_kinDepth.setItemText(0, QtGui.QApplication.translate("ScrollAreaTracker", "Center Pixel Depth", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_kinDepth.setItemText(1, QtGui.QApplication.translate("ScrollAreaTracker", "Median Depth", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_kinDepth.setItemText(2, QtGui.QApplication.translate("ScrollAreaTracker", "Closest", None, QtGui.QApplication.UnicodeUTF8))
-        self.doubleSpinBox_tol.setToolTip(QtGui.QApplication.translate("ScrollAreaTracker", "Maximum distance in the scenem usually no need to change this", None, QtGui.QApplication.UnicodeUTF8))
-        self.doubleSpinBox_tol.setSuffix(QtGui.QApplication.translate("ScrollAreaTracker", " cm", None, QtGui.QApplication.UnicodeUTF8))
-        self.doubleSpinBox_kinDetSize.setSuffix(QtGui.QApplication.translate("ScrollAreaTracker", " cm", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_prio.setItemText(0, QtGui.QApplication.translate("ScrollAreaTracker", "Distance from background", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_prio.setItemText(1, QtGui.QApplication.translate("ScrollAreaTracker", "Closest to Goal", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_prio.setItemText(2, QtGui.QApplication.translate("ScrollAreaTracker", "Closest to Camera", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_prio.setItemText(3, QtGui.QApplication.translate("ScrollAreaTracker", "Estimated Object Size", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_prio.setItemText(4, QtGui.QApplication.translate("ScrollAreaTracker", "Detection Size Pixels", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_14.setToolTip(QtGui.QApplication.translate("ScrollAreaTracker", "Maximum distance in the scenem usually no need to change this", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_14.setText(QtGui.QApplication.translate("ScrollAreaTracker", "Opening Kernel Size", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_control.setTitle(QtGui.QApplication.translate("ScrollAreaTracker", "Crazyflie Control", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("ScrollAreaTracker", "Joy Control", None, QtGui.QApplication.UnicodeUTF8))
-        self.radioButton_joyAbs.setToolTip(QtGui.QApplication.translate("ScrollAreaTracker", "Move the flie relative to the optical axis of the kinect", None, QtGui.QApplication.UnicodeUTF8))
-        self.radioButton_joyAbs.setText(QtGui.QApplication.translate("ScrollAreaTracker", "Absolute", None, QtGui.QApplication.UnicodeUTF8))
-        self.radioButton_joyRel.setToolTip(QtGui.QApplication.translate("ScrollAreaTracker", "Move the flie relative to the flies orientation", None, QtGui.QApplication.UnicodeUTF8))
-        self.radioButton_joyRel.setText(QtGui.QApplication.translate("ScrollAreaTracker", "Relative", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_autoCapture.setToolTip(QtGui.QApplication.translate("ScrollAreaTracker", "Automatically Take over the flie control when trackable by kinect", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_autoCapture.setText(QtGui.QApplication.translate("ScrollAreaTracker", "Auto Capture", None, QtGui.QApplication.UnicodeUTF8))
+        ScrollAreaTracker.setWindowTitle(_translate("ScrollAreaTracker", "ScrollArea", None))
+        self.groupBox_slam.setTitle(_translate("ScrollAreaTracker", "Mono Slam", None))
+        self.groupBox_qualisys.setTitle(_translate("ScrollAreaTracker", "Qualisys Configuration", None))
+        self.label_24.setText(_translate("ScrollAreaTracker", "Artificial Detection Delay", None))
+        self.label_23.setText(_translate("ScrollAreaTracker", "Crazyflie Frame ID", None))
+        self.comboBox_q1.setItemText(0, _translate("ScrollAreaTracker", "/Q0", None))
+        self.comboBox_q1.setItemText(1, _translate("ScrollAreaTracker", "/Q1", None))
+        self.comboBox_q1.setItemText(2, _translate("ScrollAreaTracker", "/Q2", None))
+        self.label_22.setText(_translate("ScrollAreaTracker", "Wand Frame ID", None))
+        self.comboBox_q0.setItemText(0, _translate("ScrollAreaTracker", "/Q0", None))
+        self.comboBox_q0.setItemText(1, _translate("ScrollAreaTracker", "/Q1", None))
+        self.comboBox_q0.setItemText(2, _translate("ScrollAreaTracker", "/Q2", None))
+        self.doubleSpinBox_6.setSuffix(_translate("ScrollAreaTracker", " seconds", None))
+        self.comboBox_tracker.setItemText(0, _translate("ScrollAreaTracker", "Qualisys Motion Tracker", None))
+        self.comboBox_tracker.setItemText(1, _translate("ScrollAreaTracker", "Kinect", None))
+        self.comboBox_tracker.setItemText(2, _translate("ScrollAreaTracker", "MonoSlam", None))
+        self.pushButton_trackStart.setText(_translate("ScrollAreaTracker", "Enable Tracker", None))
+        self.groupBox_kinectBG.setTitle(_translate("ScrollAreaTracker", "Background Detection", None))
+        self.pushButton_reset.setText(_translate("ScrollAreaTracker", "Reset Background", None))
+        self.comboBox_kinMethod.setItemText(0, _translate("ScrollAreaTracker", "Median", None))
+        self.comboBox_kinMethod.setItemText(1, _translate("ScrollAreaTracker", "Minimum", None))
+        self.label_17.setText(_translate("ScrollAreaTracker", "Method", None))
+        self.label_11.setToolTip(_translate("ScrollAreaTracker", "Maximum distance in the scenem usually no need to change this", None))
+        self.label_11.setText(_translate("ScrollAreaTracker", "Maximum Depth", None))
+        self.doubleSpinBox_kinMaxDepth.setToolTip(_translate("ScrollAreaTracker", "Maximum distance in the scenem usually no need to change this", None))
+        self.doubleSpinBox_kinMaxDepth.setSuffix(_translate("ScrollAreaTracker", " m", None))
+        self.doubleSpinBox_kinObsTime.setSuffix(_translate("ScrollAreaTracker", " seconds", None))
+        self.label_18.setText(_translate("ScrollAreaTracker", "Observation Time", None))
+        self.label_2.setText(_translate("ScrollAreaTracker", "Foreground Distance", None))
+        self.doubleSpinBox_kinFG.setSuffix(_translate("ScrollAreaTracker", " cm", None))
+        self.groupBox_kinectFG.setTitle(_translate("ScrollAreaTracker", "Crazyflie Detection", None))
+        self.spinBox_kernelSize.setSuffix(_translate("ScrollAreaTracker", " *2+1", None))
+        self.label_21.setText(_translate("ScrollAreaTracker", "Depth Estimation", None))
+        self.label_13.setToolTip(_translate("ScrollAreaTracker", "Maximum distance in the scenem usually no need to change this", None))
+        self.label_13.setText(_translate("ScrollAreaTracker", "SizeTolerance", None))
+        self.label_19.setText(_translate("ScrollAreaTracker", "Prioritise", None))
+        self.label_12.setToolTip(_translate("ScrollAreaTracker", "How far away something has to be from the background to consider it foreground", None))
+        self.label_12.setText(_translate("ScrollAreaTracker", "Detection Size", None))
+        self.label_15.setToolTip(_translate("ScrollAreaTracker", "Maximum distance in the scenem usually no need to change this", None))
+        self.label_15.setText(_translate("ScrollAreaTracker", "Opening Kernel Iterations", None))
+        self.comboBox_kinDepth.setItemText(0, _translate("ScrollAreaTracker", "Center Pixel Depth", None))
+        self.comboBox_kinDepth.setItemText(1, _translate("ScrollAreaTracker", "Median Depth", None))
+        self.comboBox_kinDepth.setItemText(2, _translate("ScrollAreaTracker", "Closest", None))
+        self.doubleSpinBox_tol.setToolTip(_translate("ScrollAreaTracker", "Maximum distance in the scenem usually no need to change this", None))
+        self.doubleSpinBox_tol.setSuffix(_translate("ScrollAreaTracker", " cm", None))
+        self.doubleSpinBox_kinDetSize.setSuffix(_translate("ScrollAreaTracker", " cm", None))
+        self.comboBox_prio.setItemText(0, _translate("ScrollAreaTracker", "Distance from background", None))
+        self.comboBox_prio.setItemText(1, _translate("ScrollAreaTracker", "Closest to Goal", None))
+        self.comboBox_prio.setItemText(2, _translate("ScrollAreaTracker", "Closest to Camera", None))
+        self.comboBox_prio.setItemText(3, _translate("ScrollAreaTracker", "Estimated Object Size", None))
+        self.comboBox_prio.setItemText(4, _translate("ScrollAreaTracker", "Detection Size Pixels", None))
+        self.label_14.setToolTip(_translate("ScrollAreaTracker", "Maximum distance in the scenem usually no need to change this", None))
+        self.label_14.setText(_translate("ScrollAreaTracker", "Opening Kernel Size", None))
+        self.groupBox_control.setTitle(_translate("ScrollAreaTracker", "Crazyflie Control", None))
+        self.label.setText(_translate("ScrollAreaTracker", "Joy Control", None))
+        self.radioButton_joyAbs.setToolTip(_translate("ScrollAreaTracker", "Move the flie relative to the optical axis of the kinect", None))
+        self.radioButton_joyAbs.setText(_translate("ScrollAreaTracker", "Absolute", None))
+        self.radioButton_joyRel.setToolTip(_translate("ScrollAreaTracker", "Move the flie relative to the flies orientation", None))
+        self.radioButton_joyRel.setText(_translate("ScrollAreaTracker", "Relative", None))
+        self.checkBox_autoCapture.setToolTip(_translate("ScrollAreaTracker", "Automatically Take over the flie control when trackable by kinect", None))
+        self.checkBox_autoCapture.setText(_translate("ScrollAreaTracker", "Auto Capture", None))
 

@@ -81,6 +81,21 @@ trajectory = [(M,M,D,0),(M,M,D,90),(M,M,D,0),(M,M,D,135),(M,M,D,0),(M,M,D,180)]
 # cam house
 trajectory = [(M,M,0.5,90), (M,M,1.0,90), (M,M,1.5,90),(M,M,1.0,90), (M,M,0.5,90), (M,F,D,rot), (L,F,D,rot), (L,B,D,rot), (R,B,D,rot), (R,F,D,rot), (R,F,U,rot), (L,F,U,rot), (L,B,U,rot), (M,B,U,rot), (M,M,U,rot), (M,M,1.0,rot),(M,M,0.5,rot),(M,M,0.2,rot)]
 
+# cam front ccrl xyz3
+B = 0.0
+F = 1.5
+D = 0.75
+UUD = 1.25
+UDD = 1.0
+U = 1.5
+rot = 90
+L = 1.5
+R = -L
+M = 0
+trajectory = [(M,F,D,rot),(M,F,U,rot),(L,F,U,rot),(L,F,D,rot),(R,F,D,rot),(R,F,U,rot),(M,F,U,rot),(M,B,U,rot),(L,B,U,rot),(L,B,D,rot),(R,B,D,rot),(R,B,U,rot),(M,B,U,rot),(M,F,U,rot),(M,F,D,rot),(M,F,0,rot)]
+
+#XYZ5 ccrl cam front 2
+trajectory = [(R,F,0.0,rot),(R,F,D,rot),(R,F,U,rot),(L,F,U,rot),(L,B,U,rot),(R,B,U,rot),(R,B,UUD,rot),(R,B,UDD,rot),(R,B,D,rot),(R,F,D,rot),(L,F,D,rot),(L,B,D,rot),(R,B,D,rot),(R,B,0.25,rot)]
 
 
 def enum(*sequential, **named):

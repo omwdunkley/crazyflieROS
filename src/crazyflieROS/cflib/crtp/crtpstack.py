@@ -48,6 +48,7 @@ class CRTPPort:
     DEBUGDRIVER = 0x0E
     LINKCTRL = 0x0F
     ALL = 0xFF
+    SYNC = 0x0D # Time sync shit
 
 
 class CRTPPacket(object):

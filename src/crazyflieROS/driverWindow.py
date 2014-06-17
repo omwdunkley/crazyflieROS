@@ -8,6 +8,7 @@ from ui.ai import AttitudeIndicator
 from trackManager import TrackManager
 from logManager import LogManager
 from paramManager import ParamManager
+from sync import Sync
 from FlieManager import FlieControl, STATE
 from rosTools import generateRosMessages, ROSNode
 from ui.driverGUI import Ui_MainWindow
@@ -141,8 +142,24 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ros.sig_baro.connect(self.logManager.setAslOffset)
 
 
+
+
         # init previous settings
         self.readSettings()
+
+
+        # Sync
+        self.sync = Sync(self.flie.crazyflie)
+        self.sync.sig_delayUp.connect(lambda  x: self.ui.label_up.setText(str(round(x,2))+"ms"))
+        self.sync.sig_delayDown.connect(lambda  x: self.ui.label_down.setText(str(round(x,2))+"ms"))
+
+        self.ui.groupBox_sync.toggled.connect(self.sync.enable)
+        self.ui.spinBox_syncHz.valueChanged.connect(self.sync.setSyncRate)
+        self.ui.spinBox_syncHz.valueChanged.emit(self.ui.spinBox_syncHz.value())
+        self.ui.groupBox_sync.toggled.emit(self.ui.groupBox_sync.isChecked())
+        self.sync.sig_cpuTime.connect(lambda  x: self.ui.label_cputime.setText("%08.03fs"%x))
+        self.sync.sig_flieTime.connect(lambda  x: self.ui.label_flietime.setText("%08.03fs"%x))
+        self.sync.sig_diffTime.connect(lambda  x: self.ui.label_difftime.setText("%08.03fs"%x))
 
 
         self.ui.checkBox_rosLog.stateChanged.connect(self.logManager.setPubToRos)
@@ -198,6 +215,10 @@ class DriverWindow(QtGui.QMainWindow ):
         self.ui.pushButton_baro.clicked.connect(self.updateBaroTopics)
 
         self.ui.groupBox_baro.toggled.connect(lambda x: self.updateBaroTopics(not x))
+
+
+
+
 
 
         # Connections to GUI
