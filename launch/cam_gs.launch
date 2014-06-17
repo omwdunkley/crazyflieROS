@@ -13,7 +13,7 @@
 
 
     <!-- GS CAM -->
-    <env name="GSCAM_CONFIG" value="v4l2src device=$(arg DEVICE) ! video/x-raw-yuv,format=\(fourcc\)YUY2,width=720,height=576,framerate=$(arg FPS) ! ffmpegcolorspace " />
+    <env name="GSCAM_CONFIG" value="v4l2src device=$(arg DEVICE) norm=PAL ! video/x-raw-yuv,format=\(fourcc\)YUY2,width=720,height=576,framerate=$(arg FPS) ! ffmpegcolorspace " />
     <node pkg="gscam" type="gscam" name="gscam" required="true" output="screen">
         <param name="camera_name" value="$(arg NAME)" />
         <param name="camera_info_url" value="package://gscam/examples/uncalibrated_parameters.ini" />
