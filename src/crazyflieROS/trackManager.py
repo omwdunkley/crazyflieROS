@@ -277,8 +277,8 @@ class KinectTracker(Tracker):
         # Ros Stuff
         self.sub_depth = None #Initialised later
         self.bridge = CvBridge()
-        self.pub_depth = rospy.Publisher("/camera/detector/image_raw", ImageMSG, queue_size=5)
-        self.pub_camera = rospy.Publisher("/camera/detector/camera_info", CamInfoMSG, queue_size=5)
+        self.pub_depth = rospy.Publisher("/camera/detector/image_raw", ImageMSG, queue_size=1)
+        self.pub_camera = rospy.Publisher("/camera/detector/camera_info", CamInfoMSG, queue_size=1)
 
 
         # Parameters
@@ -461,6 +461,7 @@ class KinectTracker(Tracker):
     def incomingDepthData(self, data):
         self.started()
 
+        t0 = rospy.Time.now()
         img = self.ros2cv(data, dt="passthrough")
         img = np.asarray(img, dtype=np.float32)
         img /= self.maxDepth*1000 # convert to 0-1 units, 1=maxDepth
@@ -469,6 +470,8 @@ class KinectTracker(Tracker):
         img[img<0.01] = 1
         np.clip(img, 0.0, 1.0)
         img = img.reshape((480,640))
+
+        t1 = rospy.Time.now()
 
         # Only draw images if we actually display them
         showing = self.pub_depth.get_num_connections()>0 or self.pub_camera.get_num_connections()>0
@@ -515,6 +518,7 @@ class KinectTracker(Tracker):
             # extract foreground
             if self.counter > self.counterSteps:
 
+                t2 = rospy.Time.now()
                 np.clip(img, 0.0, 1.0)
                 # Our BW image
                 img = cv2.min(self.depth, img)
@@ -531,10 +535,15 @@ class KinectTracker(Tracker):
                 bm = np.asarray(bm, dtype=np.uint8)
                 dsts = cv2.distanceTransform(bm, cv2.cv.CV_DIST_L2, 3)
 
+                t3 = rospy.Time.now()
+                t4 = t3
+
 
                 if showing:
+                    pass
                     show = np.asarray( cv2.cvtColor(img*255, cv2.COLOR_GRAY2BGR), dtype=np.uint8)
                     show[:, :, 2] = cv2.max(bm,show[:, :, 2])
+                t4 = rospy.Time.now()
 
 
                 # Detect possible flies
@@ -582,6 +591,7 @@ class KinectTracker(Tracker):
                         flies.append([dist, mxl, x, y, z, w, b_diff])
                     bm -=  mask[1:-1, 1:-1]*255
 
+                t5 = rospy.Time.now()
 
                 if len(flies)>0:
                     # Sort by distance from background#
@@ -596,10 +606,10 @@ class KinectTracker(Tracker):
                         flies = sorted([f+[(f[2]-self.goal[0])**2+(f[3]-self.goal[1])**2+(f[4]-self.goal[2])**2] for f in flies], key=itemgetter(7),reverse=False)
                     elif self.priority == 2:
                         # Depth
-                        #flies = sorted(flies, key=itemgetter(4),reverse=False)
+                        flies = sorted(flies, key=itemgetter(4),reverse=False)
                         # Closest to GT
-                        gt = self.getGTDist()
-                        flies = sorted([f+[(f[2]-gt[0])**2+(f[3]-gt[1])**2+(f[4]-gt[2])**2] for f in flies], key=itemgetter(7),reverse=False)
+                        #gt = self.getGTDist()
+                        #flies = sorted([f+[(f[2]-gt[0])**2+(f[3]-gt[1])**2+(f[4]-gt[2])**2] for f in flies], key=itemgetter(7),reverse=False)
 
                     elif self.priority == 3:
                         # Estimated object size
@@ -614,37 +624,49 @@ class KinectTracker(Tracker):
                         dist, mxl, x, y, z, w, b_diff = flies[0][0:7]
 
                         # publish with level rotation
-                        t,r, = self.getKinectPoint()
-                        #self.pub_tf.sendTransform([z,-x-0.02,-y], (0,0,0,1), rospy.Time.now(), "cf_xyz", "camera_depth_frame")#TODO maybe we need to rotate 90" so x is aligned with optical axis
-                        self.pub_tf.sendTransform([x,y,z], (-r[0],-r[1],-r[2],r[3]), rospy.Time.now(), "cf_xyz", "camera_depth_optical_frame")#TODO maybe we need to rotate 90" so x is aligned with optical axis
+                        #t,r, = self.getKinectPoint()
+                        self.pub_tf.sendTransform([z,-x-0.02,-y], (0,0,0,1), rospy.Time.now(), "cf_xyz", "camera_depth_frame")#TODO maybe we need to rotate 90" so x is aligned with optical axis
+                        #self.pub_tf.sendTransform([x,y,z], (-r[0],-r[1],-r[2],r[3]), rospy.Time.now(), "cf_xyz", "camera_depth_optical_frame")#TODO maybe we need to rotate 90" so x is aligned with optical axis
+                        #self.pub_tf.sendTransform([x,y,z], (0,0,0,1), rospy.Time.now(), "cf_xyz", "camera_depth_optical_frame")#TODO maybe we need to rotate 90" so x is aligned with optical axis
+
+                    t6 = rospy.Time.now()
 
                     if showing:
+                        pass
                         for i, flie in enumerate(flies):
                             dist, mxl, x, y, z, w, b_diff = flies[i][0:7]
                             if i==0:
                                 cv2.circle(show, mxl, int(dist), (0, 255, 0), 4)
                             else:
                                 cv2.circle(show, mxl, int(dist), (12, 50, 12), 1)
+                            #cv2.circle(show, mxl, 2, (0, 255, 0))
+                            #cv2.circle(show, mxl, int(b_diff*10), (255, 0, 0))
+                            #cv2.putText(show, str(i),                    (mxl[0]-30, mxl[1]),    cv2.FONT_HERSHEY_PLAIN, 1.4, (0, 255, 255))
+                            #cv2.putText(show, str(round(z, 2))+"m",      (mxl[0]+14, mxl[1]+00), cv2.FONT_HERSHEY_PLAIN, 1.4, (255, 255, 0))
+                            #cv2.putText(show, str(round(w*100, 1))+"cm", (mxl[0]+14, mxl[1]+20), cv2.FONT_HERSHEY_PLAIN, 1.4, (255,0,255))
+                            #cv2.putText(show, str(round(b_diff,2))+"m",  (mxl[0]+14, mxl[1]+40), cv2.FONT_HERSHEY_PLAIN, 1.4, (255, 0, 0))
+                    t7 = rospy.Time.now()
 
-                            cv2.circle(show, mxl, 2, (0, 255, 0))
-                            cv2.circle(show, mxl, int(b_diff*10), (255, 0, 0))
-                            cv2.putText(show, str(i),                    (mxl[0]-30, mxl[1]),    cv2.FONT_HERSHEY_PLAIN, 1.4, (0, 255, 255))
-                            cv2.putText(show, str(round(z, 2))+"m",      (mxl[0]+14, mxl[1]+00), cv2.FONT_HERSHEY_PLAIN, 1.4, (255, 255, 0))
-                            cv2.putText(show, str(round(w*100, 1))+"cm", (mxl[0]+14, mxl[1]+20), cv2.FONT_HERSHEY_PLAIN, 1.4, (255,0,255))
-                            cv2.putText(show, str(round(b_diff,2))+"m",  (mxl[0]+14, mxl[1]+40), cv2.FONT_HERSHEY_PLAIN, 1.4, (255, 0, 0))
+                    rospy.loginfo("%7.1f %7.1f %7.1f %7.1f %7.1f %7.1f  = %10.1f ", 1000.*(t1-t0).to_sec(), 1000.*(t2-t1).to_sec(), 1000.*(t3-t2).to_sec(), 1000.*(t4-t3).to_sec(), 1000.*(t5-t4).to_sec(), 1000.*(t7-t6).to_sec(), 1000*(t7-t0).to_sec())
         else:
             show = np.asarray( cv2.cvtColor(img*255, cv2.COLOR_GRAY2BGR), dtype=np.uint8)
 
+
+
+        tS0 = rospy.Time.now()
         if showing:
+            pass
             try:
                 img = self.bridge.cv2_to_imgmsg(show, "bgr8")
                 self.cameraInfo.header.stamp = rospy.Time.now()
                 img.header = self.cameraInfo.header
-
                 self.pub_camera.publish(self.cameraInfo)
                 self.pub_depth.publish(img)
             except CvBridgeError, e:
                 rospy.logerr("Image sending problem: %s", e)
+
+        tS1 = rospy.Time.now()
+        rospy.loginfo(" Total = %10.1f  [%10.1f]", 1000.*(rospy.Time.now()-t0).to_sec(), 1000*(tS1-tS0).to_sec())
 
 
 

@@ -98,6 +98,17 @@ trajectory = [(M,F,D,rot),(M,F,U,rot),(L,F,U,rot),(L,F,D,rot),(R,F,D,rot),(R,F,U
 trajectory = [(R,F,0.0,rot),(R,F,D,rot),(R,F,U,rot),(L,F,U,rot),(L,B,U,rot),(R,B,U,rot),(R,B,UUD,rot),(R,B,UDD,rot),(R,B,D,rot),(R,F,D,rot),(L,F,D,rot),(L,B,D,rot),(R,B,D,rot),(R,B,0.25,rot)]
 
 
+F=2.0 #Y
+D=1.0
+U=1.5
+M=1.8
+L=M-0.50
+R=M+0.50
+rot=90.0
+
+trajectory = [(M,F,D,rot),(L,F,D,rot),(L,F,U,rot),(R,F,U,rot),(R,F,D,rot),(M,F,D,rot)]
+
+
 def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
     reverse = dict((value, key) for key, value in enums.iteritems())
