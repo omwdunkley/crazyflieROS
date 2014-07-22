@@ -109,6 +109,16 @@ rot=90.0
 trajectory = [(M,F,D,rot),(L,F,D,rot),(L,F,U,rot),(R,F,U,rot),(R,F,D,rot),(M,F,D,rot)]
 
 
+
+# Square with up/down in the middle
+X=0.5
+Y=0.5
+M=0.0
+D=0.5
+U=1.25
+R=0
+trajectory = [(M,M,U,R),(M,M,D,R),(X,Y,D,R),(-X,Y,D,R),(-X,-Y,D,R),(X,-Y,D,R),(X,Y,D,R),(M,M,D,R)]
+
 def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
     reverse = dict((value, key) for key, value in enums.iteritems())

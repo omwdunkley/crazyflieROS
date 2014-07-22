@@ -6,17 +6,21 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /Grid1
+        - /Grid1/Grid1
         - /TF1
         - /TF1/Frames1
         - /TF1/Tree1
         - /Kinect1
         - /Kinect1/RGB Cam1
+        - /Kinect1/Depth Cam1/Visibility1
+        - /Kinect1/PointCloud21
+        - /Kinect1/PointCloud21/Autocompute Value Bounds1
         - /Camera1/Visibility1
-        - /Image1
         - /Axes1
         - /Axes2
       Splitter Ratio: 0.618705
-    Tree Height: 695
+    Tree Height: 1188
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -42,7 +46,7 @@ Visualization Manager:
     - Class: rviz/Group
       Displays:
         - Alpha: 1
-          Cell Size: 2
+          Cell Size: 1
           Class: rviz/Grid
           Color: 164; 0; 2
           Enabled: true
@@ -131,19 +135,19 @@ Visualization Manager:
         camera_rgb_optical_frame:
           Value: true
         cf0:
-          Value: true
+          Value: false
         cf_gt:
           Value: true
         cf_gt2d:
-          Value: true
+          Value: false
         cf_xyz:
-          Value: true
+          Value: false
         cmd:
-          Value: true
+          Value: false
         goal:
-          Value: true
+          Value: false
         world:
-          Value: true
+          Value: false
       Marker Scale: 1.5
       Name: TF
       Show Arrows: false
@@ -154,11 +158,8 @@ Visualization Manager:
           camera_link:
             camera_depth_frame:
               camera_depth_optical_frame:
-                {}
-              cf_xyz:
-                cf0:
-                  cf_gt:
-                    {}
+                cf_xyz:
+                  {}
             camera_rgb_frame:
               camera_rgb_optical_frame:
                 {}
@@ -195,41 +196,41 @@ Visualization Manager:
             Value: true
           Zoom Factor: 1
         - Class: rviz/Camera
-          Enabled: false
+          Enabled: true
           Image Rendering: background and overlay
-          Image Topic: /camera/depth_registered/image_raw
+          Image Topic: /camera/detector/image_raw
           Name: Depth Cam
           Overlay Alpha: 0
           Queue Size: 1
           Transport Hint: raw
-          Value: false
+          Value: true
           Visibility:
-            "": true
+            Axes: true
             Camera: true
             Grid:
               Grid: true
               Value: true
             Image: true
             Kinect:
-              PointCloud2: true
-              RGB Cam: true
-              Value: true
-            TF: true
+              PointCloud2: false
+              RGB Cam: false
+              Value: false
+            TF: false
             Value: false
           Zoom Factor: 1
-        - Alpha: 1
+        - Alpha: 0.8
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
-            Max Value: 3.5
-            Min Value: 0
+            Max Value: 0.2
+            Min Value: 1.2
             Value: false
-          Axis: X
+          Axis: Z
           Channel Name: intensity
           Class: rviz/PointCloud2
           Color: 255; 255; 255
           Color Transformer: AxisColor
           Decay Time: 0
-          Enabled: false
+          Enabled: true
           Invert Rainbow: false
           Max Color: 255; 255; 255
           Max Intensity: 4096
@@ -239,13 +240,13 @@ Visualization Manager:
           Position Transformer: XYZ
           Queue Size: 1
           Selectable: true
-          Size (Pixels): 3
+          Size (Pixels): 2
           Size (m): 0.01
           Style: Points
           Topic: /camera/depth_registered/points
           Use Fixed Frame: true
           Use rainbow: true
-          Value: false
+          Value: true
       Enabled: true
       Name: Kinect
     - Class: rviz/Camera
@@ -258,15 +259,13 @@ Visualization Manager:
       Transport Hint: raw
       Value: false
       Visibility:
-        "": true
+        Axes: true
         Grid:
           Grid: true
           Value: true
         Image: true
         Kinect:
-          Depth Cam: true
-          PointCloud2: true
-          RGB Cam: true
+          "": true
           Value: false
         TF: true
         Value: true
@@ -320,22 +319,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 6.69405
+      Distance: 6.95897
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.667535
-        Y: 0.00695288
-        Z: 0.88493
+        X: 0.10712
+        Y: 0.10136
+        Z: 1.11949
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.139798
+      Pitch: 0.969796
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.18335
+      Yaw: 4.70385
     Saved: ~
 Window Geometry:
   Camera:
@@ -344,12 +343,12 @@ Window Geometry:
     collapsed: false
   Displays:
     collapsed: false
-  Height: 895
+  Height: 1388
   Hide Left Dock: false
   Hide Right Dock: false
   Image:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000021f000002f8fc020000000bfc00000028000002f80000000000fffffffaffffffff0100000002fb0000001200440065007000740068002000430061006d0000000000ffffffff0000007d00fffffffb0000000c00430061006d00650072006100000000000000021f0000006500fffffffb0000000a0049006d006100670065000000010b0000027c0000001600fffffffb0000000e005200470042002000430061006d0100000028000002f80000001600fffffffb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d006100670065000000010b0000032e000000000000000000000001000001b3000002f8fc0200000003fb000000100044006900730070006c0061007900730100000028000002f8000000dd00fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b2000000000000000000000002000004c30000019cfc0100000007fb0000000c00430061006d00650072006100000001150000021a0000000000000000fb0000000c00430061006d0065007200610100000172000001b80000000000000000fb0000000c00430061006d0065007200610100000330000002200000000000000000fb0000000a0049006d00610067006502000004730000028e000001f30000011dfb0000000a005600690065007700730000000000000005500000010f00fffffffb0000000c00430061006d00650072006101000002e6000003610000000000000000fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000006010000003bfc0100000002fb0000000800540069006d00650100000000000006010000031b00fffffffb0000000800540069006d0065010000000000000450000000000000000000000223000002f800000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd000000040000000000000272000004e5fc020000000bfc00000028000001950000001600fffffffa000000000100000002fb0000001200440065007000740068002000430061006d0100000000ffffffff0000007d00fffffffb0000000c00430061006d00650072006100000000000000021f0000006500fffffffb0000000a0049006d00610067006500000000280000027c0000001600fffffffb0000000e005200470042002000430061006d01000001c30000034a0000001600fffffffb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d006100670065000000010b0000032e000000000000000000000001000001b3000004e5fc0200000003fb000000100044006900730070006c0061007900730100000028000004e5000000dd00fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b2000000000000000000000002000004c30000019cfc0100000007fb0000000c00430061006d00650072006100000001150000021a0000000000000000fb0000000c00430061006d0065007200610100000172000001b80000000000000000fb0000000c00430061006d0065007200610100000330000002200000000000000000fb0000000a0049006d00610067006502000004730000028e000001f30000011dfb0000000a005600690065007700730000000000000005500000010f00fffffffb0000000c00430061006d00650072006101000002e6000003610000000000000000fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000078a0000003bfc0100000002fb0000000800540069006d006501000000000000078a0000031b00fffffffb0000000800540069006d0065010000000000000450000000000000000000000359000004e500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   RGB Cam:
     collapsed: false
   Selection:
@@ -360,6 +359,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1537
-  X: 143
-  Y: 126
+  Width: 1930
+  X: 616
+  Y: 24

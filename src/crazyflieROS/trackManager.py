@@ -19,7 +19,7 @@ import rospy
 import roslib
 roslib.load_manifest("crazyflieROS")
 import tf
-from tf.transformations import quaternion_from_euler as rpy2quat
+from tf.transformations import quaternion_from_euler as rpy2quat,quaternion_inverse
 from sensor_msgs.msg import Image as ImageMSG
 from sensor_msgs.msg import CameraInfo as CamInfoMSG
 from cv_bridge import CvBridge, CvBridgeError
@@ -454,7 +454,7 @@ class KinectTracker(Tracker):
 
     def projectRay(self, u,v,d):
         (x,y,z) = self.cameraModel.projectPixelTo3dRay((u,v))
-        return [x*d,y*d,z*d]
+        return [x*d/z,y*d/z,z*d/z]
 
 
 
@@ -465,10 +465,9 @@ class KinectTracker(Tracker):
         img = self.ros2cv(data, dt="passthrough")
         img = np.asarray(img, dtype=np.float32)
         img /= self.maxDepth*1000 # convert to 0-1 units, 1=maxDepth
-        img[np.isnan(img)] = 0
-        img[np.isinf(img)] = 0
+        img[np.bitwise_not(np.isfinite(img))] = 0
         img[img<0.01] = 1
-        np.clip(img, 0.0, 1.0)
+        img = np.clip(img, 0.0, 1.0)
         img = img.reshape((480,640))
 
         t1 = rospy.Time.now()
@@ -519,25 +518,19 @@ class KinectTracker(Tracker):
             if self.counter > self.counterSteps:
 
                 t2 = rospy.Time.now()
-                np.clip(img, 0.0, 1.0)
+                img = np.clip(img, 0.0, 1.0)
+
                 # Our BW image
                 img = cv2.min(self.depth, img)
 
-                # Output image
-
-
-
                 # Binary image of close objects
-                d = self.depth-img
-                #d = cv2.morphologyEx(d, cv2.MORPH_DILATE, self.kernel, iterations=1)
+                d = np.subtract(self.depth, img)
                 d = cv2.morphologyEx(d, cv2.MORPH_OPEN, self.kernel, iterations=self.morphIterations)
                 bm = cv2.threshold(d, self.bg_thresh/self.maxDepth, 255, cv2.THRESH_BINARY)[1]
                 bm = np.asarray(bm, dtype=np.uint8)
                 dsts = cv2.distanceTransform(bm, cv2.cv.CV_DIST_L2, 3)
 
                 t3 = rospy.Time.now()
-                t4 = t3
-
 
                 if showing:
                     pass
@@ -624,10 +617,14 @@ class KinectTracker(Tracker):
                         dist, mxl, x, y, z, w, b_diff = flies[0][0:7]
 
                         # publish with level rotation
-                        #t,r, = self.getKinectPoint()
-                        self.pub_tf.sendTransform([z,-x-0.02,-y], (0,0,0,1), rospy.Time.now(), "cf_xyz", "camera_depth_frame")#TODO maybe we need to rotate 90" so x is aligned with optical axis
+                        t,r, = self.getKinectPoint()
+                        #self.pub_tf.sendTransform([z,-x-0.02,-y], (0,0,0,1), rospy.Time.now(), "cf_xyz", "camera_depth_frame")#TODO maybe we need to rotate 90" so x is aligned with optical axis
                         #self.pub_tf.sendTransform([x,y,z], (-r[0],-r[1],-r[2],r[3]), rospy.Time.now(), "cf_xyz", "camera_depth_optical_frame")#TODO maybe we need to rotate 90" so x is aligned with optical axis
-                        #self.pub_tf.sendTransform([x,y,z], (0,0,0,1), rospy.Time.now(), "cf_xyz", "camera_depth_optical_frame")#TODO maybe we need to rotate 90" so x is aligned with optical axis
+
+
+                        # Point in world frame with R from crayzflie
+
+                        self.pub_tf.sendTransform([x,y,z], quaternion_inverse(r), rospy.Time.now(), "cf_xyz", "camera_depth_optical_frame")#TODO maybe we need to rotate 90" so x is aligned with optical axis
 
                     t6 = rospy.Time.now()
 
@@ -653,7 +650,6 @@ class KinectTracker(Tracker):
 
 
 
-        tS0 = rospy.Time.now()
         if showing:
             pass
             try:
@@ -665,8 +661,7 @@ class KinectTracker(Tracker):
             except CvBridgeError, e:
                 rospy.logerr("Image sending problem: %s", e)
 
-        tS1 = rospy.Time.now()
-        rospy.loginfo(" Total = %10.1f  [%10.1f]", 1000.*(rospy.Time.now()-t0).to_sec(), 1000*(tS1-tS0).to_sec())
+        rospy.loginfo(" Total = %10.1f", 1000.*(rospy.Time.now()-t0).to_sec())
 
 
 
