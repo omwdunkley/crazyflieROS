@@ -12,6 +12,8 @@ __Update:__ Sixaxis/sixpair instructions updated to (workaround for a bug introd
 
 __Update:__ Relative barometric pressure for above ground level estimation. [Details](#multiBaro)
 
+__Update:__ MSc Thesis is now online: [Visual Inertial Control of a Nano-Quadroto](http://vision.in.tum.de/_media/spezial/bib/dunkley14msc.pdf) [Video](http://youtu.be/RFPuCXl-jS4)
+
 # Introduction
 This package / document was created to help some friends get working with the crazyflie, ROS and the mocap system here at TUM. Still very much a work in progress. 
 The goal is to obtain a general overview of the flie, get a development environment set up for changing the firmware and implementing client side code.
@@ -19,8 +21,6 @@ The goal is to obtain a general overview of the flie, get a development environm
 I assume you are familiar with ROS and are running a recent version of Ubuntu. This was tested on 12.04 and ROS Fuerte to Hydro. You will need a joystick to fly the flie with - the code in this package was written to fly the flie with PS3 Sixaxis controller.
 
 Also, some permissions might be messed up (thanks Mr NTFS partition..) so you might need to chmod +x a few files (the *.cfg files probably).
-
-
 
 
 ### Important Links
