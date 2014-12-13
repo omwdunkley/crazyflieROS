@@ -12,7 +12,7 @@ __Update:__ Sixaxis/sixpair instructions updated to (workaround for a bug introd
 
 __Update:__ Relative barometric pressure for above ground level estimation. [Details](#multiBaro)
 
-__Update:__ MSc Thesis is now online: [Visual Inertial Control of a Nano-Quadroto](http://vision.in.tum.de/_media/spezial/bib/dunkley14msc.pdf) [Video](http://youtu.be/RFPuCXl-jS4)
+__Update:__ MSc Thesis is now online: [Visual Inertial Control of a Nano-Quadroto](http://vision.in.tum.de/_media/spezial/bib/dunkley14msc.pdf) With Video: [Video on Youtube](http://youtu.be/RFPuCXl-jS4)
 
 # Introduction
 This package / document was created to help some friends get working with the crazyflie, ROS and the mocap system here at TUM. Still very much a work in progress. 
